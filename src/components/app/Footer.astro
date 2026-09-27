@@ -31,7 +31,7 @@ const year = new Date().getFullYear();
             </span>
           </div>
           {settings.footerTagline && (
-            <p class="text-xs text-[var(--foreground)] max-w-md mb-6 md:mb-10 leading-relaxed font-bold uppercase tracking-widest">
+            <p class="text-xs text-[var(--foreground)] max-w-md mb-6 md:mb-10 leading-relaxed font-medium">
               {settings.footerTagline}
             </p>
           )}
@@ -39,7 +39,7 @@ const year = new Date().getFullYear();
 
         {settings.footerQuickHeading && (
           <div>
-            <h4 class="font-bold text-[var(--card-foreground)] mb-8 text-[10px] uppercase tracking-[0.2em]">
+            <h4 class="font-bold text-[var(--card-foreground)] mb-8 text-[11px] uppercase tracking-[0.2em]">
               {settings.footerQuickHeading}
             </h4>
             <ul class="flex flex-col gap-4 text-[11px] font-bold uppercase tracking-widest">
@@ -60,7 +60,7 @@ const year = new Date().getFullYear();
 
         {settings.footerResourceHeading && (
           <div>
-            <h4 class="font-bold text-[var(--card-foreground)] mb-8 text-[10px] uppercase tracking-[0.2em]">
+            <h4 class="font-bold text-[var(--card-foreground)] mb-8 text-[11px] uppercase tracking-[0.2em]">
               {settings.footerResourceHeading}
             </h4>
             <ul class="flex flex-col gap-4 text-[11px] font-bold uppercase tracking-widest">
@@ -103,10 +103,10 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer {
-    --foreground: #555555;
+    --foreground: #404040;
     --card-foreground: #121212;
     --primary: #9d2235;
-    --muted-foreground: #7a7a7a;
+    --muted-foreground: #525252;
     --border: #e3e0dc;
     font-family: 'Sora Variable', 'Sora', sans-serif;
   }
