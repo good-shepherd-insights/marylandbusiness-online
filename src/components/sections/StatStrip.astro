@@ -1,0 +1,76 @@
+---
+/**
+ * Stat strip section — dark band of stat items. All content comes from
+ * Sanity `about.statStrip`; renders nothing when absent or empty.
+ */
+import type { StatStripContent, StatItem } from '@lib/sanity/types';
+
+interface Props {
+  statStrip: StatStripContent;
+}
+
+const { stats } = Astro.props.statStrip;
+const validStats = (stats ?? []).filter((s) => s.value);
+---
+
+{
+  validStats.length > 0 && (
+    <section class="stat-strip">
+      <div class="stat-strip-inner">
+        {validStats.map((stat: StatItem) => (
+          <div class="stat-item">
+            {stat.value && <span class="stat-value">{stat.value}</span>}
+            {stat.label && <span class="stat-label">{stat.label}</span>}
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .stat-strip {
+    --strip-secondary: #eaaa00;
+    --strip-muted: #9ca3af;
+
+    background: #121212;
+    color: #ffffff;
+    padding: 4rem 1rem;
+  }
+
+  .stat-strip-inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 3rem;
+    line-height: 1;
+    font-weight: 800;
+    color: var(--strip-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--strip-muted);
+  }
+
+  @media (min-width: 768px) {
+    .stat-strip {
+      padding: 4rem 3rem;
+    }
+
+    .stat-strip-inner {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

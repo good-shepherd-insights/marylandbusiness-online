@@ -1,26 +1,29 @@
 ---
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
 import { Icon } from "astro-icon/components";
-import { getCollection } from "astro:content";
+import { getListings, getSiteSettings } from "../../lib/sanity/queries";
 import formatString from "../../util/formatString";
 import UiTagGrid from "../ui/tags/Grid.vue";
 import UiTagSelect from "../ui/tags/Select.vue";
 import config from "@util/themeConfig";
+import { getFilterOptions } from "@lib/directory/paths";
 
+const filterOptions = await getFilterOptions();
+
+const settings = await getSiteSettings(perspectiveCookie);
 const searchPlaceholder = await getSearchPlaceholder();
 
 async function getSearchPlaceholder() {
-  if (
-    config.directoryData.search?.placeholder &&
-    config.directoryData.search.placeholder.includes("{0}")
-  ) {
-    const count = (await getCollection("directory")).length;
-    return formatString(
-      config.directoryData.search?.placeholder ?? "Search among {0} listings",
-      count,
-    );
+  // CMS placeholder wins; TOML config is the fallback.
+  const placeholder =
+    settings?.searchPlaceholder ?? config.directoryData?.search?.placeholder;
+  if (placeholder && placeholder.includes("{0}")) {
+    const count = (await getListings(perspectiveCookie)).length;
+    return formatString(placeholder, count);
   }
 
-  return config.directoryData.search?.placeholder ?? "Search";
+  return placeholder ?? "Search";
 }
 ---
 
@@ -61,13 +64,13 @@ async function getSearchPlaceholder() {
       }
       if (config.directoryUI.search.tags.display === "select") {
         return (
-          <UiTagSelect client:load>
+          <UiTagSelect client:load options={filterOptions}>
             <Icon name="tabler:x" />
           </UiTagSelect>
         );
       }
       if (config.directoryUI.search.tags.display === "show-all") {
-        return <UiTagGrid client:load />;
+        return <UiTagGrid client:load options={filterOptions} />;
       }
     }
   }

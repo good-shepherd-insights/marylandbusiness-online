@@ -1,0 +1,104 @@
+---
+// Single-segment routes (TAGS.md + HUB-DIRECTORY-RESEARCH.md): named pages
+// (about, how-it-works) or a directory path. [category] shadows [...slug]
+// for every single-segment URL (named params beat rest params). Directory
+// resolution is three-tier: gate-passing → hub; valid-but-gate-off → 302
+// to the nearest gate-passing ancestor with ?af= chips; unresolvable →
+// bare 302 to the hub root.
+import { getCountyOptions, getCategoryOptions, resolveDirectoryPath } from "@lib/directory/paths";
+import { getAboutPage, getDirectoryPage, getHowItWorksPage, getSiteSettings } from "@lib/sanity/queries";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import "@fontsource-variable/sora";
+import Navbar from "@components/app/Navbar.astro";
+import Footer from "@components/app/Footer.astro";
+import HubHeader from "@components/sections/HubHeader.astro";
+import HubDiscovery from "@components/sections/HubDiscovery.astro";
+import HubBasic from "@components/sections/HubBasic.astro";
+import HiwHeader from "@components/sections/HiwHeader.astro";
+import HiwProcess from "@components/sections/HiwProcess.astro";
+import HiwValue from "@components/sections/HiwValue.astro";
+import HiwWhy from "@components/sections/HiwWhy.astro";
+import HiwPricing from "@components/sections/HiwPricing.astro";
+import HiwComparison from "@components/sections/HiwComparison.astro";
+import HiwFaq from "@components/sections/HiwFaq.astro";
+import HiwCta from "@components/sections/HiwCta.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import AboutHeader from "@components/sections/AboutHeader.astro";
+import StatStrip from "@components/sections/StatStrip.astro";
+import Origin from "@components/sections/Origin.astro";
+import MissionBand from "@components/sections/MissionBand.astro";
+import VisionPillars from "@components/sections/VisionPillars.astro";
+import OfferArms from "@components/sections/OfferArms.astro";
+import Partnerships from "@components/sections/Partnerships.astro";
+import ClosingCta from "@components/sections/ClosingCta.astro";
+
+const { category } = Astro.params;
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
+
+// Named page documents win over directory resolution (a slug named "about"
+// would be ambiguous; none exists).
+const about = category === "about" ? await getAboutPage(perspectiveCookie) : undefined;
+const howItWorks = category === "how-it-works" ? await getHowItWorksPage(perspectiveCookie) : undefined;
+
+const settings = await getSiteSettings(perspectiveCookie);
+const [countyOptions, categoryOptions] = await Promise.all([getCountyOptions(), getCategoryOptions()]);
+const dir = about || howItWorks ? null : await resolveDirectoryPath(category ?? "");
+const view = dir?.kind === "open" ? dir.view : undefined;
+const directoryPage = view ? await getDirectoryPage(perspectiveCookie) : undefined;
+const hasChrome = Boolean(view && directoryPage?.hubHeader && directoryPage.hubDiscovery);
+
+if (dir?.kind === "narrow" || dir?.kind === "invalid") {
+  return new Response(null, { status: 301, headers: { Location: dir.redirectTo } });
+}
+if (!about && !howItWorks && !view) {
+  return new Response(null, { status: 301, headers: { Location: "/" } });
+}
+---
+{
+  about ? (
+    <BaseLayout>
+      {settings && <Navbar settings={settings} />}
+      {about.header && <AboutHeader header={about.header} />}
+      {about.statStrip && <StatStrip statStrip={about.statStrip} />}
+      {about.origin && <Origin origin={about.origin} />}
+      {about.missionBand && <MissionBand missionBand={about.missionBand} />}
+      {about.visionPillars && <VisionPillars visionPillars={about.visionPillars} />}
+      {about.offerArms && <OfferArms offerArms={about.offerArms} />}
+      {about.partnerships && <Partnerships partnerships={about.partnerships} />}
+      {about.closingCta && <ClosingCta closingCta={about.closingCta} />}
+      {settings && <Footer settings={settings} />}
+    </BaseLayout>
+  ) : howItWorks ? (
+    <BaseLayout title={howItWorks.title} slug={category}>
+      {settings && <Navbar settings={settings} />}
+      {howItWorks.hiwHeader && <HiwHeader header={howItWorks.hiwHeader} crumbTail={howItWorks.title} />}
+      {howItWorks.hiwProcess && <HiwProcess process={howItWorks.hiwProcess} />}
+      {howItWorks.hiwValue && <HiwValue value={howItWorks.hiwValue} />}
+      {howItWorks.hiwWhy && <HiwWhy why={howItWorks.hiwWhy} />}
+      {howItWorks.hiwPricing && <HiwPricing pricing={howItWorks.hiwPricing} />}
+      {howItWorks.hiwComparison && howItWorks.hiwPricing && (
+        <HiwComparison comparison={howItWorks.hiwComparison} plans={howItWorks.hiwPricing.plans ?? []} />
+      )}
+      {howItWorks.hiwFaq && <HiwFaq faq={howItWorks.hiwFaq} />}
+      {howItWorks.hiwCta && <HiwCta cta={howItWorks.hiwCta} />}
+      {settings && <Footer settings={settings} />}
+    </BaseLayout>
+  ) : hasChrome && view ? (
+    <BaseLayout title={`${view.hub.label} ${directoryPage!.hubHeader?.headingSuffix ?? ""}`.trim()} description={view.state.description ?? undefined} slug={category}>
+      <div
+        class="hub-page min-h-dvh bg-[#FAF7F2] flex flex-col overflow-hidden"
+        style="font-family: 'Sora Variable', 'Sora', sans-serif;"
+      >
+        {settings && <Navbar settings={settings} />}
+        <HubHeader header={directoryPage!.hubHeader!} label={view.hub.label} />
+        <HubDiscovery discovery={directoryPage!.hubDiscovery!} hub={view.hub} filters={view.filters} counties={countyOptions} categories={categoryOptions} />
+        {settings && <Footer settings={settings} />}
+      </div>
+    </BaseLayout>
+  ) : view ? (
+    <BaseLayout title={view.hub.label} description={view.state.description ?? undefined} slug={category}>
+      <HubBasic label={view.hub.label} description={view.state.description} hub={view.hub} />
+      {settings && <Footer settings={settings} />}
+    </BaseLayout>
+  ) : null
+}

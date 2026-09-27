@@ -1,0 +1,49 @@
+---
+/**
+ * County/City quick-jump strip. Chips = live gate county hubs
+ * (getGeoCountyHubs) — never CMS copy. Heading/view-all = CMS props.
+ */
+import { Icon } from 'astro-icon/components';
+import { getGeoCountyHubs } from '@lib/directory/paths';
+import type { CountyJumpContent } from '@lib/sanity/types';
+
+interface Props {
+  section: CountyJumpContent;
+}
+
+const { section } = Astro.props;
+const hubs = await getGeoCountyHubs();
+---
+
+<section class="county-jump">
+  <div class="wrap">
+    <h3>{section.heading}</h3>
+    <div class="chips">
+      {hubs.map((hub) => (
+        <a class="chip" href={`/${hub.path}`}>{hub.label}</a>
+      ))}
+    </div>
+    <div class="view-all-row">
+      <a class="view-all" href={section.viewAllUrl}>
+        {section.viewAllLabel}
+        <Icon name="tabler:arrow-right" class="view-all-icon" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .county-jump { font-family: 'Sora Variable', 'Sora', sans-serif; padding: 56px 48px; background: #f8f7f6; border-bottom: 1px solid #e3e0dc; }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  h3 { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: #555; margin: 0 0 20px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 12px; }
+  .chip { background: #fff; border: 1px solid #e3e0dc; padding: 12px 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #121212; text-decoration: none; transition: all 0.2s ease; }
+  .chip:hover { border-color: #9d2235; color: #9d2235; }
+  .view-all-row { display: flex; justify-content: flex-end; margin-top: 20px; }
+  .view-all { font-size: 10px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
+  .view-all:hover { color: #9d2235; }
+  .view-all-icon { width: 11px; height: 11px; margin-left: 4px; vertical-align: -1px; }
+  @media (max-width: 768px) {
+    .county-jump { padding: 40px 16px; }
+  }
+</style>

@@ -1,0 +1,246 @@
+---
+/**
+ * Editorial section — MD-Made Stories band: portrait image with quote
+ * overlay, heading block with story rows, CTA. All content comes from
+ * Sanity `home.editorial`; the component renders nothing when the section
+ * is absent and never substitutes its own copy. Eyebrow border and image
+ * caption placement are presentation (CSS).
+ */
+import { sanityImageUrl } from '@lib/sanity/client';
+import type { EditorialContent, EditorialStory } from '@lib/sanity/types';
+
+interface Props {
+  editorial: EditorialContent;
+}
+
+const {
+  image,
+  imageAlt,
+  quote,
+  attributionName,
+  attributionBusiness,
+  eyebrow,
+  heading,
+  description,
+  stories,
+  ctaLabel,
+  ctaLink,
+} = Astro.props.editorial;
+
+const validStories = (stories ?? []).filter((s) => s.title);
+---
+
+{
+  (heading || validStories.length > 0) && (
+    <section class="editorial">
+      <div class="editorial-inner">
+        <div class="editorial-grid">
+          <div class="editorial-media">
+            {image?.asset && (
+              <img
+                src={sanityImageUrl(image, { width: 1200 })}
+                srcset={`${sanityImageUrl(image, { width: 600 })} 1x, ${sanityImageUrl(image, { width: 1200 })} 2x`}
+                alt={imageAlt ?? ''}
+                loading="lazy"
+              />
+            )}
+            {(quote || attributionName) && (
+              <div class="editorial-caption">
+                {quote && <h4>{quote}</h4>}
+                {(attributionName || attributionBusiness) && (
+                  <div class="editorial-attribution">
+                    <div>
+                      {attributionName && <p class="editorial-name">{attributionName}</p>}
+                      {attributionBusiness && <p class="editorial-business">{attributionBusiness}</p>}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div class="editorial-content">
+            {eyebrow && <span class="editorial-eyebrow">{eyebrow}</span>}
+            {heading && <h2>{heading}</h2>}
+            {description && <p class="editorial-description">{description}</p>}
+            {validStories.length > 0 && (
+              <div class="editorial-stories">
+                {validStories.map((story: EditorialStory) => (
+                  <div class="editorial-story">
+                    <div>
+                      <h4>{story.title}</h4>
+                      {story.excerpt && <p>{story.excerpt}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {ctaLabel && ctaLink && (
+              <a class="editorial-cta" href={ctaLink}>{ctaLabel}</a>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .editorial {
+    --editorial-primary: #9d2235;
+    --editorial-secondary: #eaaa00;
+    --editorial-foreground: #121212;
+    --editorial-muted: #555555;
+    --editorial-border: #e3e0dc;
+    --editorial-background: #faf7f2;
+    --editorial-story-bg: #f8f7f6;
+
+    background: var(--editorial-background);
+    padding: 8rem 1rem;
+    overflow: hidden;
+  }
+
+  .editorial-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+  }
+
+  .editorial-grid {
+    display: grid;
+    gap: 6rem;
+    align-items: center;
+  }
+
+  .editorial-media {
+    position: relative;
+  }
+
+  .editorial-media img {
+    width: 100%;
+    height: 40rem;
+    object-fit: cover;
+    border: 1px solid var(--editorial-border);
+  }
+
+  .editorial-caption {
+    background: var(--editorial-background);
+    padding: 2rem;
+    border-top: 1px solid var(--editorial-border);
+  }
+
+  .editorial-caption h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--editorial-foreground);
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    margin: 0 0 0.75rem;
+  }
+
+  .editorial-attribution {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .editorial-name {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: var(--editorial-foreground);
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .editorial-business {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    color: var(--editorial-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0;
+  }
+
+  .editorial-eyebrow {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--editorial-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    border-left: 4px solid var(--editorial-primary);
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .editorial-content h2 {
+    font-size: 3rem;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--editorial-foreground);
+    margin: 0 0 2.5rem;
+  }
+
+  .editorial-description {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 500;
+    color: var(--editorial-muted);
+    margin: 0 0 3rem;
+  }
+
+  .editorial-stories {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .editorial-story {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--editorial-story-bg);
+    border: 1px solid var(--editorial-border);
+  }
+
+  .editorial-story h4 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--editorial-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 0.5rem;
+  }
+
+  .editorial-story p {
+    font-size: 0.75rem;
+    line-height: 1.625;
+    color: var(--editorial-muted);
+    margin: 0;
+  }
+
+  .editorial-cta {
+    display: inline-block;
+    padding: 1.25rem 2.5rem;
+    background: var(--editorial-primary);
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    box-shadow: 0 25px 50px -12px rgb(157 34 53 / 15%);
+  }
+
+  @media (min-width: 768px) {
+    .editorial {
+      padding: 8rem 3rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .editorial-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

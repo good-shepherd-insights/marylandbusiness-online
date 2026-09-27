@@ -1,0 +1,42 @@
+---
+/**
+ * Media block for "Vibe Check" — still frame, play button, caption gradient,
+ * duration chip. Markup only; wrapping/link logic lives in VibeCheck.astro.
+ */
+import { sanityImageUrl } from '@lib/sanity/client';
+import type { SanityListing } from '@lib/sanity/types';
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+---
+
+<div class="relative md:h-[420px] h-64 bg-[#121212] overflow-hidden">
+  {listing.videoStill?.asset && (
+    <img
+      class="w-full h-full object-cover opacity-70"
+      src={sanityImageUrl(listing.videoStill, { width: 1600 })}
+      alt={listing.videoStill.alt ?? listing.videoHeading ?? ''}
+      loading="lazy"
+    />
+  )}
+  <div class="absolute inset-0 flex items-center justify-center">
+    <div class="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center shadow-2xl">
+      <Icon name="tabler:player-play" class="w-6 h-6 text-[var(--primary)] ml-1" />
+    </div>
+  </div>
+  <div class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+    <span class="text-[9px] font-bold text-[var(--secondary)] uppercase tracking-[0.2em]">
+      {listing.videoEyebrow}
+    </span>
+    <h3 class="text-lg font-extrabold text-white uppercase tracking-tight mt-1">{listing.videoCaption}</h3>
+  </div>
+  {listing.videoDuration && (
+    <div class="absolute top-6 right-6 bg-white/90 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-widest text-[var(--card-foreground)]">
+      {listing.videoDuration}
+    </div>
+  )}
+</div>

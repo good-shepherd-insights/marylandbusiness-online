@@ -50,12 +50,12 @@ const currentPath = new URL(Astro.request.url).pathname;
     <div
       class="flex gap-3 items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse"
     >
-    { config.header.actionButton.href &&
+    { config.header.actionButton?.href &&
       <a
-        href={config.header.actionButton.href}
+        href={config.header.actionButton?.href}
         class="hidden md:inline-flex items-center dark:text-gray-300 text-gray-600"
       >
-        {config.header.actionButton.text}
+        {config.header.actionButton?.text}
       </a>
       }
       <ColorSelector transition:persist class="hidden md:flex" />
@@ -102,18 +102,18 @@ const currentPath = new URL(Astro.request.url).pathname;
         </div>
     </div>
   </div>
+  </div>
 </nav>
 
 
 <script>
   const mobileMenuButton = document.getElementById('mobile-menu-button');
   const mobileMenu = document.getElementById('mobile-menu');
-  const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 
-  if (mobileMenuButton && mobileMenu && mobileMenuIcon) {
+  if (mobileMenuButton && mobileMenu) {
     mobileMenuButton.addEventListener('click', () => {
-      const isOpen = mobileMenu.classList.toggle('hidden');
-      mobileMenuIcon.setAttribute('name', isOpen ? 'tabler:baseline-density-medium' : 'tabler:x');
+      const isHidden = mobileMenu.classList.toggle('hidden');
+      mobileMenuButton.setAttribute('aria-expanded', String(!isHidden));
     });
   }
 </script>

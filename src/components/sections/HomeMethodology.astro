@@ -1,0 +1,62 @@
+---
+/**
+ * Verification / ranking methodology (census 13 §4): numbered transparency
+ * block. The 1–4 badges render from item position — not stored.
+ */
+import type { SanityHomeMethodology } from '@lib/sanity/types';
+
+interface Props {
+  methodology: SanityHomeMethodology;
+}
+
+const { methodology } = Astro.props;
+---
+
+{
+  methodology.heading && (
+    <section id="trust-logic" class="home-methodology py-16 md:py-24 px-4 md:px-12 bg-white">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-12 md:mb-20">
+          {methodology.eyebrow && (
+            <span class="text-[var(--primary)] font-extrabold text-[10px] tracking-[0.2em] uppercase mb-4 md:mb-6 block">
+              {methodology.eyebrow}
+            </span>
+          )}
+          <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
+            {methodology.heading}
+          </h2>
+          <p class="text-base md:text-lg text-[var(--foreground)] max-w-2xl mx-auto font-medium leading-relaxed">
+            {methodology.description}
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 md:gap-12">
+          {(methodology.steps ?? []).map((step, i) => (
+            <div class="flex gap-5 md:gap-6">
+              <div class="shrink-0 w-12 h-12 bg-[var(--primary)] text-white flex items-center justify-center font-bold text-xl">
+                {i + 1}
+              </div>
+              <div>
+                <h4 class="font-extrabold text-[var(--card-foreground)] uppercase tracking-widest mb-3">
+                  {step.title}
+                </h4>
+                {step.body && (
+                  <p class="text-sm text-[var(--foreground)] leading-relaxed">{step.body}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .home-methodology {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+</style>

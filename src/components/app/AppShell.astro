@@ -1,13 +1,8 @@
 ---
-import Posthog from "../analytics/Posthog.astro";
-import Footer from "./Footer.astro";
-import Navbar from "./Navbar.astro";
-import Banner from "./header/Banner.astro";
+// Global app shell. Navbar, announcement banner, and footer are orphaned
+// by order — no page renders them.
 ---
 
 <div>
-  <Banner />
-  <Navbar />
   <slot />
-  <Footer />
 </div>

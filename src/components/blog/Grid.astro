@@ -1,9 +1,11 @@
 ---
-import { getCollection } from "astro:content";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
 import PureGrid from "../directory/PureGrid.astro";
+import { getBlogPosts } from "../../lib/sanity/queries";
 
-const allListings = await getCollection("blog");
-const blogListings = allListings.map((value) => ({
+const allPosts = await getBlogPosts(perspectiveCookie);
+const blogListings = allPosts.map((value) => ({
   ...value,
   id: `blog/${value.id}`,
 }));

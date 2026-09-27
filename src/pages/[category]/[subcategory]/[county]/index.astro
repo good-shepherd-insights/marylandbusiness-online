@@ -1,0 +1,74 @@
+---
+// Three-segment routes (TAGS.md + HUB-DIRECTORY-RESEARCH.md): the combo
+// hub (/restaurant/seafood/anne-arundel) or the business detail at its
+// geographic path (/anne-arundel/annapolis/<business>). Same depth, one
+// route file. Combo: open → hub; valid-but-gate-off → 302 to the nearest
+// gate-passing ancestor with ?af= chips. Detail: slug must resolve and
+// the listing must sit in the requested county+city (data integrity, not
+// the gate) — no match is a genuine 404.
+import { getCountyOptions, getCategoryOptions, resolveDirectoryPath } from "@lib/directory/paths";
+import { getDirectoryPage, getListing, getSiteSettings } from "@lib/sanity/queries";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import "@fontsource-variable/sora";
+import { PortableText } from "astro-portabletext";
+import Navbar from "@components/app/Navbar.astro";
+import Footer from "@components/app/Footer.astro";
+import HubHeader from "@components/sections/HubHeader.astro";
+import HubDiscovery from "@components/sections/HubDiscovery.astro";
+import HubBasic from "@components/sections/HubBasic.astro";
+import Listing from "@layouts/Listing.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const { category, subcategory, county } = Astro.params;
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
+const settings = await getSiteSettings(perspectiveCookie);
+const [countyOptions, categoryOptions] = await Promise.all([getCountyOptions(), getCategoryOptions()]);
+const dir = await resolveDirectoryPath(`${category}/${subcategory}/${county}`);
+const view = dir?.kind === "open" ? dir.view : undefined;
+const directoryPage = view ? await getDirectoryPage(perspectiveCookie) : undefined;
+const hasChrome = Boolean(view && directoryPage?.hubHeader && directoryPage.hubDiscovery);
+
+if (dir?.kind === "narrow") {
+  return new Response(null, { status: 301, headers: { Location: dir.redirectTo } });
+}
+
+// Detail fallback (only when the segments are not a directory combo): the
+// listing must actually sit in the requested county+city. No match → the
+// geo route itself is the valid landing (tier 3: redirect, no filtering).
+const listing = view ? null : await getListing(county ?? "", perspectiveCookie);
+const matches =
+  listing &&
+  listing.county?.slug?.current === category &&
+  listing.city?.slug?.current === subcategory;
+
+if (!view && (!listing || !matches)) {
+  const geo = await resolveDirectoryPath(`${category}/${subcategory}`);
+  const loc = geo.kind === "open" ? `/${geo.path}` : geo.kind === "narrow" ? geo.redirectTo.split("?")[0] : geo.redirectTo;
+  return new Response(null, { status: 301, headers: { Location: loc } });
+}
+---
+
+{
+  hasChrome && view ? (
+    <BaseLayout title={`${view.hub.label} ${directoryPage!.hubHeader?.headingSuffix ?? ""}`.trim()} description={view.state.description ?? undefined} slug={county}>
+      <div
+        class="hub-page min-h-dvh bg-[#FAF7F2] flex flex-col overflow-hidden"
+        style="font-family: 'Sora Variable', 'Sora', sans-serif;"
+      >
+        {settings && <Navbar settings={settings} />}
+        <HubHeader header={directoryPage!.hubHeader!} label={view.hub.label} />
+        <HubDiscovery discovery={directoryPage!.hubDiscovery!} hub={view.hub} filters={view.filters} counties={countyOptions} categories={categoryOptions} />
+        {settings && <Footer settings={settings} />}
+      </div>
+    </BaseLayout>
+  ) : view ? (
+    <BaseLayout title={view.hub.label} description={view.state.description ?? undefined} slug={county}>
+      <HubBasic label={view.hub.label} description={view.state.description} hub={view.hub} />
+      {settings && <Footer settings={settings} />}
+    </BaseLayout>
+  ) : (
+    <Listing frontmatter={listing!} slug={county ?? ""}>
+      <PortableText value={listing!.about ?? []} />
+    </Listing>
+  )
+}

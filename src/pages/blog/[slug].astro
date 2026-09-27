@@ -1,24 +1,18 @@
 ---
-import { getCollection } from "astro:content";
-import { render } from "astro:content";
+import { PortableText } from "astro-portabletext";
 import Article from "@layouts/Article.astro";
+import { getBlogPost } from "@lib/sanity/queries";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
 
-const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { slug } = Astro.params;
+const entry = slug ? await getBlogPost(slug, perspectiveCookie) : undefined;
 
-export async function getStaticPaths() {
-  const allListings = await getCollection("blog");
-
-  return allListings.map((entry) => {
-    let mySlug: string = entry.id;
-    return {
-      params: { slug: mySlug },
-      props: { entry },
-    };
-  });
+if (!entry) {
+  return Astro.redirect("/404");
 }
 ---
 
-<Article>
-  <Content />
+<Article frontmatter={entry.data} slug={slug}>
+  <PortableText value={entry.body as any ?? []} />
 </Article>

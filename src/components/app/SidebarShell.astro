@@ -1,20 +1,12 @@
 ---
-import Footer from "./Footer.astro";
-import SidebarNavbar from "./SidebarNavbar.astro";
-import SidebarTags from "./SidebarTags.astro";
-import Banner from "./header/Banner.astro";
-
-const { showSidebar = true } = Astro.props;
+// Sidebar shell. Navbar, announcement banner, footer, and the sidebar tag
+// nav are orphaned by order — no page renders them.
 ---
 
 <div>
-  <Banner />
   <div class="md:flex">
-    {showSidebar && <SidebarTags />}
     <div class="w-full min-h-dvh">
-      <SidebarNavbar />
       <slot />
     </div>
   </div>
 </div>
-<Footer />

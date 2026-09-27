@@ -1,0 +1,352 @@
+---
+/**
+ * Home hero — background image carousel, badge, CMS-composed heading and
+ * segmented county/category search. All content comes from the Sanity
+ * `home.hero` object; the component renders nothing for missing pieces
+ * and never substitutes its own copy or defaults. Segment spacing is owned
+ * here in markup (space between segments); heading data carries words only.
+ */
+import { Icon } from 'astro-icon/components';
+import { sanityImageUrl } from '@lib/sanity/client';
+import type { HeroContent } from '@lib/sanity/types';
+
+interface Props {
+  hero: HeroContent;
+}
+
+const { hero } = Astro.props;
+const { badge, heading, subheading, images, countyLabel, counties, categoryLabel, categories, searchButtonLabel } =
+  hero;
+---
+
+{
+  images && images.length > 0 && (
+    <section class="hero" data-hero>
+      <div class="hero-carousel" data-carousel>
+        {images.map((image, index) => (
+          <div
+            class:list={['hero-slide', { 'is-active': index === 0 }]}
+            data-slide={index}
+          >
+            <img
+              src={sanityImageUrl(image, { width: 1920 })}
+              srcset={sanityImageUrl(image, { width: 1280 }) + ' 1280w, ' + sanityImageUrl(image, { width: 1920 }) + ' 1920w, ' + sanityImageUrl(image, { width: 2560 }) + ' 2560w'}
+              sizes="100vw"
+              alt={image.alt ?? ''}
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+            <div class="hero-overlay" />
+          </div>
+        ))}
+      </div>
+
+      <div class="hero-inner">
+        {badge?.text && (
+          <p class="hero-badge">
+            {badge.icon && <Icon name={badge.icon} />}
+            <span>{badge.text}</span>
+          </p>
+        )}
+
+        {heading && heading.length > 0 && (
+          <h1 class="hero-heading">
+            {heading.map((segment, index) => (
+              <Fragment>
+                {segment.text ? (
+                  <span
+                    class:list={['hero-segment', {
+                      'hero-segment-accent': segment.style === 'accent',
+                      'hero-segment-highlight': segment.style === 'highlight',
+                    }]}
+                  >
+                    {segment.text}
+                  </span>
+                ) : null}
+                {index < heading.length - 1 && ' '}
+              </Fragment>
+            ))}
+          </h1>
+        )}
+
+        {subheading && <p class="hero-subheading">{subheading}</p>}
+
+        <form class="hero-search" method="get" action="/">
+          <div class="hero-field">
+            <label for="hero-county">{countyLabel}</label>
+            <select id="hero-county" name="county">
+              {counties?.map((option) =>
+                option.label ? <option value={option.label}>{option.label}</option> : null,
+              )}
+            </select>
+          </div>
+          <div class="hero-field">
+            <label for="hero-category">{categoryLabel}</label>
+            <select id="hero-category" name="category">
+              {categories?.map((option) =>
+                option.label ? <option value={option.label}>{option.label}</option> : null,
+              )}
+            </select>
+          </div>
+          <button type="submit" class="hero-submit">{searchButtonLabel}</button>
+        </form>
+      </div>
+
+      {images.length > 1 && (
+        <div class="hero-dots" role="tablist" aria-label="Background slides">
+          {images.map((image, index) => (
+            <button
+              type="button"
+              class:list={['hero-dot', { 'is-active': index === 0 }]}
+              data-dot={index}
+              aria-label={`Show slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+<style>
+  .hero {
+    --hero-primary: #9d2235;
+    --hero-secondary: #eaaa00;
+    --hero-secondary-foreground: #121212;
+    --hero-border: #e3e0dc;
+    --hero-field-bg: #f8f7f6;
+
+    position: relative;
+    min-height: 700px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .hero-carousel,
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hero-slide {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+
+  .hero-slide.is-active {
+    opacity: 1;
+  }
+
+  .hero-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 40%);
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 7rem 2rem;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 1rem;
+    background: var(--hero-secondary);
+    color: var(--hero-secondary-foreground);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-badge :global(svg) {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .hero-heading {
+    color: #fff;
+    font-size: clamp(3rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-segment-accent {
+    color: var(--hero-secondary);
+  }
+
+  .hero-segment-highlight {
+    display: inline-block;
+    position: relative;
+    padding: 0 0.5rem;
+  }
+
+  .hero-segment-highlight::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--hero-primary);
+    z-index: -1;
+  }
+
+  .hero-subheading {
+    color: rgb(255 255 255 / 95%);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    max-width: 42rem;
+    margin: 0 auto 4rem;
+  }
+
+  .hero-search {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: 0.5rem;
+    background: #fff;
+    border: 1px solid var(--hero-border);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%);
+    text-align: left;
+  }
+
+  .hero-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem 1.25rem;
+    background: var(--hero-field-bg);
+    border: 1px solid transparent;
+    transition: border-color 0.2s ease;
+  }
+
+  .hero-field:hover,
+  .hero-field:focus-within {
+    border-color: #121212;
+  }
+
+  .hero-field label {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 0.25rem;
+  }
+
+  .hero-field select {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: #121212;
+    cursor: pointer;
+  }
+
+  .hero-field select:focus {
+    outline: none;
+  }
+
+  .hero-submit {
+    padding: 1.25rem 2.5rem;
+    background: var(--hero-primary);
+    color: #fff;
+    border: 0;
+    font: inherit;
+    font-weight: 800;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+  }
+
+  .hero-submit:hover {
+    filter: brightness(90%);
+  }
+
+  .hero-dots {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .hero-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0.4;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+
+  .hero-dot.is-active {
+    opacity: 1;
+  }
+
+  @media (min-width: 768px) {
+    .hero-search {
+      flex-direction: row;
+      align-items: stretch;
+    }
+
+    .hero-submit {
+      padding: 1.25rem;
+    }
+  }
+</style>
+
+<script>
+  // Background carousel: auto-advance every 5s, manual jump via dots.
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  if (hero) {
+    const slides = [...hero.querySelectorAll<HTMLElement>('[data-slide]')];
+    const dots = [...hero.querySelectorAll<HTMLButtonElement>('[data-dot]')];
+    let current = 0;
+
+    const showSlide = (index: number) => {
+      current = index;
+      for (const slide of slides) {
+        slide.classList.toggle('is-active', Number(slide.dataset.slide) === index);
+      }
+      for (const dot of dots) {
+        dot.classList.toggle('is-active', Number(dot.dataset.dot) === index);
+      }
+    };
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => showSlide(Number(dot.dataset.dot)));
+    });
+
+    if (slides.length > 1) {
+      setInterval(() => showSlide((current + 1) % slides.length), 5000);
+    }
+  }
+</script>

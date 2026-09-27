@@ -1,0 +1,50 @@
+---
+/**
+ * Maryland Verified achievements — design markup: muted full-bleed band,
+ * white credential cards with primary icons.
+ */
+import type { SanityListing } from '@lib/sanity/types';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const valid = (listing.achievements ?? []).filter((a) => a.label);
+---
+
+{
+  valid.length > 0 && (
+    <section id="achievements" class="bg-[#F3EFE8] -mx-6 px-6 md:-mx-16 md:px-16">
+      <h2 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-widest mb-2">
+        {listing.achievementsHeading}
+      </h2>
+      <p class="text-[10px] font-bold text-[var(--foreground)] uppercase tracking-widest mb-8">
+        {listing.achievementsSub}
+      </p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {valid.map((achievement) => (
+          <div class="bg-white border border-[var(--border)] p-6 flex flex-col items-center text-center">
+            
+            <span class="text-[10px] font-extrabold uppercase tracking-widest mb-1">{achievement.label}</span>
+            <span class="text-[8px] font-bold text-[var(--foreground)] uppercase tracking-widest">
+              {achievement.subLabel}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  section {
+    --primary: #9d2235;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+</style>

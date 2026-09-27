@@ -1,0 +1,1 @@
+import{g as e,h as t,m as n}from"./runtime-core.esm-bundler.CoOhua3z.js";function r(r){let i=e();if(typeof window<`u`){let e=r.subscribe(e=>{i.value=e});n()&&t(e)}else i.value=r.get();return i}var i=(e,t)=>{let n=e.__vccOpts||e;for(let[e,r]of t)n[e]=r;return n};export{r as n,i as t};

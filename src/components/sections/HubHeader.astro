@@ -1,0 +1,88 @@
+---
+/**
+ * Hub header — "Regional Command Center" band (design 10 desktop, design 11
+ * mobile, censuses 10/11): breadcrumb, path title + live badge, stat
+ * blocks. Title is the resolved path label (any path kind — county, city,
+ * subcategory, combo); labels/stats from the hubHeader section doc.
+ * Mobile: condensed strip (badge hidden, stats full-width with dividers,
+ * 2nd value in primary) per design 11. Markup mirrors the UX Pilot
+ * designs; hovers dropped (V-10).
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHubHeader } from '@lib/sanity/types';
+
+interface Props {
+  header: SanityHubHeader;
+  label: string;
+}
+
+const { header, label } = Astro.props;
+const hasContent = Boolean(header.breadcrumbRoot || header.liveBadgeLabel || label);
+---
+
+{
+  hasContent && (
+    <header class="hub-header shrink-0 bg-[#FAF7F2] border-b border-[var(--border)] px-6 py-6 lg:px-8">
+      <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between lg:items-end gap-0 lg:gap-6">
+        <div class="flex-1">
+          <nav class="flex items-center gap-1 lg:gap-2 mb-2 lg:mb-3 text-[8px] lg:text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--foreground)]">
+            {header.breadcrumbRoot && <a href="/">{header.breadcrumbRoot}</a>}
+            <Icon name="tabler:chevron-right" class="w-2 h-2 opacity-40" />
+            <span class="text-[var(--primary)]">{label}</span>
+          </nav>
+          <div class="flex items-center gap-4 mb-4 lg:mb-0">
+            <h1 class="text-2xl lg:text-4xl font-extrabold text-[var(--card-foreground)] tracking-tight uppercase leading-tight">
+              {label}{header.headingSuffix ? ` ${header.headingSuffix}` : ''}
+            </h1>
+            {header.liveBadgeLabel && (
+              <div class="hidden lg:flex bg-[var(--secondary)]/10 border border-[var(--secondary)]/20 px-3 py-1 items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                </span>
+                <span class="text-[9px] font-bold text-[var(--card-foreground)] uppercase tracking-widest">{header.liveBadgeLabel}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        {(header.stats?.length ?? 0) > 0 && (
+          <div class="flex w-full lg:w-auto gap-4 lg:gap-12 border-t border-b lg:border-t-0 lg:border-b-0 border-[var(--border)] py-4 lg:py-0 lg:border-l lg:pl-12">
+            {header.stats!.map((stat) => (
+              <div class="hub-stat flex-1 lg:flex-none text-center">
+                <span class="hub-stat-value block text-lg lg:text-xl font-extrabold text-[var(--card-foreground)]">{stat.value}</span>
+                <span class="block text-[8px] lg:text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </header>
+  )
+}
+
+<style>
+  .hub-header {
+    --background: #faf7f2;
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --secondary: #eaaa00;
+    --muted-foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  /* Design 11 mobile strip: dividers between stats, 2nd value in primary. */
+  @media (max-width: 1023px) {
+    .hub-stat {
+      border-right: 1px solid var(--border);
+      padding-right: 1rem;
+    }
+    .hub-stat:last-child {
+      border-right: 0;
+      padding-right: 0;
+    }
+    .hub-stat:nth-child(2) .hub-stat-value {
+      color: var(--primary);
+    }
+  }
+</style>

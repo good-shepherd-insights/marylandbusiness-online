@@ -17,14 +17,14 @@ const href = getHref();
 ---
 
 {
-  config.header.banner.show ?
+  config.header.banner?.show ?
 <div class="flex items-center justify-center gap-x-6 bg-primary-600 px-6 py-2.5">
   <p class="text-sm leading-6 text-white">
     <a href={href} target="_blank" class="inline-flex items-center gap-1">
       <strong v-if="bannerConfig?.brandText" class="font-semibold hidden sm:block">
-        { config.header.banner.brandText }
+        { config.header.banner?.brandText }
       </strong>
-      {config.header.banner.brandText ? <Dot class="hidden sm:block" v-if="bannerConfig?.brandText" /> : <></>}
+      {config.header.banner?.brandText ? <Dot class="hidden sm:block" /> : <></>}
       { config.header.banner?.text }
       <Icon class="hidden sm:block w-5 h-5" name="tabler:arrow-right" />
     </a>

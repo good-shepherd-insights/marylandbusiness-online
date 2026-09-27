@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { useStore } from '@nanostores/vue';
 import { tags } from '@/store.js';
-import config from "@util/themeConfig";
-import type Tag from "@/types/Tag";
 
-const availableTags = config.directoryData.tags as Tag[] | undefined;
+// Filter options come from the CMS gate (paths.ts) via Search.astro props —
+// no config-file tag list.
+const props = defineProps<{ options: { label: string; value: string }[] }>();
 
 const selectedTags = useStore(tags);
 
-function toggleTagByName(tag: string) {
+function toggleTag(tag: string) {
   if (!tag) return;
-  
+
   if (!selectedTags.value.includes(tag as never)) {
     tags.set([...selectedTags.value, tag] as never[]);
   }
@@ -24,12 +24,13 @@ function toggleTagByName(tag: string) {
 <template>
   <div class="flex flex-wrap gap-2 mt-4">
     <span
-      v-for="tag in availableTags"
+      v-for="option in props.options"
+      :key="option.value"
       class="border border-gray-200 rounded-md px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-900 dark:border-gray-600 cursor-pointer select-none"
-      :class="selectedTags.includes(tag.key) ? 'border-primary-500 dark:border-primary-300' : ''"
-      @click="toggleTagByName(tag.key)"
+      :class="selectedTags.includes(option.value) ? 'border-primary-500 dark:border-primary-300' : ''"
+      @click="toggleTag(option.value)"
     >
-      {{ tag.name }}
+      {{ option.label }}
     </span>
   </div>
 </template>

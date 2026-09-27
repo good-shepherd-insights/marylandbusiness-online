@@ -1,0 +1,60 @@
+---
+/**
+ * Featured Programs strip — flagship state program cards. Props = CMS
+ * `featuredPrograms` section document.
+ */
+import { Icon } from 'astro-icon/components';
+import type { FeaturedProgramsContent, IconTint } from '@lib/sanity/types';
+
+interface Props {
+  section: FeaturedProgramsContent;
+}
+
+const { section } = Astro.props;
+const tintClass: Record<IconTint, string> = {
+  primary: 'tint-primary',
+  secondary: 'tint-secondary',
+  dark: 'tint-dark',
+};
+---
+
+<section class="featured-programs">
+  <div class="wrap">
+    <span class="eyebrow">{section.eyebrow}</span>
+    <h2>{section.heading}</h2>
+    <div class="grid">
+      {(section.programs ?? []).map((program) => (
+        <div class="card">
+          <div class:list={['icon-box', tintClass[program.iconTint]]}>
+            <Icon name={`tabler:${program.icon}`} class="icon" />
+          </div>
+          <h3>{program.title}</h3>
+          <p>{program.description}</p>
+          <a class="visit" href={program.url} target="_blank" rel="noopener noreferrer">{section.cardLinkLabel}</a>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .featured-programs { font-family: 'Sora Variable', 'Sora', sans-serif; padding: 80px 48px; background: #faf7f2; border-bottom: 1px solid #e3e0dc; }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  .eyebrow { display: block; color: #9d2235; font-weight: 800; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px; }
+  h2 { font-size: 30px; font-weight: 800; color: #121212; letter-spacing: -0.025em; margin: 0 0 40px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #e3e0dc; border-left: 1px solid #e3e0dc; }
+  .card { border-right: 1px solid #e3e0dc; border-bottom: 1px solid #e3e0dc; padding: 32px; background: #fff; }
+  .icon-box { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .tint-primary { background: #9d2235; color: #fff; }
+  .tint-secondary { background: #eaaa00; color: #121212; }
+  .tint-dark { background: #121212; color: #fff; }
+  .icon { width: 18px; height: 18px; }
+  h3 { font-size: 18px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: -0.025em; margin: 0 0 12px; }
+  .card p { font-size: 14px; color: #555; line-height: 1.625; margin: 0 0 24px; }
+  .visit { font-size: 10px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid #121212; padding-bottom: 4px; text-decoration: none; }
+  .visit:hover { color: #9d2235; border-color: #9d2235; }
+  @media (max-width: 1024px) {
+    .featured-programs { padding: 56px 16px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

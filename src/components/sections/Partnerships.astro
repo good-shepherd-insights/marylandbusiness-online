@@ -1,0 +1,192 @@
+---
+/**
+ * Partnerships section — intro + CTA left, partner card grid right.
+ * Icon tint cycles primary/secondary/dark by position (CSS) — never data.
+ * All content from Sanity `about.partnerships`.
+ */
+import { Icon } from 'astro-icon/components';
+import type { PartnershipsContent, Partner } from '@lib/sanity/types';
+
+interface Props {
+  partnerships: PartnershipsContent;
+}
+
+const { eyebrow, heading, description, ctaLabel, ctaLink, partners } = Astro.props.partnerships;
+const validPartners = (partners ?? []).filter((p) => p.title);
+---
+
+{
+  (heading || validPartners.length > 0) && (
+    <section class="partners">
+      <div class="partners-inner">
+        <div class="partners-grid">
+          <div class="partners-intro">
+            {eyebrow && <span class="partners-eyebrow">{eyebrow}</span>}
+            {heading && <h2>{heading}</h2>}
+            {description && <p>{description}</p>}
+            {ctaLabel && ctaLink && (
+              <a class="partners-cta" href={ctaLink}>
+                <span>{ctaLabel}</span>
+                <Icon name="tabler:arrow-right" />
+              </a>
+            )}
+          </div>
+          <div class="partners-cards">
+            {validPartners.map((partner: Partner) => (
+              <div class="partner-card">
+                <div class="partner-icon">{partner.icon && <Icon name={partner.icon} />}</div>
+                {partner.title && <h4>{partner.title}</h4>}
+                {partner.text && <p>{partner.text}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .partners {
+    --partners-primary: #9d2235;
+    --partners-secondary: #eaaa00;
+    --partners-foreground: #121212;
+    --partners-muted: #555555;
+    --partners-border: #e3e0dc;
+    --partners-background: #fdfcfb;
+    --partners-card: #faf7f2;
+
+    background: var(--partners-background);
+    padding: 7rem 1rem;
+  }
+
+  .partners-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+  }
+
+  .partners-grid {
+    display: grid;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .partners-eyebrow {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--partners-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 1.5rem;
+  }
+
+  .partners-intro h2 {
+    font-size: 2.25rem;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--partners-foreground);
+    margin: 0 0 1.5rem;
+  }
+
+  .partners-intro > p {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 500;
+    color: var(--partners-muted);
+    margin: 0 0 2.5rem;
+  }
+
+  .partners-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 2rem;
+    background: var(--partners-primary);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+
+  .partners-cta :global(svg) {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .partners-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border-top: 1px solid var(--partners-border);
+    border-left: 1px solid var(--partners-border);
+  }
+
+  .partner-card {
+    padding: 2rem;
+    background: var(--partners-card);
+    border-right: 1px solid var(--partners-border);
+    border-bottom: 1px solid var(--partners-border);
+  }
+
+  .partner-icon {
+    color: var(--partners-primary);
+    margin-bottom: 1.25rem;
+  }
+
+  .partner-card:nth-child(3n + 2) .partner-icon {
+    color: var(--partners-secondary);
+  }
+
+  .partner-card:nth-child(3n) .partner-icon {
+    color: #121212;
+  }
+
+  .partner-icon :global(svg) {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .partner-card h4 {
+    font-size: 0.875rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    color: var(--partners-foreground);
+    margin: 0 0 0.75rem;
+  }
+
+  .partner-card p {
+    font-size: 0.75rem;
+    line-height: 1.625;
+    color: var(--partners-muted);
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .partners {
+      padding: 7rem 3rem;
+    }
+
+    .partners-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .partners-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .partners-intro {
+      grid-column: span 2;
+    }
+
+    .partners-cards {
+      grid-column: span 3;
+    }
+  }
+</style>

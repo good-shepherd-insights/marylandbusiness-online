@@ -1,0 +1,74 @@
+---
+/**
+ * FAQ accordion (design 12 §7): chevron rotates + answer expands when
+ * open; first item opens by default. Toggle behavior is a tiny client
+ * script — content is only question + answer.
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHiwFaq } from '@lib/sanity/types';
+
+interface Props {
+  faq: SanityHiwFaq;
+}
+
+const { faq } = Astro.props;
+---
+
+{
+  faq.heading && (
+    <section id="faq" class="hiw-faq py-16 md:py-28 px-4 md:px-12 bg-[#FDFCFB] border-t border-[var(--border)]">
+      <div class="max-w-4xl mx-auto">
+        <div class="mb-12 md:mb-16">
+          {faq.eyebrow && <span class="text-[var(--primary)] font-extrabold text-xs tracking-[0.2em] uppercase mb-6 block">{faq.eyebrow}</span>}
+          <h2 class="text-3xl md:text-4xl font-extrabold text-[var(--card-foreground)] mb-6 tracking-tight">{faq.heading}</h2>
+        </div>
+
+        <div class="border-t border-[var(--border)]">
+          {(faq.items ?? []).map((item, i) => (
+            <div class:list={['faq-item border-b border-[var(--border)]', i === 0 && 'open']}>
+              <button type="button" class="faq-question w-full flex items-center justify-between py-6 text-left">
+                <h3 class="text-base font-extrabold text-[var(--card-foreground)] pr-8">{item.question}</h3>
+                <Icon name="tabler:chevron-down" class="faq-chevron w-4 h-4 text-[var(--foreground)] shrink-0" />
+              </button>
+              <div class="faq-answer">
+                {item.answer && <p class="text-sm text-[var(--foreground)] leading-relaxed pb-6 pr-4 md:pr-10">{item.answer}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      btn.closest('.faq-item')?.classList.toggle('open');
+    });
+  });
+</script>
+
+<style>
+  .hiw-faq {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .faq-item.open .faq-answer {
+    max-height: 400px;
+  }
+  .faq-item.open :global(.faq-chevron) {
+    transform: rotate(180deg);
+  }
+  :global(.faq-chevron) {
+    transition: transform 0.25s ease;
+  }
+</style>

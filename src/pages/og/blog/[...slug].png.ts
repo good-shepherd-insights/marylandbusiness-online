@@ -1,40 +1,43 @@
-import { getEntry, type CollectionEntry } from 'astro:content';
 import fs from 'fs';
 import path from 'path';
-import { ImageResponse } from '@vercel/og';
-import { getBlogPages, getRootPages } from '@lib/getRootPages';
+import sharp from 'sharp';
+import satori from 'satori';
+import { getBlogPost, getSiteSettings } from '../../../lib/sanity/queries';
+import { sanityImageUrl } from '../../../lib/sanity/client';
 import config from '@util/themeConfig';
-import type { AllContent } from '../../../types/content';
 
 const boldFontPath = 'node_modules/@fontsource/gabarito/files/gabarito-latin-700-normal.woff' as const;
 const regularFontPath = 'node_modules/@fontsource/gabarito/files/gabarito-latin-400-normal.woff' as const;
- 
+
 interface Props {
   params: { slug: string };
 }
 
-function getPostCoverPath(entry: CollectionEntry<'blog'>) {
-  if (!entry.data.image) {
-    return '/default-blog-image.png';
+/** Fetch a Sanity cover image as a base64 data URI for satori. */
+async function fetchCoverAsDataUri(
+  image: { asset: { _ref: string }; alt?: string } | undefined,
+): Promise<string | null> {
+  if (!image?.asset) return null;
+  try {
+    const url = sanityImageUrl(image, { width: 400 });
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const type = res.headers.get('content-type') ?? 'image/png';
+    return `data:${type};base64,${buffer.toString('base64')}`;
+  } catch {
+    return null;
   }
-  return entry.data.image.src;
 }
 
-function getPostCoverImage(entry: CollectionEntry<'blog'>) {
-  const imagePath = getPostCoverPath(entry);
-  if (process.env.NODE_ENV === 'development') {
-    return path.resolve(imagePath.replace(/\?.*/, '').replace('/@fs', ''));
-  }
-  return path.resolve(imagePath.replace('/', 'dist/'));
-}
- 
 export async function GET({ params }: Props) {
-  const title = config.general.title;
+  const settings = await getSiteSettings();
+  const title = settings?.siteTitle ?? config.general.title;
   const { slug } = params;
-  const entry = await getEntry('blog', slug);
+  const entry = slug ? await getBlogPost(slug) : undefined;
 
   if (!entry) {
-    throw new Error("Unable to find " + slug);
+    return new Response('Not found', { status: 404 });
   }
 
   // using custom font files
@@ -42,25 +45,21 @@ export async function GET({ params }: Props) {
   const GabaritoSansRegular = fs.readFileSync(
     path.resolve(regularFontPath),
   );
-  let postCover;
-  try {
-    postCover = fs.readFileSync(getPostCoverImage(entry));
-  } catch (error) {
-    postCover = null;
-  }
 
-  const image = postCover ? {
+  const cover = await fetchCoverAsDataUri(entry.data.image);
+
+  const image = cover ? {
     type: 'img',
     props: {
-      src: postCover.buffer,
+      src: cover,
     },
-  } :               {
+  } : {
     type: 'div',
     props: {
-      tw: 'bg-gray-200 rounded-full'
+      tw: 'bg-gray-200 rounded-full',
     },
   };
- 
+
   const html = {
     type: 'div',
     props: {
@@ -98,7 +97,7 @@ export async function GET({ params }: Props) {
                     fontSize: '18px',
                     fontFamily: 'Gabarito Regular',
                   },
-                  children: entry.data.title,
+                  children: entry.data.description ?? entry.data.title,
                 },
               },
             ],
@@ -130,8 +129,10 @@ export async function GET({ params }: Props) {
       },
     },
   };
- 
-  return new ImageResponse(html, {
+
+  // Satori's React JSX types don't fit a plain-object element tree; structure is validated at runtime.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const svg = await satori(html as any, {
     width: 1200,
     height: 600,
     fonts: [
@@ -147,8 +148,10 @@ export async function GET({ params }: Props) {
       },
     ],
   });
-}
 
-export async function getStaticPaths() {
-  return await getBlogPages();
+  const png = await sharp(Buffer.from(svg), { density: 72 }).png().toBuffer();
+
+  return new Response(png, {
+    headers: { 'Content-Type': 'image/png' },
+  });
 }

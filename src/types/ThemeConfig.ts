@@ -66,7 +66,7 @@ export interface ThemeConfig {
       colorModeSelector: boolean;
       links: [{ href: string; name: string; target?: string }];
     };
-    actionButton: {
+    actionButton?: {
       text: string;
       href: string;
     };

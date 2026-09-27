@@ -1,0 +1,54 @@
+---
+// Four-segment directory route (TAGS.md + HUB-DIRECTORY-RESEARCH.md):
+// gated subcategory+county+city (/restaurant/seafood/anne-arundel/annapolis).
+// Three-tier resolution: open → hub; valid-but-gate-off → 302 to the
+// nearest gate-passing ancestor with ?af= chips; unresolvable → bare 302
+// to the hub root.
+import { getCountyOptions, getCategoryOptions, resolveDirectoryPath } from "@lib/directory/paths";
+import { getDirectoryPage, getSiteSettings } from "@lib/sanity/queries";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import "@fontsource-variable/sora";
+import Navbar from "@components/app/Navbar.astro";
+import Footer from "@components/app/Footer.astro";
+import HubHeader from "@components/sections/HubHeader.astro";
+import HubDiscovery from "@components/sections/HubDiscovery.astro";
+import HubBasic from "@components/sections/HubBasic.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const { category, subcategory, county, city } = Astro.params;
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
+const settings = await getSiteSettings(perspectiveCookie);
+const [countyOptions, categoryOptions] = await Promise.all([getCountyOptions(), getCategoryOptions()]);
+const dir = await resolveDirectoryPath(`${category}/${subcategory}/${county}/${city}`);
+const view = dir?.kind === "open" ? dir.view : undefined;
+const directoryPage = view ? await getDirectoryPage(perspectiveCookie) : undefined;
+const hasChrome = Boolean(view && directoryPage?.hubHeader && directoryPage.hubDiscovery);
+
+if (dir?.kind === "narrow" || dir?.kind === "invalid") {
+  return new Response(null, { status: 301, headers: { Location: dir.redirectTo } });
+}
+if (!view) {
+  return new Response(null, { status: 301, headers: { Location: "/" } });
+}
+---
+
+{
+  hasChrome && view ? (
+    <BaseLayout title={`${view.hub.label} ${directoryPage!.hubHeader?.headingSuffix ?? ""}`.trim()} description={view.state.description ?? undefined} slug={city}>
+      <div
+        class="hub-page min-h-dvh bg-[#FAF7F2] flex flex-col overflow-hidden"
+        style="font-family: 'Sora Variable', 'Sora', sans-serif;"
+      >
+        {settings && <Navbar settings={settings} />}
+        <HubHeader header={directoryPage!.hubHeader!} label={view.hub.label} />
+        <HubDiscovery discovery={directoryPage!.hubDiscovery!} hub={view.hub} filters={view.filters} counties={countyOptions} categories={categoryOptions} />
+        {settings && <Footer settings={settings} />}
+      </div>
+    </BaseLayout>
+  ) : view ? (
+    <BaseLayout title={view.hub.label} description={view.state.description ?? undefined} slug={city}>
+      <HubBasic label={view.hub.label} description={view.state.description} hub={view.hub} />
+      {settings && <Footer settings={settings} />}
+    </BaseLayout>
+  ) : null
+}

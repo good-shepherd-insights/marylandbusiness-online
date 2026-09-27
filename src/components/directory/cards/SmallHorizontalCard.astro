@@ -1,8 +1,7 @@
 ---
-import { Image } from "astro:assets";
+import { sanityImageUrl, sanityImageSrcSet } from "@lib/sanity/client";
 import DirectoryFeaturedTag from "../FeaturedTag.astro";
 const { myItem, href } = Astro.props;
-const type = "small-horizontal";
 ---
 
 <a
@@ -13,11 +12,14 @@ const type = "small-horizontal";
   <div class="flex-none mr-3 rounded-none w-16 h-16 overflow-hidden">
     {
       myItem.image ? (
-        <Image
+        <img
           class="w-16 h-16 object-cover"
-          src={myItem.image}
-          alt={myItem.title}
+          src={sanityImageUrl(myItem.image, { width: 128, height: 128 })}
+          srcset={sanityImageSrcSet(myItem.image, 128)}
+          width="64"
+          height="64"
           loading="lazy"
+          alt={myItem.image?.alt ?? myItem.name}
         />
       ) : (
         <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
@@ -28,7 +30,7 @@ const type = "small-horizontal";
   <div class="flex-grow">
     <div class="flex items-center justify-between mb-0.5">
       <h3 class="font-bold line-clamp-1 text-ellipsis overflow-hidden card-title">
-        {myItem.title}
+        {myItem.name}
       </h3>
     </div>
 

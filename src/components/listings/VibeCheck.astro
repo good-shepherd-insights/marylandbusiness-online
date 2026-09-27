@@ -1,0 +1,56 @@
+---
+/**
+ * "Vibe Check" video block — section shell + heading. Links out only when
+ * videoUrl exists; media markup lives in VibeCheckMedia.astro.
+ */
+import VibeCheckMedia from './VibeCheckMedia.astro';
+import type { SanityListing } from '@lib/sanity/types';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const hasMedia = Boolean(listing.videoStill?.asset) || Boolean(listing.videoHeading);
+---
+
+{
+  hasMedia && (
+    <section id="vibe-check">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-widest">
+          {listing.videoHeading}
+        </h2>
+        {listing.videoLabel && (
+          <span class="text-[10px] font-bold text-[var(--foreground)] uppercase tracking-widest">
+            {listing.videoLabel}
+          </span>
+        )}
+      </div>
+      {listing.videoUrl ? (
+        <a href={listing.videoUrl}>
+          <VibeCheckMedia listing={listing} />
+        </a>
+      ) : (
+        <VibeCheckMedia listing={listing} />
+      )}
+    </section>
+  )
+}
+
+<style>
+  section {
+    --primary: #9d2235;
+    --secondary: #eaaa00;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  #vibe-check {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+</style>

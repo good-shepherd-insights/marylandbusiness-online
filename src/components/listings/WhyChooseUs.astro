@@ -1,0 +1,43 @@
+---
+/**
+ * Why Choose Us — design markup: primary-bordered heading + prose block.
+ */
+import { PortableText } from 'astro-portabletext';
+import type { SanityListing } from '@lib/sanity/types';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const hasBody = Array.isArray(listing.whyChooseUs) && listing.whyChooseUs.length > 0;
+---
+
+{
+  (listing.whyChooseUsHeading || hasBody) && (
+    <section id="why-choose-us">
+      {listing.whyChooseUsHeading && (
+        <h2 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-widest mb-6 border-l-4 border-[var(--primary)] pl-6">
+          {listing.whyChooseUsHeading}
+        </h2>
+      )}
+      {hasBody && (
+        <div class="prose-content space-y-5 max-w-3xl">
+          <PortableText value={listing.whyChooseUs ?? []} />
+        </div>
+      )}
+    </section>
+  )
+}
+
+<style>
+  section {
+    --primary: #9d2235;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+</style>

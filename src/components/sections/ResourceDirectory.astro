@@ -1,0 +1,370 @@
+---
+/**
+ * Full Resource Directory — toolbar (search + selects + reset), category /
+ * type filter rail, compliance calendar, resource card grid. Selects and
+ * checkboxes are client-side filters (TAGS.md: never indexed). All copy =
+ * CMS props; card/program icons = CMS tabler names.
+ */
+import { Icon } from 'astro-icon/components';
+import type { IconTint, ResourceDirectoryContent } from '@lib/sanity/types';
+
+interface Props {
+  section: ResourceDirectoryContent;
+}
+
+const { section } = Astro.props;
+const badgeTintClass: Record<IconTint, string> = {
+  primary: 'badge-primary',
+  secondary: 'badge-secondary',
+  dark: 'badge-dark',
+};
+const iconTintClass: Record<string, string> = {
+  primary: 'icon-tint-primary',
+  secondary: 'icon-tint-secondary',
+};
+---
+
+<section class="directory" id="resource-directory">
+  <div class="wrap">
+    <div class="head">
+      <h2>{section.heading}</h2>
+      <span class="count">{section.countLabel}</span>
+      <span class="count" data-visible-count hidden></span>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-row" data-toolbar>
+        <div class="search">
+          <Icon name="tabler:search" class="search-icon" />
+          <input type="text" placeholder={section.searchPlaceholder} />
+        </div>
+        <div class="selects">
+          <div class="select-box">
+            <select data-filter="jurisdiction" aria-label={section.jurisdictionOptions[0]}>
+              <option value="">{section.jurisdictionOptions[0]}</option>
+              {section.jurisdictionOptions.slice(1).map((option) => <option value={option}>{option}</option>)}
+            </select>
+            <Icon name="tabler:chevron-down" class="select-icon" />
+          </div>
+          <div class="select-box">
+            <select data-filter="type" aria-label={section.typeOptions[0]}>
+              <option value="" selected disabled hidden>{section.typeOptions[0]}</option>
+              {section.typeOptions.slice(1).map((option) => <option value={option}>{option}</option>)}
+            </select>
+            <Icon name="tabler:chevron-down" class="select-icon" />
+          </div>
+          <div class="select-box">
+            <select data-filter="sort" aria-label={section.sortOptions[0]}>
+              {section.sortOptions.map((option) => <option>{option}</option>)}
+            </select>
+            <Icon name="tabler:chevron-down" class="select-icon" />
+          </div>
+          <button class="reset" data-reset>
+            <Icon name="tabler:arrow-back-up" class="reset-icon" />
+            {section.resetLabel}
+          </button>
+        </div>
+      </div>
+        <div class="active-row" data-active-row hidden>
+          <span class="active-label">Active:</span>
+          <span class="chips" data-active-chips></span>
+        </div>
+    </div>
+
+    <div class="layout">
+      <aside class="rail">
+        <div class="sticky">
+          <h4>{section.categoryHeading}</h4>
+          <nav class="categories">
+            {section.categories.map((category, i) => (
+              <a href="#resources" class:list={['category', { active: i === 0 }]} data-category-filter={category}>{category}</a>
+            ))}
+          </nav>
+
+          <h4 class="rail-gap">{section.typeHeading}</h4>
+          <div class="type-options">
+            {section.railTypeOptions.map((type) => (
+              <label class="type-option">
+                <input type="checkbox" value={type} data-type-checkbox />
+                {type}
+              </label>
+            ))}
+          </div>
+
+          <div class="calendar">
+            <h4 class="calendar-heading">{section.calendarHeading}</h4>
+            <div class="deadlines">
+              {(section.deadlines ?? []).map((deadline) => (
+                <div class="deadline">
+                  <div>
+                    <p class="deadline-title">{deadline.title}</p>
+                    <p class="deadline-org">{deadline.org}</p>
+                  </div>
+                  <span class="deadline-date">{deadline.dateLabel}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="grid">
+        {(section.cards ?? []).map((card) => (
+          <article
+            class="card"
+            data-category={card.category}
+            data-type={card.typeBadge}
+            data-kind={card.jurisdictionKind}
+            data-search={`${card.title} ${card.jurisdiction} ${card.description}`.toLowerCase()}
+          >
+            <div class="card-top">
+              <div class:list={['card-icon', iconTintClass[card.iconTint]]}>
+                <Icon name={`tabler:${card.icon}`} class="card-icon-svg" />
+              </div>
+              <span class:list={['badge', badgeTintClass[card.badgeTint]]}>{card.typeBadge}</span>
+            </div>
+            <h3>{card.title}</h3>
+            <p class="jurisdiction">{card.jurisdiction}</p>
+            <p class="description">{card.description}</p>
+            <a class="visit" href={card.url} target="_blank" rel="noopener noreferrer">
+              {section.cardLinkLabel}
+              <Icon name="tabler:arrow-right" class="visit-icon" />
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <div class="load-more-row">
+      <button class="load-more">{section.loadMoreLabel}</button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .directory { font-family: 'Sora Variable', 'Sora', sans-serif; padding: 80px 48px; background: #faf7f2; }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  .head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
+  h2 { font-size: 30px; font-weight: 800; color: #121212; letter-spacing: -0.025em; margin: 0; }
+  .count { font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.1em; }
+  .toolbar { border: 1px solid #e3e0dc; background: #f3efe8; padding: 20px; margin-bottom: 40px; }
+  .toolbar-row { display: flex; flex-direction: column; gap: 16px; }
+  .search { position: relative; flex: 1; }
+  .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #555; }
+  input { width: 100%; border: 1px solid #e3e0dc; padding: 14px 16px 14px 44px; font-family: inherit; font-size: 14px; font-weight: 500; outline: none; background: #fff; color: #121212; }
+  input:focus { border-color: #121212; }
+  .selects { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .select-box { position: relative; }
+  select { appearance: none; width: 100%; border: 1px solid #e3e0dc; background: #fff; padding: 14px 36px 14px 16px; font-family: inherit; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #121212; outline: none; border-radius: 0; cursor: pointer; }
+  select:focus { border-color: #121212; }
+  .select-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; color: #555; pointer-events: none; }
+  .reset { display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; font-family: inherit; border: 1px solid #e3e0dc; color: #121212; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; background: #fff; border-radius: 0; padding: 14px 20px; cursor: pointer; }
+  .reset:hover { border-color: #121212; background: #fafafa; }
+  .reset-icon { width: 12px; height: 12px; }
+  .layout { display: flex; flex-direction: column; gap: 48px; }
+  .rail { width: 100%; }
+  .sticky { position: static; }
+  .rail h4 { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: #121212; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid #e3e0dc; }
+  .rail-gap { margin-top: 40px; }
+  .categories { display: flex; flex-direction: column; }
+  .category { font-size: 14px; font-weight: 700; color: #555; padding: 12px 0; border-bottom: 1px solid #e3e0dc; text-decoration: none; transition: all 0.15s ease; }
+  .category:hover { color: #9d2235; }
+  .category.active { color: #9d2235; font-weight: 800; }
+  .type-options { display: flex; flex-direction: column; gap: 12px; }
+  .type-option { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; }
+  .type-option:hover { color: #9d2235; }
+  .type-option input { accent-color: #9d2235; width: 14px; height: 14px; }
+  .calendar { margin-top: 40px; border: 1px solid #e3e0dc; padding: 24px; background: #f3efe8; }
+  .calendar-heading { color: #9d2235 !important; border-bottom: 0 !important; padding-bottom: 0 !important; margin-bottom: 20px !important; }
+  .deadlines { display: flex; flex-direction: column; gap: 20px; }
+  .deadline { display: flex; justify-content: space-between; align-items: flex-start; }
+  .deadline-title { font-size: 12px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: -0.025em; margin: 0; }
+  .deadline-org { font-size: 9px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.1em; margin: 2px 0 0; }
+  .deadline-date { font-size: 10px; font-weight: 800; color: #9d2235; text-transform: uppercase; white-space: nowrap; }
+  .grid { flex: 1; display: grid; grid-template-columns: 1fr; gap: 24px; }
+  .card { border: 1px solid #e3e0dc; padding: 28px; display: flex; flex-direction: column; background: #faf7f2; transition: all 0.2s ease; }
+  .card[hidden] { display: none; }
+  .card:hover { border-color: #121212; box-shadow: 0 0 24px rgba(18, 18, 18, 0.06); }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .card-icon { width: 40px; height: 40px; background: #f8f7f6; display: flex; align-items: center; justify-content: center; }
+  .icon-tint-primary { color: #9d2235; }
+  .icon-tint-secondary { color: #eaaa00; }
+  .card-icon-svg { width: 18px; height: 18px; }
+  .badge { font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 8px; color: #fff; }
+  .badge-primary { background: #9d2235; }
+  .badge-secondary { background: #eaaa00; color: #121212; }
+  .badge-dark { background: #121212; }
+  .card h3 { font-size: 14px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: -0.025em; margin: 0 0 8px; }
+  .jurisdiction { font-size: 9px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 12px; }
+  .description { font-size: 12px; color: #555; line-height: 1.625; margin: 0 0 24px; flex: 1; }
+  .visit { font-size: 10px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
+  .visit:hover { color: #9d2235; }
+  .visit-icon { width: 10px; height: 10px; margin-left: 4px; vertical-align: -1px; }
+  .active-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e3e0dc; }
+  .active-row[hidden] { display: none; }
+  .active-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .active-row :global(.chip-item) { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e3e0dc; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #121212; padding: 6px 10px; border-radius: 0; }
+  .active-row :global(.chip-item button) { display: inline-flex; align-items: center; background: none; border: 0; cursor: pointer; color: #555; padding: 0; line-height: 0; }
+  .active-row :global(.chip-item button:hover) { color: #9d2235; }
+  .active-row :global(.chip-item button svg) { width: 10px; height: 10px; }
+  .count[hidden] { display: none; }
+  .load-more-row { text-align: center; margin-top: 56px; }
+  .load-more { font-family: inherit; border: 1px solid #e3e0dc; color: #121212; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; background: #fff; border-radius: 0; padding: 16px 40px; cursor: pointer; }
+  .load-more:hover { border-color: #121212; background: #fafafa; }
+  @media (min-width: 768px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .selects { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .layout { flex-direction: row; }
+    .rail { width: 256px; flex-shrink: 0; }
+    .sticky { position: sticky; top: 96px; }
+  }
+  @media (min-width: 1280px) {
+    .toolbar-row { flex-direction: row; }
+    .selects { display: flex; }
+  }
+  @media (max-width: 768px) {
+    .directory { padding: 56px 16px; }
+  }
+</style>
+
+<script>
+  // Client-side filtering only (TAGS.md): never generates URLs, never indexed.
+  const root = document.getElementById('resource-directory');
+  if (root) {
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('.grid .card'));
+    const searchInputs = Array.from(root.querySelectorAll<HTMLInputElement>('input[type="text"]'));
+    const jurisdictionSelect = root.querySelector<HTMLSelectElement>('select[data-filter="jurisdiction"]');
+    const typeSelect = root.querySelector<HTMLSelectElement>('select[data-filter="type"]');
+    const sortSelect = root.querySelector<HTMLSelectElement>('select[data-filter="sort"]');
+    const resetButton = root.querySelector<HTMLButtonElement>('[data-reset]');
+    const categoryLinks = Array.from(root.querySelectorAll<HTMLAnchorElement>('[data-category-filter]'));
+    const typeBoxes = Array.from(root.querySelectorAll<HTMLInputElement>('[data-type-checkbox]'));
+    const activeRow = root.querySelector<HTMLElement>('[data-active-row]');
+    const activeChips = root.querySelector<HTMLElement>('[data-active-chips]');
+    const visibleCount = root.querySelector<HTMLElement>('[data-visible-count]');
+
+    let activeCategory: string | null = null;
+
+    const applies = (): boolean =>
+      Boolean(
+        searchInputs.some((i) => i.value.trim()) ||
+        jurisdictionSelect?.value ||
+        typeSelect?.value ||
+        typeBoxes.some((b) => b.checked) ||
+        activeCategory,
+      );
+
+    const renderChips = () => {
+      if (!activeChips || !activeRow) return;
+      activeChips.textContent = '';
+      // One chip per unique label; clearing it removes every filter with that label.
+      const chipsByLabel = new Map<string, Array<() => void>>();
+      const push = (label: string, clear: () => void) => {
+        if (!label) return;
+        const list = chipsByLabel.get(label) ?? [];
+        list.push(clear);
+        chipsByLabel.set(label, list);
+      };
+      if (activeCategory) push(activeCategory, () => { activeCategory = null; syncCategoryRail(); });
+      typeBoxes.filter((b) => b.checked).forEach((b) => push(b.value, () => { b.checked = false; }));
+      if (jurisdictionSelect?.value) push(jurisdictionSelect.value, () => { jurisdictionSelect.value = ''; });
+      if (typeSelect?.value) push(typeSelect.value, () => { typeSelect.value = ''; });
+      searchInputs.filter((i) => i.value.trim()).forEach((i) => push(i.value.trim(), () => { i.value = ''; }));
+      const chips = [...chipsByLabel.entries()].map(([label, clears]) => ({
+        label,
+        clear: () => clears.forEach((fn) => fn()),
+      }));
+      activeRow.hidden = chips.length === 0;
+      for (const chip of chips) {
+        const span = document.createElement('span');
+        span.className = 'chip-item';
+        const label = document.createElement('span');
+        label.textContent = chip.label;
+        const x = document.createElement('button');
+        x.type = 'button';
+        x.setAttribute('aria-label', `Remove ${chip.label} filter`);
+        x.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
+        x.addEventListener('click', () => { chip.clear(); apply(); });
+        span.append(label, x);
+        activeChips.append(span);
+      }
+    };
+
+    const syncCategoryRail = () => {
+      categoryLinks.forEach((link) => {
+        link.classList.toggle('active', link.dataset.categoryFilter === activeCategory);
+      });
+    };
+
+    const apply = () => {
+      const query = searchInputs.map((i) => i.value.trim().toLowerCase()).find(Boolean) ?? '';
+      const kind = jurisdictionSelect?.value ?? '';
+      const type = typeSelect?.value ?? '';
+      const checkedTypes = typeBoxes.filter((b) => b.checked).map((b) => b.value);
+
+      let visible = 0;
+      for (const card of cards) {
+        let show = true;
+        if (activeCategory && card.dataset.category !== activeCategory) show = false;
+        if (show && kind && card.dataset.kind !== kind) show = false;
+        if (show && type && card.dataset.type !== type) show = false;
+        if (show && checkedTypes.length > 0 && !checkedTypes.includes(card.dataset.type ?? '')) show = false;
+        if (show && query && !(card.dataset.search ?? '').includes(query)) show = false;
+        card.hidden = !show;
+        if (show) visible += 1;
+      }
+
+      const sort = sortSelect?.value ?? '';
+      const grid = cards[0]?.parentElement;
+      if (grid) {
+        const ordered = [...cards];
+        if (sort.includes('A–Z') || sort.includes('A-Z')) {
+          ordered.sort((a, b) => (a.querySelector('h3')?.textContent ?? '').localeCompare(b.querySelector('h3')?.textContent ?? ''));
+        } else if (sort.includes('Jurisdiction')) {
+          ordered.sort((a, b) => (a.dataset.jurisdictionText ?? '').localeCompare(b.dataset.jurisdictionText ?? ''));
+        } else if (sort.includes('Recently')) {
+          ordered.reverse();
+        }
+        for (const card of ordered) grid.append(card);
+      }
+
+      if (visibleCount) {
+        visibleCount.hidden = false;
+        visibleCount.textContent = `${visible} shown`;
+      }
+      renderChips();
+    };
+
+    // expose jurisdiction text for sort
+    cards.forEach((card) => {
+      card.dataset.jurisdictionText = card.querySelector('.jurisdiction')?.textContent ?? '';
+    });
+
+    searchInputs.forEach((input) => input.addEventListener('input', apply));
+    jurisdictionSelect?.addEventListener('change', apply);
+    typeSelect?.addEventListener('change', apply);
+    sortSelect?.addEventListener('change', apply);
+    typeBoxes.forEach((box) => box.addEventListener('change', apply));
+    categoryLinks.forEach((link) =>
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        activeCategory = activeCategory === link.dataset.categoryFilter ? null : link.dataset.categoryFilter ?? null;
+        syncCategoryRail();
+        apply();
+      }),
+    );
+    resetButton?.addEventListener('click', () => {
+      searchInputs.forEach((input) => (input.value = ''));
+      if (jurisdictionSelect) jurisdictionSelect.value = '';
+      if (typeSelect) typeSelect.value = '';
+      typeBoxes.forEach((box) => (box.checked = false));
+      activeCategory = null;
+      syncCategoryRail();
+      if (sortSelect) sortSelect.selectedIndex = 0;
+      apply();
+    });
+  }
+</script>

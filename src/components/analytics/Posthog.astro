@@ -54,8 +54,12 @@
       }),
       (e.__SV = 1));
   })(document, window.posthog || []);
-  posthog.init(POSTHOG_API_KEY, {
-    api_host: POSTHOG_API_HOST,
-    person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well
-  });
+  // Only boot analytics when both env vars are configured; otherwise the
+  // snippet crashes on api_host.replace (template legacy, no key set).
+  if (POSTHOG_API_KEY && POSTHOG_API_HOST) {
+    posthog.init(POSTHOG_API_KEY, {
+      api_host: POSTHOG_API_HOST,
+      person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well
+    });
+  }
 </script>

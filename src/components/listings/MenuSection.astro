@@ -1,0 +1,118 @@
+---
+/**
+ * Menu & Signature Dishes — design markup: heading + note + outline CTA,
+ * category tabs (active style), two-column dish grid with badge chips
+ * keyed by the `menuItem.badge` enum.
+ */
+import { sanityImageUrl } from '@lib/sanity/client';
+import { BADGES } from '../../sanity/schemaTypes/components/menuItem';
+import type { MenuItem, SanityListing } from '@lib/sanity/types';
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const categories = (listing.menu ?? []).filter((cat) => (cat.items ?? []).length > 0);
+
+const chipByBadge: Record<string, string> = {
+  chefsSignature: 'bg-[var(--card-foreground)] text-white',
+  glutenFree: 'bg-green-700 text-white',
+  seasonal: 'bg-[var(--secondary)] text-[var(--secondary-foreground)]',
+};
+// Badge display labels come from the menuItem schema enum titles — the
+// single source of truth (no hardcoded duplicate map).
+const badgeLabel = Object.fromEntries(BADGES.map((b) => [b.value, b.title]));
+function chipClass(item: MenuItem) {
+  return chipByBadge[item.badge ?? ''] ?? 'bg-[var(--card-foreground)] text-white';
+}
+---
+
+{
+  categories.length > 0 && (
+    <section id="menu">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-widest">
+            {listing.menuHeading}
+          </h2>
+          <p class="text-[10px] font-bold text-[var(--foreground)] uppercase tracking-widest mt-1">
+            {listing.menuNote}
+          </p>
+        </div>
+        {listing.menuCtaLabel && listing.menuUrl && (
+          <a class="btn-outline px-6 py-3" href={listing.menuUrl}>
+            {listing.menuCtaLabel} <Icon name="tabler:arrow-right" class="w-2.5 h-2.5 ml-2 inline-block" />
+          </a>
+        )}
+      </div>
+
+      {categories.map((cat) => (
+        <div>
+          <div class="flex gap-2 mb-8 border-b border-[var(--border)]">
+            {cat.label && (
+              <button class="px-5 py-3 text-[10px] font-extrabold uppercase tracking-widest border-b-2 border-[var(--primary)] text-[var(--primary)]">
+                {cat.label}
+              </button>
+            )}
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+            {(cat.items ?? []).map((item) => (
+              <div class="flex gap-4 items-start pb-6 border-b border-[var(--border)]">
+                {item.image?.asset && (
+                  <div class="w-20 h-20 shrink-0 border border-[var(--border)] overflow-hidden">
+                    <img
+                      class="w-full h-full object-cover"
+                      src={sanityImageUrl(item.image, { width: 160 })}
+                      alt={item.image.alt ?? item.name ?? ''}
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div class="flex-1">
+                  <div class="flex justify-between items-start mb-1">
+                    <h4 class="text-sm font-extrabold uppercase tracking-tight">{item.name}</h4>
+                    {item.price != null && (
+                      <span class="text-sm font-extrabold text-[var(--primary)]">${item.price}</span>
+                    )}
+                  </div>
+                  <p class="text-xs text-[var(--foreground)] leading-relaxed">{item.description}</p>
+                  {item.badge && (
+                    <span class={`inline-block mt-2 text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 ${chipClass(item)}`}>
+                      {badgeLabel[item.badge] ?? item.badge}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+  )
+}
+
+<style>
+  section {
+    --primary: #9d2235;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .btn-outline {
+    border: 2px solid var(--card-foreground);
+    background: transparent;
+    color: var(--card-foreground);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+    border-radius: 0;
+    display: block;
+    text-align: center;
+  }
+</style>

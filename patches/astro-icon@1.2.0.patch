@@ -1,0 +1,269 @@
+diff --git a/components/Icon.astro b/components/Icon.astro
+index 85596f5ee30eaa8277a2fb2915a92c26bd25e6a9..6768597805da13cf6b31d83bace811e53a49773f 100644
+--- a/components/Icon.astro
++++ b/components/Icon.astro
+@@ -23,14 +23,6 @@ interface Props extends HTMLAttributes<"svg"> {
+   height?: number | string;
+ }
+ 
+-class AstroIconError extends Error {
+-  public hint: string = "";
+-
+-  constructor(message: string) {
+-    super(message);
+-  }
+-}
+-
+ const localsKey = Astro.locals;
+ const {
+   name = "",
+@@ -40,13 +32,36 @@ const {
+   ...props
+ } = Astro.props;
+ 
++// PATCH (astro-icon@1.2.0): strip invisible/poison characters from icon names
++// (zero-width, bidi controls, soft hyphen, tag characters) so CMS-sourced names
++// like "tabler:phone<zwsp payload>" resolve to their intended icon.
++const sanitizeIconName = (value: unknown) =>
++  typeof value === "string"
++    ? value.replace(
++        /[\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF\u00AD\u180E\u{E0000}-\u{E007F}]/gu,
++        ""
++      ).trim()
++    : value;
++const sanitizedName = sanitizeIconName(name);
++
++// PATCH (astro-icon@1.2.0): never throw for unresolvable icons (missing set,
++// missing icon, invalid name). Warn in DEV and render nothing instead, so a
++// bad value in CMS data can never take down a page render.
++let failed = false;
++const fail = (message: string, hint?: string) => {
++  failed = true;
++  if (import.meta.env.DEV) {
++    console.warn(`[astro-icon] ${message}${hint ? `\n${hint}` : ""}`);
++  }
++};
++
+ const normalizeAccessibleElement = (value?: string | AccessibleElementProps) =>
+   typeof value === "string" ? { value } : value;
+ const normalizedTitle = normalizeAccessibleElement(title);
+ const normalizedDesc = normalizeAccessibleElement(desc);
+ const map = cache.get(localsKey) ?? new Map();
+-const i = map.get(name) ?? 0;
+-map.set(name, i + 1);
++const i = map.get(sanitizedName) ?? 0;
++map.set(sanitizedName, i + 1);
+ cache.set(localsKey, map);
+ 
+ const { include = {} } = config;
+@@ -54,115 +69,128 @@ const sets = Object.keys(include);
+ 
+ const includeSymbol = !inline && i === 0;
+ 
+-let [setName, iconName] = (name as string).split(":");
++let [setName, iconName] = (sanitizedName as string).split(":");
+ 
+ if (!setName && iconName) {
+-  const err = new AstroIconError(`Invalid "name" provided!`);
+-  if (import.meta.env.DEV) {
+-    err.hint = `The provided value of "${name}" is invalid.\n\nDid you forget the icon set name? If you were attemping to reference a local icon, use the icon's name directly. (ie. "${iconName}")`;
+-  }
+-  throw err;
++  fail(
++    `Invalid "name" provided!`,
++    `The provided value of "${sanitizedName}" is invalid.\n\nDid you forget the icon set name? If you were attempting to reference a local icon, use the icon's name directly. (ie. "${iconName}")`
++  );
+ }
+ 
+ // No iconName, assume local icon reference
+-if (!iconName) {
++if (!failed && !iconName) {
+   // Assign the provided setName to the iconName
+   iconName = setName;
+   setName = "local";
+ 
+   // Check if the local icon set exists
+   if (!icons[setName]) {
+-    const err = new AstroIconError('Unable to load the "local" icon set!');
+-    if (import.meta.env.DEV) {
+-      err.hint =
+-        'It looks like the "local" set was not loaded.\n\nDid you forget to create the icon directory or to update your config?';
+-    }
+-    throw err;
++    fail(
++      'Unable to load the "local" icon set!',
++      'It looks like the "local" set was not loaded.\n\nDid you forget to create the icon directory or to update your config?'
++    );
+   }
+ 
+   // Check if the icon is missing from the local collection
+-  if (!(iconName in icons[setName].icons)) {
+-    const err = new AstroIconError(`Unable to locate "${name}" icon!`);
+-    if (import.meta.env.DEV) {
+-      err.hint = `The icon named "${iconName}" was not found in your local icon directory.\n\nDid you forget to configure your icon directory or make a typo?`;
+-    }
+-    throw err;
++  if (!failed && iconName && !(iconName in icons[setName].icons)) {
++    fail(
++      `Unable to locate "${sanitizedName}" icon!`,
++      `The icon named "${iconName}" was not found in your local icon directory.\n\nDid you forget to configure your icon directory or make a typo?`
++    );
+   }
+ }
+ 
+-const collection = icons[setName];
++const collection = !failed ? icons[setName] : undefined;
+ 
+ // Iconify collection not configured correctly
+-if (!collection) {
+-  const err = new AstroIconError(`Unable to locate the "${setName}" icon set!`);
+-  if (import.meta.env.DEV) {
+-    if (sets.includes(setName)) {
+-      err.hint = `It looks like the "${setName}" set was not loaded.\n\nDid you install the "@iconify-json/${setName}" dependency?`;
+-    } else {
+-      err.hint = `It looks like the "${setName}" set is not included in your configuration.\n\nDo you need to add the "${setName}" set?`;
+-    }
++if (!failed && !collection) {
++  if (sets.includes(setName)) {
++    fail(
++      `Unable to locate the "${setName}" icon set!`,
++      `It looks like the "${setName}" set was not loaded.\n\nDid you install the "@iconify-json/${setName}" dependency?`
++    );
++  } else {
++    fail(
++      `Unable to locate the "${setName}" icon set!`,
++      `It looks like the "${setName}" set is not included in your configuration.\n\nDo you need to add the "${setName}" set?`
++    );
+   }
+-  throw err;
+ }
+ 
+-const iconData = getIconData(collection, iconName ?? setName);
++const iconData = collection
++  ? getIconData(collection, iconName ?? setName)
++  : undefined;
+ // Missing icon from the icon collection
+-if (!iconData) {
+-  const err = new AstroIconError(`Unable to locate "${name}" icon!`);
+-  if (import.meta.env.DEV) {
+-    const [maybeStar] = include[setName];
+-    if (maybeStar === "*" || include[setName].includes(iconName)) {
+-      err.hint = `The "${setName}" set does not include an icon named "${iconName}".\n\nIs this a typo?`;
+-    } else {
+-      err.hint = `The "${setName}" set is not configured to include an icon named "${iconName}".\n\nDo you need to add it to your configuration?`;
+-    }
++if (collection && !iconData) {
++  const [maybeStar] = include[setName];
++  if (maybeStar === "*" || include[setName].includes(iconName)) {
++    fail(
++      `Unable to locate "${sanitizedName}" icon!`,
++      `The "${setName}" set does not include an icon named "${iconName}".\n\nIs this a typo?`
++    );
++  } else {
++    fail(
++      `Unable to locate "${sanitizedName}" icon!`,
++      `The "${setName}" set is not configured to include an icon named "${iconName}".\n\nDo you need to add it to your configuration?`
++    );
+   }
+-  throw err;
+ }
+ 
+-const id = `ai:${collection.prefix}:${iconName ?? setName}`;
++let id = "";
++let normalizedProps = {};
++let normalizedBody = "";
++let symbolViewBox: string | undefined = undefined;
++let useRect: Record<string, number> = {};
++
++if (iconData) {
++  const rawId = `ai:${collection!.prefix}:${iconName ?? setName}`;
+ 
+-if (props.size) {
+-  props.width = props.size;
+-  props.height = props.size;
+-  delete props.size;
++  if (props.size) {
++    props.width = props.size;
++    props.height = props.size;
++    delete props.size;
++  }
++  const renderData = iconToSVG(iconData);
++  const attributes = renderData.attributes as Partial<
++    IconifyIconBuildResult["attributes"]
++  >;
++  normalizedProps = { ...attributes, ...props };
++  normalizedBody = replaceIDs(renderData.body);
++
++  const [minX, minY, vbWidth, vbHeight] =
++    attributes.viewBox?.split(/[\s,]+/).map(Number) ?? [];
++  // Without this the artwork renders offset by its origin and clipped (https://github.com/natemoo-re/astro-icon/issues/212).
++  const hasOffsetOrigin =
++    [minX, minY, vbWidth, vbHeight].every(Number.isFinite) &&
++    (minX !== 0 || minY !== 0);
++  symbolViewBox = hasOffsetOrigin ? attributes.viewBox : undefined;
++  useRect = hasOffsetOrigin
++    ? { x: minX!, y: minY!, width: vbWidth!, height: vbHeight! }
++    : {};
++  id = rawId;
+ }
+-const renderData = iconToSVG(iconData);
+-const attributes = renderData.attributes as Partial<
+-  IconifyIconBuildResult["attributes"]
+->;
+-const normalizedProps = { ...attributes, ...props };
+-const normalizedBody = replaceIDs(renderData.body);
+-
+-const [minX, minY, vbWidth, vbHeight] =
+-  attributes.viewBox?.split(/[\s,]+/).map(Number) ?? [];
+-// Without this the artwork renders offset by its origin and clipped (https://github.com/natemoo-re/astro-icon/issues/212).
+-const hasOffsetOrigin =
+-  [minX, minY, vbWidth, vbHeight].every(Number.isFinite) &&
+-  (minX !== 0 || minY !== 0);
+-const symbolViewBox = hasOffsetOrigin ? attributes.viewBox : undefined;
+-const useRect = hasOffsetOrigin
+-  ? { x: minX, y: minY, width: vbWidth, height: vbHeight }
+-  : {};
+ ---
+ 
+-<svg {...normalizedProps} data-icon={name}>
+-  {
+-    normalizedTitle && (
+-      <title id={normalizedTitle.id}>{normalizedTitle.value}</title>
+-    )
+-  }
+-  {normalizedDesc && <desc id={normalizedDesc.id}>{normalizedDesc.value}</desc>}
+-  {
+-    inline ? (
+-      <Fragment id={id} set:html={normalizedBody} />
+-    ) : (
+-      <Fragment>
+-        {includeSymbol && (
+-          <symbol id={id} viewBox={symbolViewBox} set:html={normalizedBody} />
+-        )}
+-        <use href={`#${id}`} {...useRect} />
+-      </Fragment>
+-    )
+-  }
+-</svg>
++{
++  !failed && (
++    <svg {...normalizedProps} data-icon={sanitizedName}>
++      {normalizedTitle && (
++        <title id={normalizedTitle.id}>{normalizedTitle.value}</title>
++      )}
++      {normalizedDesc && (
++        <desc id={normalizedDesc.id}>{normalizedDesc.value}</desc>
++      )}
++      {inline ? (
++        <Fragment id={id} set:html={normalizedBody} />
++      ) : (
++        <Fragment>
++          {includeSymbol && (
++            <symbol id={id} viewBox={symbolViewBox} set:html={normalizedBody} />
++          )}
++          <use href={`#${id}`} {...useRect} />
++        </Fragment>
++      )}
++    </svg>
++  )
++}

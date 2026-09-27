@@ -1,0 +1,68 @@
+---
+/**
+ * Mission band section — full-width primary-color mission statement. All
+ * content from Sanity `about.missionBand`; renders nothing when absent.
+ */
+import type { MissionBandContent } from '@lib/sanity/types';
+
+interface Props {
+  missionBand: MissionBandContent;
+}
+
+const { eyebrow, statement } = Astro.props.missionBand;
+---
+
+{
+  statement && (
+    <section class="mission">
+      <div class="mission-inner">
+        {eyebrow && <span class="mission-eyebrow">{eyebrow}</span>}
+        <p class="mission-statement">{statement}</p>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .mission {
+    --mission-primary: #9d2235;
+
+    background: var(--mission-primary);
+    color: #ffffff;
+    padding: 7rem 1rem;
+  }
+
+  .mission-inner {
+    max-width: 56rem;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .mission-eyebrow {
+    display: inline-block;
+    font-size: 0.625rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: rgb(255 255 255 / 70%);
+    margin-bottom: 2rem;
+  }
+
+  .mission-statement {
+    font-size: 2.25rem;
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .mission {
+      padding: 7rem 3rem;
+    }
+
+    .mission-statement {
+      font-size: 3rem;
+    }
+  }
+</style>

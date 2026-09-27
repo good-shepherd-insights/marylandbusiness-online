@@ -1,122 +1,113 @@
 ---
-import AppLogo from "./Logo.astro";
-import { Icon } from "astro-icon/components";
-import config from "@util/themeConfig";
+/**
+ * Global footer (census 14, design 9CGLhn7IuWzEhRoEnKtp): brand block +
+ * Quick Links / Resources columns + legal bar. All copy from siteSettings;
+ * no icons in the design. Links without href render as non-link text (no
+ * dead "#" anchors). Copyright year renders dynamically.
+ */
+import type { SanitySiteSettings } from '@lib/sanity/types';
 
-const socials = Object.values(config.footer.socials);
-const socialNames = Object.keys(config.footer.socials);
+interface Props {
+  settings: SanitySiteSettings;
+}
 
-const navigation = [
-  {
-    title: "Directory",
-    links: [
-      { title: "Submit", link: "/submit" },
-      { title: "Advertise", link: "/advertise" },
-    ],
-  },
-  {
-    title: "Categories",
-    links: config.directoryData.tags
-      ?.filter((e) => e && e.name)
-      .map((e) => ({
-        title: e.name,
-        link: `/tags/${e.key}`,
-      }))
-      .slice(0, 4),
-  },
-  {
-    title: "Blog",
-    links: [{ title: "Articles", link: "/blog" }],
-  },
-  {
-    title: "Legal",
-    links: [
-      { title: "Privacy Policy", link: "/legal/terms-of-service" },
-      { title: "Terms of Service", link: "/legal/privacy-policy" },
-    ],
-  },
-];
+const { settings } = Astro.props;
+const year = new Date().getFullYear();
 ---
 
-<footer
-  class="border-t border-gray-200 dark:border-gray-600 font-display"
-  aria-labelledby="footer-heading"
->
-  <h2 id="footer-heading" class="sr-only">Footer</h2>
-  <div class="mx-auto max-w-7xl px-6 pb-8 pt-16 sm:pt-24 lg:px-8 lg:pt-32">
-    <div class="xl:grid xl:grid-cols-3 xl:gap-8">
-      <div class="space-y-8">
-        <AppLogo />
-        <div class="flex space-x-6">
-          {
-            socials.map((item, index) => (
-              <a href={item?.link} class="text-gray-400 hover:text-gray-500">
-                <span class="sr-only">{item}</span>
-                <Icon
-                  name={
-                    config.ui.icons[
-                      socialNames[index] as keyof typeof config.ui.icons
-                    ]
-                  }
-                  class="h-6 w-6"
-                  aria-hidden="true"
-                />
+{
+  settings.footerBrandName && (
+    <footer id="footer" class="site-footer bg-[#FAF7F2] py-16 md:py-24 px-4 md:px-12 border-t border-[var(--border)]">
+      <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-12 md:gap-16">
+        <div class="col-span-1 md:col-span-2">
+          <div class="flex items-center gap-3 mb-8">
+            {settings.footerBrandBadge && (
+              <div class="w-10 h-10 bg-[var(--primary)] flex items-center justify-center text-white font-extrabold text-xl shrink-0">
+                {settings.footerBrandBadge}
+              </div>
+            )}
+            <span class="font-extrabold text-2xl text-[var(--card-foreground)] tracking-tight uppercase">
+              {settings.footerBrandName}
+            </span>
+          </div>
+          {settings.footerTagline && (
+            <p class="text-xs text-[var(--foreground)] max-w-md mb-6 md:mb-10 leading-relaxed font-bold uppercase tracking-widest">
+              {settings.footerTagline}
+            </p>
+          )}
+        </div>
+
+        {settings.footerQuickHeading && (
+          <div>
+            <h4 class="font-bold text-[var(--card-foreground)] mb-8 text-[10px] uppercase tracking-[0.2em]">
+              {settings.footerQuickHeading}
+            </h4>
+            <ul class="flex flex-col gap-4 text-[11px] font-bold uppercase tracking-widest">
+              {(settings.footerQuickLinks ?? []).map((link) => (
+                <li>
+                  {link.href ? (
+                    <a href={link.href} class="text-[var(--foreground)] hover:text-[var(--primary)] transition-colors">
+                      {link.label}
+                    </a>
+                  ) : (
+                    <span class="text-[var(--foreground)]">{link.label}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {settings.footerResourceHeading && (
+          <div>
+            <h4 class="font-bold text-[var(--card-foreground)] mb-8 text-[10px] uppercase tracking-[0.2em]">
+              {settings.footerResourceHeading}
+            </h4>
+            <ul class="flex flex-col gap-4 text-[11px] font-bold uppercase tracking-widest">
+              {(settings.footerResourceLinks ?? []).map((link) => (
+                <li>
+                  {link.href ? (
+                    <a href={link.href} class="text-[var(--foreground)] hover:text-[var(--primary)] transition-colors">
+                      {link.label}
+                    </a>
+                  ) : (
+                    <span class="text-[var(--foreground)]">{link.label}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div class="max-w-7xl mx-auto mt-16 md:mt-24 pt-10 border-t border-[var(--border)] flex flex-col md:flex-row justify-between items-center gap-6 text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-[0.3em]">
+        <p>
+          &copy; {year}
+          {settings.footerLegalName ? ` ${settings.footerLegalName}.` : ''}
+        </p>
+        <div class="flex gap-8">
+          {(settings.footerLegalLinks ?? []).map((link) =>
+            link.href ? (
+              <a href={link.href} class="hover:text-[var(--primary)] transition-colors">
+                {link.label}
               </a>
-            ))
-          }
+            ) : (
+              <span>{link.label}</span>
+            )
+          )}
         </div>
       </div>
-      <div class="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
-        {
-          [...Array(2).keys()].map((count) => (
-            <div class="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">
-                  {navigation[count].title}
-                </h3>
-                <ul role="list" class="mt-6 space-y-4">
-                  {navigation[count].links.map((item) => (
-                    <li>
-                      <a
-                        href={item.link}
-                        class="text-sm leading-6 text-gray-600 dark:text-gray-300 hover:dark:text-gray-400 hover:text-gray-900"
-                      >
-                        {item.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+    </footer>
+  )
+}
 
-              <div class="mt-10 md:mt-0">
-                <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">
-                  {navigation[count + 2].title}
-                </h3>
-                <ul role="list" class="mt-6 space-y-4">
-                  {navigation[count + 2].links.map((item) => (
-                    <li>
-                      <a
-                        href={item.link}
-                        class="text-sm leading-6 text-gray-600 dark:text-gray-300 hover:dark:text-gray-400 hover:text-gray-900"
-                      >
-                        {item.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-    <div
-      class="mt-16 border-t border-gray-900/10 dark:border-gray-600 pt-8 sm:mt-20 lg:mt-24"
-    >
-      <p class="text-xs leading-5 text-gray-500">
-        &copy; {new Date().getFullYear()}
-        {config.general.title} All rights reserved.
-      </p>
-    </div>
-  </div>
-</footer>
+<style>
+  .site-footer {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --muted-foreground: #7a7a7a;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+</style>

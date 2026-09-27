@@ -1,0 +1,95 @@
+---
+/**
+ * Closing CTA section — dark band with two semantically distinct actions.
+ * All content from Sanity `about.closingCta`; renders nothing when absent.
+ */
+import type { ClosingCtaContent } from '@lib/sanity/types';
+
+interface Props {
+  closingCta: ClosingCtaContent;
+}
+
+const { heading, primaryLabel, primaryLink, secondaryLabel, secondaryLink } = Astro.props.closingCta;
+---
+
+{
+  heading && (
+    <section class="closing">
+      <div class="closing-inner">
+        <h2>{heading}</h2>
+        <div class="closing-actions">
+          {primaryLabel && primaryLink && (
+            <a class="closing-primary" href={primaryLink}>{primaryLabel}</a>
+          )}
+          {secondaryLabel && secondaryLink && (
+            <a class="closing-secondary" href={secondaryLink}>{secondaryLabel}</a>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .closing {
+    background: #121212;
+    color: #ffffff;
+    padding: 6rem 1rem;
+  }
+
+  .closing-inner {
+    max-width: 64rem;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .closing h2 {
+    font-size: 2.5rem;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin: 0 0 2rem;
+  }
+
+  .closing-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .closing-primary {
+    display: inline-block;
+    padding: 1.25rem 2.5rem;
+    background: #9d2235;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+
+  .closing-secondary {
+    display: inline-block;
+    padding: 1.25rem 2.5rem;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+
+  @media (min-width: 768px) {
+    .closing {
+      padding: 6rem 3rem;
+    }
+
+    .closing-actions {
+      flex-direction: row;
+      justify-content: center;
+    }
+  }
+</style>

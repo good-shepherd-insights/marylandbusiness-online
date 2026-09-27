@@ -1,0 +1,126 @@
+---
+/**
+ * Pricing plans (design 12 §5): four tier cards. Authored features render
+ * a crimson check; design-marked placeholder stubs render a muted plus +
+ * placeholder-cell text. Upper plans show the gold stack divider with the
+ * CMS "Everything in …, plus:" label. A badge gets the featured 2px border
+ * + floating badge. Icons are code literals; hovers dropped (V-10).
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHiwPricing } from '@lib/sanity/types';
+
+interface Props {
+  pricing: SanityHiwPricing;
+}
+
+const { pricing } = Astro.props;
+---
+
+{
+  pricing.heading && (
+    <section id="pricing" class="hiw-pricing py-16 md:py-28 px-4 md:px-12 bg-[#FDFCFB] border-y border-[var(--border)]">
+      <div class="max-w-7xl mx-auto">
+        <div class="max-w-2xl mb-12 md:mb-16">
+          {pricing.eyebrow && <span class="text-[var(--primary)] font-extrabold text-xs tracking-[0.2em] uppercase mb-6 block">{pricing.eyebrow}</span>}
+          <h2 class="text-3xl md:text-4xl font-extrabold text-[var(--card-foreground)] mb-6 tracking-tight">{pricing.heading}</h2>
+          {pricing.sub && <p class="text-lg text-[var(--foreground)] leading-relaxed font-medium">{pricing.sub}</p>}
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {(pricing.plans ?? []).map((plan) => (
+            <div
+              class:list={[
+                'price-card bg-white p-6 md:p-8 flex flex-col',
+                plan.badge ? 'featured-plan relative' : '',
+              ]}
+            >
+              {plan.badge && (
+                <span class="plan-badge">{plan.badge}</span>
+              )}
+              <h3 class="text-sm font-extrabold text-[var(--card-foreground)] uppercase tracking-[0.15em] mb-4">{plan.name}</h3>
+              <div class="mb-1">
+                <span class="text-4xl font-extrabold text-[var(--card-foreground)]">{plan.price}</span>
+                <span class="text-sm font-bold text-[var(--foreground)]">{plan.period}</span>
+              </div>
+              {plan.tagline && <p class="text-xs text-[var(--foreground)] font-medium mb-8">{plan.tagline}</p>}
+              {plan.ctaLabel && (
+                <a href="#" class="btn-outline-dark text-center px-6 py-4 mb-8">{plan.ctaLabel}</a>
+              )}
+              {plan.includesLabel && (
+                <div class="flex items-center gap-2 mb-5 pb-5 border-b border-dashed border-[var(--border)]">
+                  <Icon name="tabler:stack-2" class="w-3 h-3 text-[var(--secondary)] shrink-0" />
+                  <span class="text-[11px] font-extrabold uppercase tracking-widest text-[var(--card-foreground)]">{plan.includesLabel}</span>
+                </div>
+              )}
+              <ul class="flex flex-col gap-5 text-sm text-[var(--card-foreground)] font-medium flex-1">
+                {(plan.features ?? []).map((feature) => (
+                  <li>
+                    <div class="flex items-start gap-3">
+                      {feature.placeholder ? (
+                        <Icon name="tabler:plus" class="w-3.5 h-3.5 text-[var(--foreground)] opacity-40 mt-1 shrink-0" />
+                      ) : (
+                        <Icon name="tabler:check" class="w-3.5 h-3.5 text-[var(--primary)] mt-1 shrink-0" />
+                      )}
+                      <div>
+                        <span class:list={['font-extrabold block', feature.placeholder && 'placeholder-cell']}>{feature.title}</span>
+                        {feature.description && (
+                          <span class:list={['text-xs text-[var(--foreground)] leading-relaxed', feature.placeholder && 'placeholder-cell']}>{feature.description}</span>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .hiw-pricing {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --secondary: #eaaa00;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  .price-card {
+    border: 1px solid var(--border);
+  }
+  .price-card.featured-plan {
+    border: 2px solid var(--card-foreground);
+  }
+  .plan-badge {
+    position: absolute;
+    top: -0.875rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    padding: 0.375rem 1rem;
+    white-space: nowrap;
+  }
+  .placeholder-cell {
+    color: var(--foreground);
+    opacity: 0.4;
+    font-style: italic;
+  }
+  .btn-outline-dark {
+    border: 2px solid var(--card-foreground);
+    color: var(--card-foreground);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+    border-radius: 0;
+    display: block;
+  }
+</style>

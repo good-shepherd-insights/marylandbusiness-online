@@ -1,0 +1,62 @@
+---
+/**
+ * Similar businesses — design markup: three image cards. Linkless for
+ * now (detail paths need city slugs the projection doesn't pull).
+ */
+import { sanityImageUrl } from '@lib/sanity/client';
+import type { SanityListing } from '@lib/sanity/types';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const valid = (listing.similar ?? []).filter((item) => item.name && item.image?.asset);
+---
+
+{
+  valid.length > 0 && (
+    <section id="similar">
+      <h2 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-widest mb-8">
+        {listing.similarHeading}
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {valid.map((item) => (
+          <div class="border border-[var(--border)]">
+            <div class="h-40 overflow-hidden">
+              <img
+                class="w-full h-full object-cover"
+                src={sanityImageUrl(item.image!, { width: 640 })}
+                alt={item.image!.alt ?? item.name ?? ''}
+                loading="lazy"
+              />
+            </div>
+            <div class="p-4">
+              <h4 class="text-[10px] font-extrabold uppercase tracking-widest">{item.name}</h4>
+              <div class="flex items-center gap-2 mt-1">
+                {item.subcategory?.name && (
+                  <span class="text-[8px] font-bold uppercase text-[var(--foreground)]">{item.subcategory.name}</span>
+                )}
+                {item.priceRange && (
+                  <span class="text-[8px] font-bold uppercase text-[var(--primary)]">{item.priceRange}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  section {
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    --primary: #9d2235;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    padding: 64px 0;
+    border-bottom: none;
+  }
+</style>

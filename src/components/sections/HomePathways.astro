@@ -1,0 +1,110 @@
+---
+/**
+ * Persona pathways (census 13 §2): "start here" nav cards. Icon + tint are
+ * frontend tabler literals by card position — never stored (V-18). Card
+ * links reuse navLink data.
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHomePathways } from '@lib/sanity/types';
+
+interface Props {
+  pathways: SanityHomePathways;
+}
+
+const { pathways } = Astro.props;
+const ICONS = ['tabler:home-2', 'tabler:shield-check', 'tabler:briefcase'];
+const TONES = ['tone-primary', 'tone-gold', 'tone-dark'];
+---
+
+{
+  pathways.heading && (
+    <section id="pathways" class="home-pathways py-16 md:py-24 px-4 md:px-12 bg-white border-y border-[var(--border)]">
+      <div class="max-w-7xl mx-auto">
+        <div class="max-w-2xl mb-10 md:mb-16">
+          {pathways.eyebrow && (
+            <span class="text-[var(--primary)] font-extrabold text-[10px] tracking-[0.2em] uppercase mb-4 md:mb-6 block">
+              {pathways.eyebrow}
+            </span>
+          )}
+          <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
+            {pathways.heading}
+          </h2>
+          <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed">
+            {pathways.description}
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 md:gap-8">
+          {(pathways.cards ?? []).map((card, i) => (
+            <div class="pathway-box p-8 md:p-10 flex flex-col">
+              <div class:list={['w-12 h-12 flex items-center justify-center mb-6 md:mb-8 border', TONES[i % TONES.length]]}>
+                <Icon name={ICONS[i % ICONS.length] as never} class="w-5 h-5" />
+              </div>
+              <h3 class="text-xl font-extrabold text-[var(--card-foreground)] mb-4 tracking-tight uppercase">
+                {card.title}
+              </h3>
+              {card.description && (
+                <p class="text-sm text-[var(--foreground)] leading-relaxed mb-8">{card.description}</p>
+              )}
+              <div class="mt-auto space-y-3">
+                {(card.links ?? []).map((link) =>
+                  link.href ? (
+                    <a
+                      href={link.href}
+                      class="flex items-center justify-between text-xs font-bold text-[var(--card-foreground)] hover:text-[var(--primary)] transition-colors p-3 bg-[#FAF7F2] border border-[var(--border)]"
+                    >
+                      {link.label}
+                      <Icon name="tabler:chevron-right" class="w-2.5 h-2.5" />
+                    </a>
+                  ) : (
+                    <span
+                      class="flex items-center justify-between text-xs font-bold text-[var(--card-foreground)] p-3 bg-[#FAF7F2] border border-[var(--border)]"
+                    >
+                      {link.label}
+                      <Icon name="tabler:chevron-right" class="w-2.5 h-2.5" />
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .home-pathways {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --secondary: #eaaa00;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  .pathway-box {
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+    background: white;
+  }
+  .pathway-box:hover {
+    border-color: var(--card-foreground);
+    transform: translateY(-4px);
+  }
+  .tone-primary {
+    background-color: rgba(157, 34, 53, 0.05);
+    color: var(--primary);
+    border-color: rgba(157, 34, 53, 0.1);
+  }
+  .tone-gold {
+    background-color: rgba(234, 170, 0, 0.1);
+    color: var(--card-foreground);
+    border-color: rgba(234, 170, 0, 0.2);
+  }
+  .tone-dark {
+    background-color: rgba(18, 18, 18, 0.05);
+    color: var(--card-foreground);
+    border-color: rgba(18, 18, 18, 0.1);
+  }
+</style>

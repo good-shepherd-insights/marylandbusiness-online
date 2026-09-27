@@ -1,0 +1,95 @@
+---
+/**
+ * Comparison table (design 12 §6): columns DERIVED from the pricing plans
+ * (single source of truth), feature rows from comparison groups. Check
+ * cells render the tabler:check literal; text cells render muted-italic
+ * (design .placeholder-cell). Hovers dropped (V-10).
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHiwComparison, SanityPricingPlan } from '@lib/sanity/types';
+
+interface Props {
+  comparison: SanityHiwComparison;
+  plans: SanityPricingPlan[];
+}
+
+const { comparison, plans } = Astro.props;
+---
+
+{
+  comparison.heading && (
+    <section id="comparison" class="hiw-comparison py-16 md:py-28 px-4 md:px-12 bg-[#FAF7F2]">
+      <div class="max-w-7xl mx-auto">
+        <div class="max-w-2xl mb-12 md:mb-16">
+          {comparison.eyebrow && <span class="text-[var(--primary)] font-extrabold text-xs tracking-[0.2em] uppercase mb-6 block">{comparison.eyebrow}</span>}
+          <h2 class="text-3xl md:text-4xl font-extrabold text-[var(--card-foreground)] mb-6 tracking-tight">{comparison.heading}</h2>
+        </div>
+
+        <div class="border border-[var(--border)] overflow-x-auto">
+          <table class="comparison-table w-full border-collapse min-w-[720px]">
+            <thead>
+              <tr>
+                <th class="text-left p-5 text-[11px] font-extrabold uppercase tracking-widest text-[var(--foreground)] w-1/3">Feature</th>
+                {plans.map((plan) => (
+                  <th class:list={['text-center p-5 text-[11px] font-extrabold uppercase tracking-widest', plan.badge ? 'text-[var(--primary)]' : 'text-[var(--card-foreground)]']}>
+                    {plan.name}
+                    <br />
+                    <span class="text-[var(--foreground)] font-bold normal-case tracking-normal text-xs">{plan.price}{plan.period}</span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(comparison.groups ?? []).map((group) => (
+                <>
+                  <tr class="group-row">
+                    <td colspan={plans.length + 1} class="p-4 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[var(--primary)]">{group.title}</td>
+                  </tr>
+                  {(group.rows ?? []).map((row) => (
+                    <tr>
+                      <td class="text-left p-5 text-xs font-bold text-[var(--card-foreground)]">{row.feature}</td>
+                      {(row.cells ?? []).map((cell) => (
+                        <td class="text-center p-5">
+                          {cell.kind === 'check' ? (
+                            <Icon name="tabler:check" class="w-3.5 h-3.5 text-[var(--primary)] inline-block" />
+                          ) : (
+                            <span class="placeholder-cell text-xs">{cell.text ?? ''}</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .hiw-comparison {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  .comparison-table :global(th),
+  .comparison-table :global(td) {
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison-table :global(thead th) {
+    border-bottom: 2px solid var(--card-foreground);
+  }
+  .comparison-table :global(tr.group-row td) {
+    background: #f3efe8;
+  }
+  .placeholder-cell {
+    color: var(--foreground);
+    opacity: 0.4;
+    font-style: italic;
+  }
+</style>

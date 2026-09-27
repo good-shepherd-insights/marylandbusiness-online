@@ -1,0 +1,35 @@
+---
+/**
+ * Hub degradation view — rendered only when a gate-passing path exists but
+ * the `directoryPage` singleton (hubHeader / hubDiscovery) is not seeded.
+ * The gate owns path existence, so the path must still render (research
+ * doc §4): heading, description, plain business list. Deliberately plain
+ * — chrome arrives with the CMS docs, not from this component.
+ */
+import type { HubData } from '@lib/sanity/types';
+
+interface Props {
+  label: string;
+  description?: string | null;
+  hub: HubData;
+}
+
+const { label, description, hub } = Astro.props;
+---
+
+<div class="min-h-dvh bg-[#FAF7F2] text-[#121212]" style="font-family: 'Sora Variable', 'Sora', sans-serif;">
+  <div class="max-w-3xl mx-auto px-6 py-16">
+    <h1 class="text-3xl lg:text-4xl font-extrabold uppercase tracking-tight">{label}</h1>
+    {description && <p class="mt-4 max-w-prose text-[#555] leading-relaxed">{description}</p>}
+    <ul class="mt-10 divide-y divide-[#e3e0dc] border-y border-[#e3e0dc]">
+      {hub.businesses.map((b) => (
+        <li class="py-4">
+          <span class="block text-sm font-extrabold uppercase tracking-tight">{b.name}</span>
+          {b.city?.name && <span class="text-[10px] font-bold uppercase tracking-widest text-[#555]">{b.city.name}</span>}
+          {b.description && <p class="mt-1 text-xs text-[#555] leading-relaxed">{b.description}</p>}
+          {b.ctaPrimaryUrl && <a class="mt-2 inline-block text-[10px] font-bold uppercase tracking-widest text-[#9d2235]" href={b.ctaPrimaryUrl}>{b.ctaPrimaryLabel}</a>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>

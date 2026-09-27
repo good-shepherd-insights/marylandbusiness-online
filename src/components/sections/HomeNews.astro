@@ -1,0 +1,144 @@
+---
+/**
+ * Daily news wire (census 13 §1): glanceable newspaper-style list. Tag tone
+ * is a frontend literal map by row index — never stored (no colors in CMS).
+ * Rows are display-only (the design links nowhere; no url field exists).
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHomeNews } from '@lib/sanity/types';
+
+interface Props {
+  news: SanityHomeNews;
+}
+
+const { news } = Astro.props;
+const TONES = ['tone-primary', 'tone-blue', 'tone-green', 'tone-orange'];
+---
+
+{
+  news.heading && (
+    <section id="news-feed" class="home-news py-16 md:py-24 px-4 md:px-12 bg-[#FAF7F2]">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-10 md:mb-16 gap-8">
+          <div class="max-w-2xl">
+            <div class="flex items-center gap-3 mb-4 md:mb-6">
+              <span class="w-8 h-[2px] bg-[var(--primary)]" aria-hidden="true" />
+              <span class="text-[var(--primary)] font-extrabold text-[10px] tracking-[0.2em] uppercase">
+                {news.eyebrow}
+              </span>
+            </div>
+            <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
+              {news.heading}
+            </h2>
+            <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed">
+              {news.description}
+            </p>
+          </div>
+          {news.pulseLabel && (
+            <div class="flex items-center gap-3 text-[10px] font-extrabold text-[var(--secondary)] uppercase tracking-[0.2em]">
+              <span class="relative flex h-2 w-2" aria-hidden="true">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--secondary)] opacity-75" />
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-[var(--secondary)]" />
+              </span>
+              {news.pulseLabel}
+            </div>
+          )}
+        </div>
+
+        <div class="bg-white border border-[var(--border)]">
+          {(news.items ?? []).map((item, i) => (
+            <div class="news-row p-6 md:p-8 flex flex-col md:flex-row gap-4 md:gap-6 md:items-center">
+              <div class="md:w-32 shrink-0">
+                {item.tag && (
+                  <span class:list={['news-tag', TONES[i % TONES.length]]}>{item.tag}</span>
+                )}
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-bold text-[var(--card-foreground)] mb-1 leading-snug hover:text-[var(--primary)] cursor-pointer transition-colors">
+                  {item.headline}
+                </h3>
+                {item.excerpt && (
+                  <p class="text-sm text-[var(--foreground)] line-clamp-1">{item.excerpt}</p>
+                )}
+              </div>
+              {(item.place || item.timeLabel) && (
+                <div class="md:text-right shrink-0">
+                  {item.place && (
+                    <span class="block text-[10px] font-bold text-[var(--card-foreground)] uppercase tracking-widest">
+                      {item.place}
+                    </span>
+                  )}
+                  {item.timeLabel && (
+                    <span class="block text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest mt-1">
+                      {item.timeLabel}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {news.archiveLabel && (
+            <div class="p-6 md:p-8 text-center bg-[#F8F7F6]">
+              <a
+                href={news.archiveUrl ?? '#'}
+                class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[var(--card-foreground)] hover:text-[var(--primary)] transition-colors"
+              >
+                {news.archiveLabel}
+                <Icon name="tabler:arrow-right" class="inline w-3 h-3 ml-2 -mt-0.5" />
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .home-news {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --secondary: #eaaa00;
+    --muted-foreground: #7a7a7a;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  .news-row {
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.15s ease;
+  }
+  .news-row:hover {
+    background-color: white;
+  }
+  .news-tag {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+  }
+  .tone-primary {
+    color: var(--primary);
+    border-color: rgba(157, 34, 53, 0.2);
+    background-color: rgba(157, 34, 53, 0.05);
+  }
+  .tone-blue {
+    color: #1d4ed8;
+    border-color: rgba(29, 78, 216, 0.2);
+    background-color: rgba(29, 78, 216, 0.05);
+  }
+  .tone-green {
+    color: #15803d;
+    border-color: rgba(21, 128, 61, 0.2);
+    background-color: rgba(21, 128, 61, 0.05);
+  }
+  .tone-orange {
+    color: #c2410c;
+    border-color: rgba(194, 65, 12, 0.2);
+    background-color: rgba(194, 65, 12, 0.05);
+  }
+</style>

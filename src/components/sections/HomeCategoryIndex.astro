@@ -1,0 +1,83 @@
+---
+/**
+ * Category sitemap (census 13 §3): high-density link grid. Columns are
+ * COMPUTED from the live category -> subcategory tree (getCategoryTree) —
+ * nothing stored, nothing invented. The grid grows as sectors are added.
+ * Subcategory path: /{categorySlug}/{subcategorySlug}.
+ */
+import type {
+  SanityHomeCategoryIndex,
+  SanityCategoryIndexGroup,
+} from '@lib/sanity/types';
+
+interface Props {
+  section: SanityHomeCategoryIndex;
+  groups: SanityCategoryIndexGroup[];
+}
+
+const { section, groups } = Astro.props;
+const populated = groups.filter((g) => (g.subcategories ?? []).length > 0);
+---
+
+{
+  section.heading && populated.length > 0 && (
+    <section id="category-index" class="home-cat-index py-16 md:py-24 px-4 md:px-12 bg-[#FAF7F2]">
+      <div class="max-w-7xl mx-auto">
+        <div class="max-w-2xl mb-10 md:mb-16">
+          {section.eyebrow && (
+            <span class="text-[var(--primary)] font-extrabold text-[10px] tracking-[0.2em] uppercase mb-4 md:mb-6 block">
+              {section.eyebrow}
+            </span>
+          )}
+          <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
+            {section.heading}
+          </h2>
+          <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed">
+            {section.description}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-12">
+          {populated.map((group) => (
+            <div>
+              <h4 class="text-[10px] font-extrabold text-[var(--primary)] uppercase tracking-[0.2em] mb-6 border-b border-[var(--border)] pb-2">
+                {group.name}
+              </h4>
+              <ul class="space-y-1">
+                {(group.subcategories ?? []).map((sub) => (
+                  <li>
+                    <a href={`/${group.slug}/${sub.slug}`} class="cat-link">
+                      {sub.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .home-cat-index {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  .cat-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--foreground);
+    transition: all 0.15s ease;
+    display: block;
+    padding: 4px 0;
+  }
+  .cat-link:hover {
+    color: var(--primary);
+    padding-left: 6px;
+  }
+</style>

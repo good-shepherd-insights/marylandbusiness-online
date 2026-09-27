@@ -1,0 +1,77 @@
+---
+/**
+ * "Why It Matters" contrast section (design 12 §4): problem vs solution
+ * panels + proof stats. Icons are code literals; hovers dropped (V-10).
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHiwWhy } from '@lib/sanity/types';
+
+interface Props {
+  why: SanityHiwWhy;
+}
+
+const { why } = Astro.props;
+---
+
+{
+  why.heading && (
+    <section id="why" class="hiw-why py-16 md:py-28 px-4 md:px-12 bg-[#FAF7F2]">
+      <div class="max-w-7xl mx-auto">
+        <div class="max-w-2xl mb-12 md:mb-16">
+          {why.eyebrow && <span class="text-[var(--primary)] font-extrabold text-xs tracking-[0.2em] uppercase mb-6 block">{why.eyebrow}</span>}
+          <h2 class="text-3xl md:text-4xl font-extrabold text-[var(--card-foreground)] mb-6 tracking-tight">{why.heading}</h2>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-0 border border-[var(--border)] mb-12 md:mb-16">
+          <div class="p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-[var(--border)] bg-[#FDFCFB]">
+            {why.problemLabel && (
+              <span class="inline-block text-[10px] font-extrabold uppercase tracking-[0.2em] text-[var(--foreground)] mb-6 px-3 py-1 border border-[var(--border)]">{why.problemLabel}</span>
+            )}
+            <ul class="flex flex-col gap-6 text-base text-[var(--foreground)] leading-relaxed font-medium">
+              {(why.problemItems ?? []).map((item) => (
+                <li class="flex items-start gap-3">
+                  <Icon name="tabler:x" class="w-3.5 h-3.5 text-[var(--foreground)] mt-1.5 shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="p-8 md:p-12 bg-[#FAF7F2]">
+            {why.solutionLabel && (
+              <span class="inline-block text-[10px] font-extrabold uppercase tracking-[0.2em] text-white mb-6 px-3 py-1 bg-[var(--primary)]">{why.solutionLabel}</span>
+            )}
+            <ul class="flex flex-col gap-6 text-base text-[var(--card-foreground)] leading-relaxed font-medium">
+              {(why.solutionItems ?? []).map((item) => (
+                <li class="flex items-start gap-3">
+                  <Icon name="tabler:check" class="w-3.5 h-3.5 text-[var(--primary)] mt-1.5 shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {(why.stats?.length ?? 0) > 0 && (
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-10 max-w-4xl">
+            {why.stats!.map((stat) => (
+              <div>
+                <span class="block text-4xl md:text-5xl font-extrabold text-[var(--primary)] mb-2">{stat.value}</span>
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--foreground)]">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .hiw-why {
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+</style>

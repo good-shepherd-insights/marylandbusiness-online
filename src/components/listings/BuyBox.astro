@@ -1,0 +1,233 @@
+---
+/**
+ * The Buy Box — design markup: price tier + live open status, both CTAs,
+ * contact rows, directions, verification panel. Open/closed status is
+ * computed from structured hours in the listing's timezone (never stored).
+ */
+import { TAX_STATUSES } from '../../sanity/schemaTypes/entities/listing';
+import type { SanityListing } from '@lib/sanity/types';
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const hasContent = Boolean(
+  listing.priceRange ||
+    listing.ctaPrimaryLabel ||
+    listing.ctaSecondaryLabel ||
+    listing.phone ||
+    listing.website ||
+    listing.address,
+);
+
+function fmtTime(hhmm?: string) {
+  if (!hhmm) return '';
+  const [h, m] = hhmm.split(':').map(Number);
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m ?? 0).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+const weekdayToKey: Record<string, string> = {
+  Sun: 'sun',
+  Mon: 'mon',
+  Tue: 'tue',
+  Wed: 'wed',
+  Thu: 'thu',
+  Fri: 'fri',
+  Sat: 'sat',
+};
+const parts = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  weekday: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+}).formatToParts(new Date());
+const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+const todayKey = weekdayToKey[get('weekday')];
+const now = `${get('hour')}:${get('minute')}`;
+const today = (listing.hours ?? []).find((h) => h.day === todayKey);
+const isOpen = Boolean(today?.opens && today?.closes && now >= today.opens && now <= today.closes);
+
+const websiteLabel = listing.website?.replace(/^https?:\/\//, '');
+const dateFmt = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+// Display values come from the taxStatus enum titles — single source of truth.
+const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
+---
+
+{
+  hasContent && (
+    <div class="buy-box">
+      {(listing.priceRange || today) && (
+        <div class="flex items-center justify-between mb-4 pb-4 border-b border-[var(--border)]">
+          {listing.priceRange && <div class="text-2xl font-extrabold text-[var(--card-foreground)]">{listing.priceRange}</div>}
+          {today && (
+            <div class="flex flex-col items-end">
+              <span class={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${isOpen ? 'text-green-600' : 'text-[var(--primary)]'}`}>
+                {isOpen && (
+                  <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                  </span>
+                )}
+                {isOpen ? listing.openNowLabel : listing.closedLabel}
+              </span>
+              <span class="text-[8px] font-bold text-[var(--foreground)] uppercase mt-1">
+                {isOpen ? `${listing.closesAtLabel} ${fmtTime(today.closes)}` : `${listing.opensAtLabel} ${fmtTime(today.opens)}`}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(listing.ctaPrimaryLabel || listing.ctaSecondaryLabel) && (
+        <div class="space-y-2 mb-5">
+          {listing.ctaPrimaryLabel && listing.ctaPrimaryUrl && (
+            <a class="btn-primary w-full py-3 text-[13px]" href={listing.ctaPrimaryUrl}>
+              {listing.ctaPrimaryLabel}
+            </a>
+          )}
+          {listing.ctaSecondaryLabel && listing.ctaSecondaryUrl && (
+            <a class="btn-outline w-full py-3 text-[13px]" href={listing.ctaSecondaryUrl}>
+              {listing.ctaSecondaryLabel}
+            </a>
+          )}
+        </div>
+      )}
+
+      <div class="space-y-3 pt-4 border-t border-[var(--border)]">
+        {listing.phone && (
+          <div class="flex items-start gap-4">
+            <div class="icon-box icon-box-sm">
+              <Icon name="tabler:phone" class="w-3 h-3" />
+            </div>
+            <div>
+              <span class="block text-[8px] font-bold uppercase tracking-widest text-[var(--foreground)] mb-1">{listing.phoneLabel}</span>
+              <a class="block text-[13px] font-extrabold text-[var(--card-foreground)]" href={`tel:${listing.phone.replace(/[^0-9+]/g, '')}`}>
+                {listing.phone}
+              </a>
+            </div>
+          </div>
+        )}
+        {listing.website && (
+          <div class="flex items-start gap-4">
+            <div class="icon-box icon-box-sm">
+              <Icon name="tabler:world" class="w-3 h-3" />
+            </div>
+            <div>
+              <span class="block text-[8px] font-bold uppercase tracking-widest text-[var(--foreground)] mb-1">{listing.websiteLabel}</span>
+              <a class="block text-[13px] font-extrabold text-[var(--card-foreground)]" href={listing.website}>
+                {websiteLabel}
+              </a>
+            </div>
+          </div>
+        )}
+        {listing.address && (
+          <div class="flex items-start gap-4">
+            <div class="icon-box icon-box-sm">
+              <Icon name="tabler:map-pin" class="w-3 h-3" />
+            </div>
+            <div>
+              <span class="block text-[8px] font-bold uppercase tracking-widest text-[var(--foreground)] mb-1">{listing.addressLabel}</span>
+              <span class="block text-[13px] font-extrabold text-[var(--card-foreground)] leading-relaxed">
+                {listing.address.street}
+                <br />
+                {[listing.address.city, listing.address.region, listing.address.postalCode].filter(Boolean).join(', ')}
+              </span>
+              {listing.directionsUrl && (
+                <a class="block text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest mt-2" href={listing.directionsUrl}>
+                  {listing.directionsLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {(listing.taxStatus || listing.licenseNumber || listing.lastAudit) && (
+        <div class="mt-4 pt-4 border-t border-[var(--border)] opacity-60">
+          <div class="flex items-center justify-between mb-4">
+            <h5 class="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[var(--card-foreground)]">
+              {listing.verificationHeading}
+            </h5>
+            <Icon name="tabler:shield-check" class="w-3 h-3 text-[var(--primary)]" />
+          </div>
+          <div class="space-y-2">
+            {listing.taxStatus && (
+              <div class="flex justify-between text-[8px] font-bold uppercase">
+                <span class="text-[var(--foreground)]">{listing.taxStatusLabel}</span>
+                <span class={listing.taxStatus === 'active' ? 'text-green-600' : 'text-[var(--primary)]'}>
+                  {taxTitle}
+                </span>
+              </div>
+            )}
+            {listing.licenseNumber && (
+              <div class="flex justify-between text-[8px] font-bold uppercase">
+                <span class="text-[var(--foreground)]">{listing.licenseLabel}</span>
+                <span class="text-[var(--card-foreground)]">{listing.licenseNumber}</span>
+              </div>
+            )}
+            {listing.lastAudit && (
+              <div class="flex justify-between text-[8px] font-bold uppercase">
+                <span class="text-[var(--foreground)]">{listing.lastAuditLabel}</span>
+                <span class="text-[var(--card-foreground)]">{dateFmt.format(new Date(listing.lastAudit))}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .buy-box {
+    --primary: #9d2235;
+    --primary-foreground: #fff;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    position: sticky;
+    top: 64px;
+    background: #faf7f2;
+    border: 2px solid var(--card-foreground);
+    box-shadow: 12px 12px 0 rgba(18, 18, 18, 0.05);
+    padding: 20px;
+  }
+  .btn-primary {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+    border-radius: 0;
+    display: block;
+    text-align: center;
+  }
+  .btn-outline {
+    border: 2px solid var(--card-foreground);
+    background: transparent;
+    color: var(--card-foreground);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+    border-radius: 0;
+    display: block;
+    text-align: center;
+  }
+  .icon-box {
+    width: 1.75rem;
+    height: 1.75rem;
+    background: #f8f7f6;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+</style>
