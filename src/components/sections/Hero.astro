@@ -41,13 +41,6 @@ const { badge, heading, subheading, images, countyLabel, counties, categoryLabel
       </div>
 
       <div class="hero-inner">
-        {badge?.text && (
-          <p class="hero-badge">
-            {badge.icon && <Icon name={badge.icon} />}
-            <span>{badge.text}</span>
-          </p>
-        )}
-
         {heading && heading.length > 0 && (
           <h1 class="hero-heading">
             {heading.map((segment, index) => (
@@ -72,7 +65,7 @@ const { badge, heading, subheading, images, countyLabel, counties, categoryLabel
 
         <form class="hero-search" method="get" action="/">
           <div class="hero-field">
-            <label for="hero-county">{countyLabel}</label>
+            <label for="hero-county">{countyLabel}:</label>
             <select id="hero-county" name="county">
               {counties?.map((option) =>
                 option.label ? <option value={option.label}>{option.label}</option> : null,
@@ -80,7 +73,7 @@ const { badge, heading, subheading, images, countyLabel, counties, categoryLabel
             </select>
           </div>
           <div class="hero-field">
-            <label for="hero-category">{categoryLabel}</label>
+            <label for="hero-category">{categoryLabel}:</label>
             <select id="hero-category" name="category">
               {categories?.map((option) =>
                 option.label ? <option value={option.label}>{option.label}</option> : null,
@@ -158,25 +151,6 @@ const { badge, heading, subheading, images, countyLabel, counties, categoryLabel
     text-align: center;
   }
 
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem 1rem;
-    background: var(--hero-secondary);
-    color: var(--hero-secondary-foreground);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 1.5rem;
-  }
-
-  .hero-badge :global(svg) {
-    width: 0.875rem;
-    height: 0.875rem;
-  }
-
   .hero-heading {
     color: #fff;
     font-size: clamp(3rem, 6vw, 4.5rem);
@@ -222,7 +196,6 @@ const { badge, heading, subheading, images, countyLabel, counties, categoryLabel
     padding: 0.5rem;
     background: #fff;
     border: 1px solid var(--hero-border);
-    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%);
     text-align: left;
   }
 
@@ -236,7 +209,7 @@ const { badge, heading, subheading, images, countyLabel, counties, categoryLabel
   }
 
   .hero-field label {
-    font-size: 0.5625rem;
+    font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
