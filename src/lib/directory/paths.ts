@@ -705,7 +705,7 @@ export interface ComboFilters {
 
 export async function getRowsForCombo(
   filters: ComboFilters,
-): Promise<{businesses: HubBusiness[]; cities: HubCity[]}> {
+): Promise<{businesses: HubBusiness[]; cities: HubCity[]; total: number}> {
   const rows = await fetchIndex();
   const hit = rows.filter(
     (row) =>
@@ -714,5 +714,5 @@ export async function getRowsForCombo(
       (!filters.county || row.county?.slug === filters.county) &&
       (!filters.city || row.city?.slug === filters.city),
   );
-  return {businesses: hit.map(toHubBusiness), cities: citiesOf(hit)};
+  return {businesses: hit.map(toHubBusiness), cities: citiesOf(hit), total: rows.length};
 }

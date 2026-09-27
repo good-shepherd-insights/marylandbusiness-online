@@ -60,7 +60,7 @@ const validHubs = (hubs ?? []).filter((hub) => hub.name);
   .county-hubs {
     --hubs-primary: #9d2235;
     --hubs-foreground: #121212;
-    --hubs-muted: #6b6560;
+    --hubs-muted: #404040;
     --hubs-border: #e3e0dc;
     --hubs-background: #faf7f2;
     --hubs-icon-box: #f8f7f6;
@@ -106,6 +106,7 @@ const validHubs = (hubs ?? []).filter((hub) => hub.name);
     font-weight: 500;
     color: var(--hubs-muted);
     margin: 0;
+    max-width: 70ch;
   }
 
   .county-hubs-cta {
@@ -180,8 +181,7 @@ const validHubs = (hubs ?? []).filter((hub) => hub.name);
     font-size: 0.875rem;
     font-weight: 700;
     color: var(--hubs-foreground);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: -0.025em;
     margin: 0 0 0.5rem;
   }
 

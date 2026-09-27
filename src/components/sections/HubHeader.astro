@@ -14,9 +14,12 @@ import type { SanityHubHeader } from '@lib/sanity/types';
 interface Props {
   header: SanityHubHeader;
   label: string;
+  /** Real, computed listing stats — overrides the CMS stat blocks. */
+  stats?: { value: string; label: string }[];
 }
 
-const { header, label } = Astro.props;
+const { header, label, stats } = Astro.props;
+const statBlocks = stats && stats.length > 0 ? stats : header.stats ?? [];
 const hasContent = Boolean(header.breadcrumbRoot || header.liveBadgeLabel || label);
 ---
 
@@ -45,11 +48,11 @@ const hasContent = Boolean(header.breadcrumbRoot || header.liveBadgeLabel || lab
             )}
           </div>
         </div>
-        {(header.stats?.length ?? 0) > 0 && (
+        {statBlocks.length > 0 && (
           <div class="flex w-full lg:w-auto gap-4 lg:gap-12 border-t border-b lg:border-t-0 lg:border-b-0 border-[var(--border)] py-4 lg:py-0 lg:border-l lg:pl-12">
-            {header.stats!.map((stat) => (
+            {statBlocks.map((stat, index) => (
               <div class="hub-stat flex-1 lg:flex-none text-center">
-                <span class="hub-stat-value block text-lg lg:text-xl font-extrabold text-[var(--card-foreground)]">{stat.value}</span>
+                <span class="hub-stat-value block text-lg lg:text-xl font-extrabold text-[var(--card-foreground)]" data-stat={index}>{stat.value}</span>
                 <span class="block text-[8px] lg:text-[9px] font-bold text-[var(--muted-foreground)] uppercase tracking-widest">{stat.label}</span>
               </div>
             ))}
