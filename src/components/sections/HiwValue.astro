@@ -34,11 +34,13 @@ const tileStyles = [
         <div class="grid lg:grid-cols-3 gap-0 border-t border-l border-[var(--border)]">
           {(value.categories ?? []).map((cat, i) => (
             <div class="border-r border-b border-[var(--border)] p-6 md:p-10 bg-[#FAF7F2] flex flex-col">
-              <div class:list={['w-12 h-12 flex items-center justify-center mb-8', tileStyles[i % tileStyles.length]]}>
-                <Icon name={tileIcons[i] ?? 'tabler:shield-check'} class="w-5 h-5" />
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 flex items-center justify-center shrink-0">
+                  <Icon name={tileIcons[i] ?? 'tabler:shield-check'} class="w-5 h-5 text-[var(--primary)]" />
+                </div>
+                <h3 class="text-xl font-extrabold text-[var(--card-foreground)] tracking-tight">{cat.title}</h3>
               </div>
-              <h3 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-tight mb-4">{cat.title}</h3>
-              {cat.description && <p class="text-sm text-[var(--foreground)] leading-relaxed mb-8">{cat.description}</p>}
+              {cat.description && <p class="text-sm text-[var(--foreground)] leading-relaxed mb-8 max-w-prose">{cat.description}</p>}
               <ul class="flex flex-col gap-4 text-sm text-[var(--foreground)] font-medium">
                 {(cat.items ?? []).map((item) => (
                   <li class="flex items-start gap-3">
@@ -57,11 +59,11 @@ const tileStyles = [
 
 <style>
   .hiw-value {
-    --foreground: #555555;
+    --foreground: #404040;
     --card-foreground: #121212;
     --primary: #9d2235;
-    --secondary: #eaaa00;
-    --secondary-foreground: #121212;
+    --secondary: #855b00;
+    --secondary-foreground: #ffffff;
     --border: #e3e0dc;
     font-family: 'Sora Variable', 'Sora', sans-serif;
   }

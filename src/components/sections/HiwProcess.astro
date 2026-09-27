@@ -47,10 +47,10 @@ const ownerIcons = ['tabler:user', 'tabler:file-check', 'tabler:user', 'tabler:s
                 <div class="flex-1 pb-2">
                   <div class="flex items-center gap-3 mb-3">
                     <Icon name={stepIcons[i] ?? 'tabler:file-pencil'} class="w-5 h-5 text-[var(--primary)] shrink-0" />
-                    <h3 class="text-lg md:text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-tight">{step.title}</h3>
+                    <h3 class="text-lg md:text-xl font-extrabold text-[var(--card-foreground)] tracking-tight">{step.title}</h3>
                   </div>
-                  {step.description && <p class="text-base text-[var(--foreground)] leading-relaxed mb-4 max-w-2xl">{step.description}</p>}
-                  <div class="flex flex-wrap gap-4 text-[10px] font-extrabold uppercase tracking-widest">
+                  {step.description && <p class="text-base text-[var(--foreground)] leading-relaxed mb-4 max-w-prose">{step.description}</p>}
+                  <div class="flex flex-wrap gap-4 text-[11px] font-extrabold uppercase tracking-widest">
                     {step.metaTime && (
                       <span class="px-3 py-1.5 border border-[var(--border)] text-[var(--card-foreground)] inline-flex items-center gap-2">
                         <Icon name="tabler:clock" class="w-3 h-3" />
@@ -76,11 +76,11 @@ const ownerIcons = ['tabler:user', 'tabler:file-check', 'tabler:user', 'tabler:s
 
 <style>
   .hiw-process {
-    --foreground: #555555;
+    --foreground: #404040;
     --card-foreground: #121212;
     --primary: #9d2235;
-    --secondary: #eaaa00;
-    --secondary-foreground: #121212;
+    --secondary: #855b00;
+    --secondary-foreground: #ffffff;
     --border: #e3e0dc;
     font-family: 'Sora Variable', 'Sora', sans-serif;
   }
