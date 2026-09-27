@@ -31,14 +31,14 @@ const { faq } = Astro.props;
           {(faq.items ?? []).map((item, i) => (
             <div class:list={['faq-item bg-white border border-[var(--border)] p-6', i === 0 && 'open']}>
               <button type="button" class="faq-question w-full flex items-center justify-between gap-6 text-left">
-                <h4 class="font-extrabold text-[var(--card-foreground)] uppercase tracking-tight text-sm">
+                <h3 class="font-extrabold text-[var(--card-foreground)] tracking-tight text-base">
                   {item.question}
-                </h4>
+                </h3>
                 <Icon name="tabler:chevron-down" class="faq-chevron w-3 h-3 text-[var(--foreground)] shrink-0" />
               </button>
               <div class="faq-answer">
                 {item.answer && (
-                  <p class="text-sm text-[var(--foreground)] leading-relaxed pt-6">{item.answer}</p>
+                  <p class="text-sm text-[var(--foreground)] leading-relaxed pt-6 max-w-prose">{item.answer}</p>
                 )}
               </div>
             </div>
@@ -61,7 +61,7 @@ const { faq } = Astro.props;
 
 <style>
   .home-faq {
-    --foreground: #555555;
+    --foreground: #404040;
     --card-foreground: #121212;
     --primary: #9d2235;
     --border: #e3e0dc;

@@ -89,10 +89,10 @@ const validBusinesses = (businesses ?? []).filter((b) => b.title);
 <style>
   .featured {
     --featured-primary: #9d2235;
-    --featured-secondary: #eaaa00;
-    --featured-secondary-foreground: #121212;
+    --featured-secondary: #b48300;
+    --featured-secondary-foreground: #ffffff;
     --featured-foreground: #121212;
-    --featured-muted: #555555;
+    --featured-muted: #404040;
     --featured-border: #e3e0dc;
     --featured-background: #fdfcfb;
     --featured-card: #faf7f2;
@@ -144,6 +144,7 @@ const validBusinesses = (businesses ?? []).filter((b) => b.title);
     font-weight: 500;
     color: var(--featured-muted);
     margin: 0;
+    max-width: 70ch;
   }
 
   .featured-arrows {
@@ -217,7 +218,7 @@ const validBusinesses = (businesses ?? []).filter((b) => b.title);
   }
 
   .featured-badge[data-tone='verified'] :global(svg) {
-    color: var(--featured-primary);
+    color: #ffffff;
   }
 
   .featured-badge[data-tone='dark'] {
@@ -259,7 +260,6 @@ const validBusinesses = (businesses ?? []).filter((b) => b.title);
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--featured-foreground);
-    text-transform: uppercase;
     letter-spacing: -0.025em;
     margin: 0 0 0.5rem;
   }
@@ -295,6 +295,7 @@ const validBusinesses = (businesses ?? []).filter((b) => b.title);
     line-height: 1.625;
     color: var(--featured-muted);
     margin: 0 0 2.5rem;
+    max-width: 70ch;
   }
 
   .featured-actions {

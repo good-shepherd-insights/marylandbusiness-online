@@ -146,7 +146,7 @@ const iconTintClass: Record<string, string> = {
   .wrap { max-width: 1280px; margin: 0 auto; }
   .head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; }
   h2 { font-size: 30px; font-weight: 800; color: #121212; letter-spacing: -0.025em; margin: 0; }
-  .count { font-size: 10px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.1em; }
+  .count { font-size: 11px; font-weight: 700; color: #404040; text-transform: uppercase; letter-spacing: 0.1em; }
   .toolbar { border: 1px solid #e3e0dc; background: #f3efe8; padding: 20px; margin-bottom: 40px; }
   .toolbar-row { display: flex; flex-direction: column; gap: 16px; }
   .search { position: relative; flex: 1; }
@@ -158,29 +158,29 @@ const iconTintClass: Record<string, string> = {
   select { appearance: none; width: 100%; border: 1px solid #e3e0dc; background: #fff; padding: 14px 36px 14px 16px; font-family: inherit; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #121212; outline: none; border-radius: 0; cursor: pointer; }
   select:focus { border-color: #121212; }
   .select-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; color: #555; pointer-events: none; }
-  .reset { display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; font-family: inherit; border: 1px solid #e3e0dc; color: #121212; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; background: #fff; border-radius: 0; padding: 14px 20px; cursor: pointer; }
+  .reset { display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; font-family: inherit; border: 1px solid #e3e0dc; color: #121212; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; background: #fff; border-radius: 0; padding: 14px 20px; cursor: pointer; }
   .reset:hover { border-color: #121212; background: #fafafa; }
   .reset-icon { width: 12px; height: 12px; }
   .layout { display: flex; flex-direction: column; gap: 48px; }
   .rail { width: 100%; }
   .sticky { position: static; }
-  .rail h4 { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: #121212; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid #e3e0dc; }
+  .rail h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: #121212; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid #e3e0dc; }
   .rail-gap { margin-top: 40px; }
   .categories { display: flex; flex-direction: column; }
-  .category { font-size: 14px; font-weight: 700; color: #555; padding: 12px 0; border-bottom: 1px solid #e3e0dc; text-decoration: none; transition: all 0.15s ease; }
+  .category { font-size: 14px; font-weight: 700; color: #404040; padding: 12px 0; border-bottom: 1px solid #e3e0dc; text-decoration: none; transition: all 0.15s ease; }
   .category:hover { color: #9d2235; }
   .category.active { color: #9d2235; font-weight: 800; }
   .type-options { display: flex; flex-direction: column; gap: 12px; }
-  .type-option { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; }
+  .type-option { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: #404040; cursor: pointer; }
   .type-option:hover { color: #9d2235; }
   .type-option input { accent-color: #9d2235; width: 14px; height: 14px; }
   .calendar { margin-top: 40px; border: 1px solid #e3e0dc; padding: 24px; background: #f3efe8; }
   .calendar-heading { color: #9d2235 !important; border-bottom: 0 !important; padding-bottom: 0 !important; margin-bottom: 20px !important; }
   .deadlines { display: flex; flex-direction: column; gap: 20px; }
   .deadline { display: flex; justify-content: space-between; align-items: flex-start; }
-  .deadline-title { font-size: 12px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: -0.025em; margin: 0; }
-  .deadline-org { font-size: 9px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.1em; margin: 2px 0 0; }
-  .deadline-date { font-size: 10px; font-weight: 800; color: #9d2235; text-transform: uppercase; white-space: nowrap; }
+  .deadline-title { font-size: 12px; font-weight: 800; color: #121212; letter-spacing: -0.025em; margin: 0; }
+  .deadline-org { font-size: 11px; font-weight: 700; color: #525252; text-transform: uppercase; letter-spacing: 0.1em; margin: 2px 0 0; }
+  .deadline-date { font-size: 11px; font-weight: 800; color: #9d2235; text-transform: uppercase; white-space: nowrap; }
   .grid { flex: 1; display: grid; grid-template-columns: 1fr; gap: 24px; }
   .card { border: 1px solid #e3e0dc; padding: 28px; display: flex; flex-direction: column; background: #faf7f2; transition: all 0.2s ease; }
   .card[hidden] { display: none; }
@@ -188,29 +188,29 @@ const iconTintClass: Record<string, string> = {
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
   .card-icon { width: 40px; height: 40px; background: #f8f7f6; display: flex; align-items: center; justify-content: center; }
   .icon-tint-primary { color: #9d2235; }
-  .icon-tint-secondary { color: #eaaa00; }
+  .icon-tint-secondary { color: #b48300; }
   .card-icon-svg { width: 18px; height: 18px; }
-  .badge { font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 8px; color: #fff; }
+  .badge { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 8px; color: #fff; }
   .badge-primary { background: #9d2235; }
-  .badge-secondary { background: #eaaa00; color: #121212; }
+  .badge-secondary { background: #b48300; color: #ffffff; }
   .badge-dark { background: #121212; }
-  .card h3 { font-size: 14px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: -0.025em; margin: 0 0 8px; }
-  .jurisdiction { font-size: 9px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 12px; }
-  .description { font-size: 12px; color: #555; line-height: 1.625; margin: 0 0 24px; flex: 1; }
-  .visit { font-size: 10px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
+  .card h3 { font-size: 14px; font-weight: 800; color: #121212; letter-spacing: -0.025em; margin: 0 0 8px; }
+  .jurisdiction { font-size: 11px; font-weight: 700; color: #525252; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 12px; }
+  .description { font-size: 12px; color: #404040; line-height: 1.625; margin: 0 0 24px; flex: 1; max-width: 70ch; }
+  .visit { font-size: 11px; font-weight: 800; color: #121212; text-transform: uppercase; letter-spacing: 0.1em; text-decoration: none; }
   .visit:hover { color: #9d2235; }
   .visit-icon { width: 10px; height: 10px; margin-left: 4px; vertical-align: -1px; }
   .active-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e3e0dc; }
   .active-row[hidden] { display: none; }
-  .active-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+  .active-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #404040; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .active-row :global(.chip-item) { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e3e0dc; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #121212; padding: 6px 10px; border-radius: 0; }
-  .active-row :global(.chip-item button) { display: inline-flex; align-items: center; background: none; border: 0; cursor: pointer; color: #555; padding: 0; line-height: 0; }
+  .active-row :global(.chip-item) { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e3e0dc; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #121212; padding: 6px 10px; border-radius: 0; }
+  .active-row :global(.chip-item button) { display: inline-flex; align-items: center; background: none; border: 0; cursor: pointer; color: #525252; padding: 0; line-height: 0; }
   .active-row :global(.chip-item button:hover) { color: #9d2235; }
   .active-row :global(.chip-item button svg) { width: 10px; height: 10px; }
   .count[hidden] { display: none; }
   .load-more-row { text-align: center; margin-top: 56px; }
-  .load-more { font-family: inherit; border: 1px solid #e3e0dc; color: #121212; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; background: #fff; border-radius: 0; padding: 16px 40px; cursor: pointer; }
+  .load-more { font-family: inherit; border: 1px solid #e3e0dc; color: #121212; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; background: #fff; border-radius: 0; padding: 16px 40px; cursor: pointer; }
   .load-more:hover { border-color: #121212; background: #fafafa; }
   @media (min-width: 768px) {
     .grid { grid-template-columns: repeat(2, 1fr); }

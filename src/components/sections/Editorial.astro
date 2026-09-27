@@ -86,9 +86,9 @@ const validStories = (stories ?? []).filter((s) => s.title);
 <style>
   .editorial {
     --editorial-primary: #9d2235;
-    --editorial-secondary: #eaaa00;
+    --editorial-secondary: #b48300;
     --editorial-foreground: #121212;
-    --editorial-muted: #555555;
+    --editorial-muted: #404040;
     --editorial-border: #e3e0dc;
     --editorial-background: #faf7f2;
     --editorial-story-bg: #f8f7f6;
@@ -130,7 +130,6 @@ const validStories = (stories ?? []).filter((s) => s.title);
     font-size: 1.125rem;
     font-weight: 700;
     color: var(--editorial-foreground);
-    text-transform: uppercase;
     letter-spacing: -0.025em;
     margin: 0 0 0.75rem;
   }
@@ -142,7 +141,7 @@ const validStories = (stories ?? []).filter((s) => s.title);
   }
 
   .editorial-name {
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--editorial-foreground);
     text-transform: uppercase;
@@ -150,7 +149,7 @@ const validStories = (stories ?? []).filter((s) => s.title);
   }
 
   .editorial-business {
-    font-size: 0.5625rem;
+    font-size: 0.6875rem;
     font-weight: 700;
     color: var(--editorial-muted);
     text-transform: uppercase;
@@ -165,8 +164,6 @@ const validStories = (stories ?? []).filter((s) => s.title);
     color: var(--editorial-primary);
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    border-left: 4px solid var(--editorial-primary);
-    padding-left: 1rem;
     margin-bottom: 1.5rem;
   }
 
@@ -185,6 +182,7 @@ const validStories = (stories ?? []).filter((s) => s.title);
     font-weight: 500;
     color: var(--editorial-muted);
     margin: 0 0 3rem;
+    max-width: 70ch;
   }
 
   .editorial-stories {
@@ -206,16 +204,15 @@ const validStories = (stories ?? []).filter((s) => s.title);
     font-size: 0.875rem;
     font-weight: 700;
     color: var(--editorial-foreground);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
     margin: 0 0 0.5rem;
   }
 
   .editorial-story p {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     line-height: 1.625;
     color: var(--editorial-muted);
     margin: 0;
+    max-width: 70ch;
   }
 
   .editorial-cta {
@@ -228,7 +225,6 @@ const validStories = (stories ?? []).filter((s) => s.title);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     text-decoration: none;
-    box-shadow: 0 25px 50px -12px rgb(157 34 53 / 15%);
   }
 
   @media (min-width: 768px) {

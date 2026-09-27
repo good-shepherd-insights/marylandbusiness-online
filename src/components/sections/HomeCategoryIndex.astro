@@ -27,7 +27,7 @@ const populated = groups.filter((g) => (g.subcategories ?? []).length > 0);
           <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
             {section.heading}
           </h2>
-          <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed">
+          <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed max-w-[70ch]">
             {section.description}
           </p>
         </div>
@@ -57,7 +57,7 @@ const populated = groups.filter((g) => (g.subcategories ?? []).length > 0);
 
 <style>
   .home-cat-index {
-    --foreground: #555555;
+    --foreground: #404040;
     --card-foreground: #121212;
     --primary: #9d2235;
     --border: #e3e0dc;

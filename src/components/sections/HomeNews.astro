@@ -21,21 +21,15 @@ const TONES = ['tone-primary', 'tone-blue', 'tone-green', 'tone-orange'];
       <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-end mb-10 md:mb-16 gap-8">
           <div class="max-w-2xl">
-            <div class="flex items-center gap-3 mb-4 md:mb-6">
-              <span class="w-8 h-[2px] bg-[var(--primary)]" aria-hidden="true" />
-              <span class="text-[var(--primary)] font-extrabold text-[10px] tracking-[0.2em] uppercase">
-                {news.eyebrow}
-              </span>
-            </div>
             <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
               {news.heading}
             </h2>
-            <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed">
+            <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed max-w-[70ch]">
               {news.description}
             </p>
           </div>
           {news.pulseLabel && (
-            <div class="flex items-center gap-3 text-[10px] font-extrabold text-[var(--secondary)] uppercase tracking-[0.2em]">
+            <div class="flex items-center gap-3 text-[11px] font-extrabold text-[var(--secondary)] uppercase tracking-[0.2em]">
               <span class="relative flex h-2 w-2" aria-hidden="true">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--secondary)] opacity-75" />
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-[var(--secondary)]" />
@@ -97,11 +91,11 @@ const TONES = ['tone-primary', 'tone-blue', 'tone-green', 'tone-orange'];
 
 <style>
   .home-news {
-    --foreground: #555555;
+    --foreground: #404040;
     --card-foreground: #121212;
     --primary: #9d2235;
-    --secondary: #eaaa00;
-    --muted-foreground: #7a7a7a;
+    --secondary: #b48300;
+    --muted-foreground: #525252;
     --border: #e3e0dc;
     font-family: 'Sora Variable', 'Sora', sans-serif;
   }
