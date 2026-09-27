@@ -1,1 +1,0 @@
-import{t as e}from"./store.Df6iuU4Y.js";var t=document.getElementById(`search`);t?.addEventListener(`input`,t=>{let n=t.target;e.set(n.value)}),document.body.addEventListener(`keydown`,function(e){e.key===`k`&&(e.ctrlKey||e.metaKey)&&(e.preventDefault(),t?.focus()),e.key===`Escape`&&(e.preventDefault(),t?.blur())});

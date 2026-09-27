@@ -1,1 +1,0 @@
-import{li as e}from"./constants-CQiAaZVS.afp4XDQ0.js";var t=`variants`,n={locale:`en-US`,namespace:t,resources:()=>e(()=>import(`./resources-CttFu-Y-.DCwksQkR.js`),[])};export{n,t};
