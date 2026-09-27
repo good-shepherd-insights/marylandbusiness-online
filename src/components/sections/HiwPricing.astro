@@ -30,19 +30,19 @@ const { pricing } = Astro.props;
           {(pricing.plans ?? []).map((plan) => (
             <div
               class:list={[
-                'price-card bg-white p-6 md:p-8 flex flex-col',
+                'price-card bg-[#FAF7F2] p-6 md:p-8 flex flex-col',
                 plan.badge ? 'featured-plan relative' : '',
               ]}
             >
               {plan.badge && (
                 <span class="plan-badge">{plan.badge}</span>
               )}
-              <h3 class="text-sm font-extrabold text-[var(--card-foreground)] uppercase tracking-[0.15em] mb-4">{plan.name}</h3>
+              <h3 class="text-sm font-extrabold text-[var(--card-foreground)] tracking-[0.15em] mb-4">{plan.name}</h3>
               <div class="mb-1">
                 <span class="text-4xl font-extrabold text-[var(--card-foreground)]">{plan.price}</span>
                 <span class="text-sm font-bold text-[var(--foreground)]">{plan.period}</span>
               </div>
-              {plan.tagline && <p class="text-xs text-[var(--foreground)] font-medium mb-8">{plan.tagline}</p>}
+              {plan.tagline && <p class="text-xs text-[var(--foreground)] font-medium mb-8 max-w-prose">{plan.tagline}</p>}
               {plan.ctaLabel && (
                 <a href="#" class="btn-outline-dark text-center px-6 py-4 mb-8">{plan.ctaLabel}</a>
               )}
@@ -81,10 +81,10 @@ const { pricing } = Astro.props;
 
 <style>
   .hiw-pricing {
-    --foreground: #555555;
+    --foreground: #404040;
     --card-foreground: #121212;
     --primary: #9d2235;
-    --secondary: #eaaa00;
+    --secondary: #855b00;
     --border: #e3e0dc;
     font-family: 'Sora Variable', 'Sora', sans-serif;
   }
@@ -101,7 +101,7 @@ const { pricing } = Astro.props;
     transform: translateX(-50%);
     background: var(--primary);
     color: #fff;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.2em;
