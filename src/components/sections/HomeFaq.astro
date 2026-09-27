@@ -27,7 +27,7 @@ const { faq } = Astro.props;
           <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
             {faq.heading}
           </h2>
-          <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed">
+          <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed max-w-[70ch]">
             {faq.description}
           </p>
         </div>
@@ -73,12 +73,15 @@ const { faq } = Astro.props;
     font-family: 'Sora Variable', 'Sora', sans-serif;
   }
   .faq-answer {
-    max-height: 0;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+  .faq-answer > * {
     overflow: hidden;
-    transition: max-height 0.3s ease;
   }
   .faq-item.open .faq-answer {
-    max-height: 500px;
+    grid-template-rows: 1fr;
   }
   .faq-item.open :global(.faq-chevron) {
     transform: rotate(180deg);
