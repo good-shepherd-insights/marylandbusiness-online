@@ -19,11 +19,6 @@ const { faq } = Astro.props;
     <section id="home-faq" class="home-faq py-20 md:py-32 px-4 md:px-12 bg-[#FAF7F2] border-t border-[var(--border)]">
       <div class="max-w-4xl mx-auto">
         <div class="mb-10 md:mb-16">
-          {faq.eyebrow && (
-            <span class="text-[var(--primary)] font-extrabold text-[10px] tracking-[0.2em] uppercase mb-4 md:mb-6 block">
-              {faq.eyebrow}
-            </span>
-          )}
           <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
             {faq.heading}
           </h2>

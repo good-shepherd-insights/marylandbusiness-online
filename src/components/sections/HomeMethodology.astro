@@ -17,11 +17,6 @@ const { methodology } = Astro.props;
     <section id="trust-logic" class="home-methodology py-16 md:py-24 px-4 md:px-12 bg-white">
       <div class="max-w-5xl mx-auto">
         <div class="text-center mb-12 md:mb-20">
-          {methodology.eyebrow && (
-            <span class="text-[var(--primary)] font-extrabold text-[10px] tracking-[0.2em] uppercase mb-4 md:mb-6 block">
-              {methodology.eyebrow}
-            </span>
-          )}
           <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
             {methodology.heading}
           </h2>
@@ -37,9 +32,9 @@ const { methodology } = Astro.props;
                 {i + 1}
               </div>
               <div>
-                <h4 class="font-extrabold text-[var(--card-foreground)] uppercase tracking-widest mb-3">
+                <h3 class="font-extrabold text-[var(--card-foreground)] uppercase tracking-widest mb-3">
                   {step.title}
-                </h4>
+                </h3>
                 {step.body && (
                   <p class="text-sm text-[var(--foreground)] leading-relaxed">{step.body}</p>
                 )}
