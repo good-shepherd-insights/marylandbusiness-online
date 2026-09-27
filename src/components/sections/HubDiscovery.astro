@@ -48,6 +48,13 @@ function stars(rating: number) {
 
 /** Row-level filter stamps: the category axis value is the parent category
  * when present, else the subcategory itself. */
+/** Detail path for a row: /{county}/{city}/{business} — only when the
+ * row carries full geo data. */
+const detailHref = (b: HubBusiness) =>
+  b.county?.slug && b.city?.slug && b.slug?.current
+    ? `/${b.county.slug}/${b.city.slug}/${b.slug.current}`
+    : null;
+
 const rowAttrs = (b: HubBusiness) => ({
   'data-row': true,
   'data-id': b._id,
@@ -57,6 +64,7 @@ const rowAttrs = (b: HubBusiness) => ({
   'data-cat': b.subcategory?.parent?.slug || b.subcategory?.slug || '',
   'data-cat-label': b.subcategory?.parent?.name || b.subcategory?.name || '',
   'data-sub': b.subcategory?.slug ?? '',
+  'data-slug': b.slug?.current ?? '',
 });
 ---
 
@@ -126,15 +134,17 @@ const rowAttrs = (b: HubBusiness) => ({
         )}
       </div>
       <div class="hidden px-3 pb-3 flex-wrap gap-2" data-chips-mobile></div>
-      <div class="hidden border-t border-[var(--border)] p-3" data-cat-menu-mobile></div>
-      <div class="hidden border-t border-[var(--border)] p-3" data-county-menu-mobile></div>
+      <div class="hidden border-t border-[var(--border)] p-3 max-h-[50vh] overflow-y-auto custom-scrollbar" data-cat-menu-mobile></div>
+      <div class="hidden border-t border-[var(--border)] p-3 max-h-[50vh] overflow-y-auto custom-scrollbar" data-county-menu-mobile></div>
     </div>
 
     <!-- Desktop filter header (design 10, user-stated 2026-09-27: Category + County dropdowns, no price/open/verified) -->
     <div class="hidden lg:block p-6 border-b border-[var(--border)] shrink-0">
       <div class="flex items-center justify-between mb-6">
         {discovery.browseHeading && (
-          <h2 class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--card-foreground)]">{discovery.browseHeading}</h2>
+          <h2 class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--card-foreground)]">
+            {discovery.browseHeading} <span class="text-[var(--muted-foreground)]" data-count>0</span>
+          </h2>
         )}
         {discovery.clearFiltersLabel && (
           <button type="button" data-clear class="text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest">{discovery.clearFiltersLabel}</button>
@@ -173,18 +183,22 @@ const rowAttrs = (b: HubBusiness) => ({
           <article class="business-list-item p-4 lg:p-6" data-biz={b._id} {...attrs}>
             <div class="flex gap-4 lg:gap-6">
               {b.imageUrl && (
-                <div class="w-20 h-20 lg:w-24 lg:h-24 shrink-0 bg-[#F8F7F6] overflow-hidden border border-[var(--border)]">
+                <a href={detailHref(b)} class="w-20 h-20 lg:w-24 lg:h-24 shrink-0 bg-[#F8F7F6] overflow-hidden border border-[var(--border)] block">
                   <img
                     class="w-full h-full object-cover grayscale lg:grayscale-0"
                     src={b.imageUrl}
                     alt={b.image?.alt ?? b.name ?? ''}
                     loading="lazy"
                   />
-                </div>
+                </a>
               )}
               <div class="flex-1 min-w-0">
                 <div class="flex justify-between items-start mb-1 lg:mb-2 gap-2">
-                  {b.name && <h3 class="text-xs lg:text-sm font-extrabold text-[var(--card-foreground)] uppercase tracking-tight truncate">{b.name}</h3>}
+                  {b.name && (
+                    <a href={detailHref(b)} class="text-xs lg:text-sm font-extrabold text-[var(--card-foreground)] uppercase tracking-tight truncate hover:text-[var(--primary)]">
+                      {b.name}
+                    </a>
+                  )}
                 </div>
                 {b.reviewCount > 0 && (
                   <div class="flex items-center gap-2 mb-2 lg:mb-3">
@@ -222,6 +236,7 @@ const rowAttrs = (b: HubBusiness) => ({
         );
       })}
       <div data-empty hidden class="p-10 text-center">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-4" data-empty-labels></p>
         <button type="button" data-empty-clear class="btn-outline px-6 py-3">{discovery.clearFiltersLabel}</button>
       </div>
     </div>
@@ -408,6 +423,7 @@ const rowAttrs = (b: HubBusiness) => ({
       const params = chipsToParams().toString();
       if (params === lastParams) return;
       lastParams = params;
+      list?.setAttribute('data-loading', '');
       try {
         const res = await fetch(`/api/directory.json?${params}`);
         if (!res.ok) return;
@@ -416,6 +432,9 @@ const rowAttrs = (b: HubBusiness) => ({
         renderCities(data.cities);
       } catch (err) {
         console.error('[hub] widen failed', err);
+      } finally {
+        list?.removeAttribute('data-loading');
+        apply();
       }
     }
 
@@ -432,27 +451,52 @@ const rowAttrs = (b: HubBusiness) => ({
       el.dataset.cat = b.subcategory?.parent?.slug || b.subcategory?.slug || '';
       el.dataset.catLabel = b.subcategory?.parent?.name || b.subcategory?.name || '';
       el.dataset.sub = b.subcategory?.slug ?? '';
+      el.dataset.slug = b.slug?.current ?? '';
+      const href = b.county?.slug && b.city?.slug && b.slug?.current ? `/${b.county.slug}/${b.city.slug}/${b.slug.current}` : null;
       const wrap = document.createElement('div');
       wrap.className = 'flex gap-4 lg:gap-6';
       if (b.imageUrl) {
         const imgBox = document.createElement('div');
         imgBox.className = 'w-20 h-20 lg:w-24 lg:h-24 shrink-0 bg-[#F8F7F6] overflow-hidden border border-[var(--border)]';
-        const img = document.createElement('img');
-        img.className = 'w-full h-full object-cover grayscale lg:grayscale-0';
-        img.src = b.imageUrl;
-        img.alt = b.image?.alt ?? b.name ?? '';
-        img.loading = 'lazy';
-        imgBox.append(img);
+        if (href) {
+          const a = document.createElement('a');
+          a.href = href;
+          a.className = 'block w-full h-full';
+          const img = document.createElement('img');
+          img.className = 'w-full h-full object-cover grayscale lg:grayscale-0';
+          img.src = b.imageUrl;
+          img.alt = b.image?.alt ?? b.name ?? '';
+          img.loading = 'lazy';
+          a.append(img);
+          imgBox.append(a);
+        } else {
+          const img = document.createElement('img');
+          img.className = 'w-full h-full object-cover grayscale lg:grayscale-0';
+          img.src = b.imageUrl;
+          img.alt = b.image?.alt ?? b.name ?? '';
+          img.loading = 'lazy';
+          imgBox.append(img);
+        }
         wrap.append(imgBox);
       }
       const body = document.createElement('div');
       body.className = 'flex-1 min-w-0';
       const head = document.createElement('div');
       head.className = 'flex justify-between items-start mb-1 lg:mb-2 gap-2';
-      const h3 = document.createElement('h3');
-      h3.className = 'text-xs lg:text-sm font-extrabold text-[var(--card-foreground)] uppercase tracking-tight truncate';
-      h3.textContent = b.name ?? '';
-      head.append(h3);
+      if (b.name) {
+        const h3 = document.createElement('h3');
+        h3.className = 'text-xs lg:text-sm font-extrabold text-[var(--card-foreground)] uppercase tracking-tight truncate';
+        if (href) {
+          const a = document.createElement('a');
+          a.href = href;
+          a.className = 'hover:text-[var(--primary)]';
+          a.textContent = b.name;
+          h3.append(a);
+        } else {
+          h3.textContent = b.name;
+        }
+        head.append(h3);
+      }
       body.append(head);
       if (b.reviewCount > 0 && b.rating > 0 && iconCache.has('star-full')) {
         const ratingRow = document.createElement('div');
@@ -682,6 +726,10 @@ const rowAttrs = (b: HubBusiness) => ({
         if (show) { visible += 1; visibleIds.add(el.dataset.id ?? ''); }
       }
       if (empty) empty.hidden = visible > 0;
+      const count = String(visible);
+      for (const el of root.querySelectorAll<HTMLElement>('[data-count]')) el.textContent = count;
+      const emptyLabels = root.querySelector<HTMLElement>('[data-empty-labels]');
+      if (emptyLabels) emptyLabels.textContent = chips.map((c) => c.label).join(' \u00b7 ');
       syncPins();
     }
 
@@ -747,6 +795,14 @@ const rowAttrs = (b: HubBusiness) => ({
     }
     function syncPins() {
       for (const [id, marker] of markers) marker.setMap(visibleIds.has(id) ? map : null);
+      if (!map) return;
+      const google = (window as unknown as { google?: MapsGoogle }).google;
+      if (!google) return;
+      const visible = [...points.values()].filter((p) => visibleIds.has(p.id));
+      if (visible.length === 0) return;
+      const bounds = new google.maps.LatLngBounds();
+      for (const p of visible) bounds.extend({ lat: p.lat, lng: p.lng });
+      map.fitBounds(bounds, 64);
     }
 
     function ensureMap(): Promise<void> {
@@ -924,6 +980,11 @@ const rowAttrs = (b: HubBusiness) => ({
   }
   /* Row content classes must match client-rendered rows too (renderRow
    * creates nodes without the scoped-CID attribute) — hence :global. */
+  .hub-list[data-loading] {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
   .hub-list :global(.business-list-item) {
     border-bottom: 1px solid var(--border);
     cursor: pointer;
