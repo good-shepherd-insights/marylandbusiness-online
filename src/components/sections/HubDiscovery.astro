@@ -86,13 +86,13 @@ const rowAttrs = (b: HubBusiness) => ({
         )}
       </div>
       {discovery.regionFocusHeading && hub.cities.length > 0 && (
-        <div class="region-focus hidden lg:block bg-white border border-[var(--border)] p-4 w-64 shadow-xl">
-          <h4 class="text-[10px] font-extrabold uppercase tracking-widest mb-4 border-b pb-2">{discovery.regionFocusHeading}</h4>
+        <div class="region-focus hidden lg:block bg-white border border-[var(--border)] p-4 w-64">
+          <h4 class="text-[11px] font-extrabold uppercase tracking-widest mb-4 border-b pb-2">{discovery.regionFocusHeading}</h4>
           <div class="space-y-3" data-city-list>
             {hub.cities.map((city) => (
               <label class="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked data-city-check={city.slug} class="accent-[var(--primary)]" />
-                <span class="text-[10px] font-bold uppercase">{city.name} ({city.count})</span>
+                <span class="text-[11px] font-bold uppercase">{city.name} ({city.count})</span>
               </label>
             ))}
           </div>
@@ -195,7 +195,7 @@ const rowAttrs = (b: HubBusiness) => ({
               <div class="flex-1 min-w-0">
                 <div class="flex justify-between items-start mb-1 lg:mb-2 gap-2">
                   {b.name && (
-                    <a href={detailHref(b)} class="text-xs lg:text-sm font-extrabold text-[var(--card-foreground)] uppercase tracking-tight truncate hover:text-[var(--primary)]">
+                    <a href={detailHref(b)} class="text-xs lg:text-sm font-extrabold text-[var(--card-foreground)] tracking-tight truncate hover:text-[var(--primary)]">
                       {b.name}
                     </a>
                   )}
@@ -206,16 +206,16 @@ const rowAttrs = (b: HubBusiness) => ({
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Icon
                           name={i < s.full ? 'tabler:star' : i === s.full && s.half ? 'tabler:star-half' : 'tabler:star'}
-                          class={`w-[10px] lg:w-[11px] h-[10px] lg:h-[11px] ${i < s.full || (i === s.full && s.half) ? 'star-full' : 'star-empty'}`}
+                          class={`w-[11px] lg:w-[12px] h-[11px] lg:h-[12px] ${i < s.full || (i === s.full && s.half) ? 'star-full' : 'star-empty'}`}
                         />
                       ))}
                     </div>
-                    <span class="text-[8px] lg:text-[9px] font-bold uppercase text-[var(--muted-foreground)] tracking-widest">
+                    <span class="text-[11px] font-bold text-[var(--muted-foreground)] tracking-widest">
                       {b.rating.toFixed(1)} ({b.reviewCount})
                     </span>
                   </div>
                 )}
-                {b.description && <p class="text-[10px] lg:text-[11px] text-[var(--foreground)] mb-3 lg:mb-4 line-clamp-2 leading-relaxed">{b.description}</p>}
+                {b.description && <p class="text-[11px] lg:text-[12px] text-[var(--foreground)] mb-3 lg:mb-4 line-clamp-2 leading-relaxed max-w-prose">{b.description}</p>}
                 <div class="flex gap-2">
                   {b.ctaPrimaryLabel && b.ctaPrimaryUrl && (
                     <a class="btn-primary flex-1 py-2.5" href={b.ctaPrimaryUrl}>{b.ctaPrimaryLabel}</a>
@@ -226,7 +226,7 @@ const rowAttrs = (b: HubBusiness) => ({
                       href={`tel:${b.phone.replace(/[^0-9+]/g, '')}`}
                       aria-label={b.name}
                     >
-                      <Icon name="tabler:phone" class="w-[10px] h-[10px]" />
+                      <Icon name="tabler:phone" class="w-[11px] h-[11px]" />
                     </a>
                   )}
                 </div>
@@ -236,19 +236,19 @@ const rowAttrs = (b: HubBusiness) => ({
         );
       })}
       <div data-empty hidden class="p-10 text-center">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-4" data-empty-labels></p>
+        <p class="text-[11px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] mb-4" data-empty-labels></p>
         <button type="button" data-empty-clear class="btn-outline px-6 py-3">{discovery.clearFiltersLabel}</button>
       </div>
     </div>
 
     {discovery.expertiseHeading && (discovery.expertiseStats?.length ?? 0) > 0 && (
       <div class="p-6 bg-[#F3EFE8] border-t border-[var(--border)] shrink-0">
-        <h4 class="text-[9px] lg:text-[10px] font-extrabold uppercase tracking-[0.2em] mb-4 text-[var(--primary)]">{discovery.expertiseHeading}</h4>
+        <h4 class="text-[11px] font-extrabold uppercase tracking-[0.2em] mb-4 text-[var(--primary)]">{discovery.expertiseHeading}</h4>
         <div class="flex flex-col gap-2 lg:grid lg:grid-cols-2 lg:gap-4">
           {discovery.expertiseStats!.map((stat) => (
             <div class="flex items-center justify-between gap-4 p-3 lg:block bg-white border border-[var(--border)]">
-              <span class="block text-[8px] lg:text-[10px] font-extrabold uppercase tracking-widest text-[var(--muted-foreground)] lg:text-[var(--card-foreground)] lg:mb-1">{stat.label}</span>
-              <span class="block text-[9px] lg:text-xs font-bold text-[var(--card-foreground)] text-right lg:text-left">{stat.value}</span>
+              <span class="block text-[11px] font-extrabold uppercase tracking-widest text-[var(--card-foreground)] lg:mb-1">{stat.label}</span>
+              <span class="block text-[11px] lg:text-xs font-bold text-[var(--card-foreground)] text-right lg:text-left">{stat.value}</span>
             </div>
           ))}
         </div>
