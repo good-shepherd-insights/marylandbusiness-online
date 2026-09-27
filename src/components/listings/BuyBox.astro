@@ -65,7 +65,7 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
           {listing.priceRange && <div class="text-2xl font-extrabold text-[var(--card-foreground)]">{listing.priceRange}</div>}
           {today && (
             <div class="flex flex-col items-end">
-              <span class={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${isOpen ? 'text-green-600' : 'text-[var(--primary)]'}`}>
+              <span class={`flex items-center gap-2 text-[11px] font-bold ${isOpen ? 'text-green-600' : 'text-[var(--primary)]'}`}>
                 {isOpen && (
                   <span class="relative flex h-2 w-2">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
@@ -74,7 +74,7 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
                 )}
                 {isOpen ? listing.openNowLabel : listing.closedLabel}
               </span>
-              <span class="text-[8px] font-bold text-[var(--foreground)] uppercase mt-1">
+              <span class="text-[11px] font-bold text-[var(--foreground)] mt-1">
                 {isOpen ? `${listing.closesAtLabel} ${fmtTime(today.closes)}` : `${listing.opensAtLabel} ${fmtTime(today.opens)}`}
               </span>
             </div>
@@ -104,7 +104,7 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
               <Icon name="tabler:phone" class="w-3 h-3" />
             </div>
             <div>
-              <span class="block text-[8px] font-bold uppercase tracking-widest text-[var(--foreground)] mb-1">{listing.phoneLabel}</span>
+              <span class="block text-[11px] font-bold text-[var(--foreground)] mb-1">{listing.phoneLabel}</span>
               <a class="block text-[13px] font-extrabold text-[var(--card-foreground)]" href={`tel:${listing.phone.replace(/[^0-9+]/g, '')}`}>
                 {listing.phone}
               </a>
@@ -117,7 +117,7 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
               <Icon name="tabler:world" class="w-3 h-3" />
             </div>
             <div>
-              <span class="block text-[8px] font-bold uppercase tracking-widest text-[var(--foreground)] mb-1">{listing.websiteLabel}</span>
+              <span class="block text-[11px] font-bold text-[var(--foreground)] mb-1">{listing.websiteLabel}</span>
               <a class="block text-[13px] font-extrabold text-[var(--card-foreground)]" href={listing.website}>
                 {websiteLabel}
               </a>
@@ -130,14 +130,14 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
               <Icon name="tabler:map-pin" class="w-3 h-3" />
             </div>
             <div>
-              <span class="block text-[8px] font-bold uppercase tracking-widest text-[var(--foreground)] mb-1">{listing.addressLabel}</span>
+              <span class="block text-[11px] font-bold text-[var(--foreground)] mb-1">{listing.addressLabel}</span>
               <span class="block text-[13px] font-extrabold text-[var(--card-foreground)] leading-relaxed">
                 {listing.address.street}
                 <br />
                 {[listing.address.city, listing.address.region, listing.address.postalCode].filter(Boolean).join(', ')}
               </span>
               {listing.directionsUrl && (
-                <a class="block text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest mt-2" href={listing.directionsUrl}>
+                <a class="block text-[11px] font-bold text-[var(--primary)] mt-2" href={listing.directionsUrl}>
                   {listing.directionsLabel}
                 </a>
               )}
@@ -149,14 +149,14 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
       {(listing.taxStatus || listing.licenseNumber || listing.lastAudit) && (
         <div class="mt-4 pt-4 border-t border-[var(--border)] opacity-60">
           <div class="flex items-center justify-between mb-4">
-            <h5 class="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[var(--card-foreground)]">
+            <h5 class="text-[11px] font-extrabold text-[var(--card-foreground)]">
               {listing.verificationHeading}
             </h5>
             <Icon name="tabler:shield-check" class="w-3 h-3 text-[var(--primary)]" />
           </div>
           <div class="space-y-2">
             {listing.taxStatus && (
-              <div class="flex justify-between text-[8px] font-bold uppercase">
+              <div class="flex justify-between text-[11px] font-bold">
                 <span class="text-[var(--foreground)]">{listing.taxStatusLabel}</span>
                 <span class={listing.taxStatus === 'active' ? 'text-green-600' : 'text-[var(--primary)]'}>
                   {taxTitle}
@@ -164,13 +164,13 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
               </div>
             )}
             {listing.licenseNumber && (
-              <div class="flex justify-between text-[8px] font-bold uppercase">
+              <div class="flex justify-between text-[11px] font-bold">
                 <span class="text-[var(--foreground)]">{listing.licenseLabel}</span>
                 <span class="text-[var(--card-foreground)]">{listing.licenseNumber}</span>
               </div>
             )}
             {listing.lastAudit && (
-              <div class="flex justify-between text-[8px] font-bold uppercase">
+              <div class="flex justify-between text-[11px] font-bold">
                 <span class="text-[var(--foreground)]">{listing.lastAuditLabel}</span>
                 <span class="text-[var(--card-foreground)]">{dateFmt.format(new Date(listing.lastAudit))}</span>
               </div>
