@@ -497,14 +497,15 @@ function hubForIndex(index: DirectoryIndex, path: string): HubView | undefined {
   const rows = index.listingsByPath.get(path) ?? [];
   return {
     state,
-    hub: hubDataOf(state.label, rows),
+    hub: hubDataOf(index, state.label, rows),
     filters: pathFiltersOf(state, rows),
   };
 }
 
-/** Real header stats, computed from the rows — never stored, never faked:
- * listings in scope, distinct cities, and the directory-wide total. */
-function hubDataOf(label: string, rows: DirectoryRow[]): HubData {
+/** Real header stats, computed from the index every request — never
+ * stored, never faked: listings in scope, distinct cities, directory
+ * total. Keys match the client-side recomputation in HubDiscovery. */
+function hubDataOf(index: DirectoryIndex, label: string, rows: DirectoryRow[]): HubData {
   const cities = citiesOf(rows);
   return {
     label,
@@ -513,6 +514,7 @@ function hubDataOf(label: string, rows: DirectoryRow[]): HubData {
     stats: [
       {value: String(rows.length), label: 'Listings'},
       {value: String(cities.length), label: 'Cities'},
+      {value: String(index.rows.length), label: 'Total'},
     ],
   };
 }
@@ -533,7 +535,7 @@ export async function getGlobalHubView(): Promise<HubView> {
   };
   return {
     state,
-    hub: {label: state.label, businesses: index.rows.map(toHubBusiness), cities: citiesOf(index.rows)},
+    hub: hubDataOf(index, state.label, index.rows),
     filters: [],
   };
 }
