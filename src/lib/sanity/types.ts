@@ -536,6 +536,9 @@ export interface HubData {
   label: string;
   businesses: HubBusiness[];
   cities: HubCity[];
+  /** Real, computed header stats (listing counts) — replaces the CMS
+   * demo numbers in the header stat blocks. */
+  stats: { value: string; label: string }[];
 }
 
 export interface HubCity {

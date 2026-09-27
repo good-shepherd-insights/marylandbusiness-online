@@ -44,7 +44,7 @@ const validParagraphs = (paragraphs ?? []).filter(Boolean);
   .origin {
     --origin-primary: #9d2235;
     --origin-foreground: #121212;
-    --origin-muted: #555555;
+    --origin-muted: #404040;
     --origin-border: #e3e0dc;
     --origin-background: #faf7f2;
 
@@ -77,8 +77,6 @@ const validParagraphs = (paragraphs ?? []).filter(Boolean);
     color: var(--origin-primary);
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    border-left: 4px solid var(--origin-primary);
-    padding-left: 1rem;
     margin-bottom: 1.5rem;
   }
 
@@ -97,6 +95,7 @@ const validParagraphs = (paragraphs ?? []).filter(Boolean);
     font-weight: 500;
     color: var(--origin-muted);
     margin: 0 0 1.5rem;
+    max-width: 70ch;
   }
 
   @media (min-width: 768px) {

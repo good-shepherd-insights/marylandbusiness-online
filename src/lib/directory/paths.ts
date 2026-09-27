@@ -497,8 +497,23 @@ function hubForIndex(index: DirectoryIndex, path: string): HubView | undefined {
   const rows = index.listingsByPath.get(path) ?? [];
   return {
     state,
-    hub: {label: state.label, businesses: rows.map(toHubBusiness), cities: citiesOf(rows)},
+    hub: hubDataOf(state.label, rows),
     filters: pathFiltersOf(state, rows),
+  };
+}
+
+/** Real header stats, computed from the rows — never stored, never faked:
+ * listings in scope, distinct cities, and the directory-wide total. */
+function hubDataOf(label: string, rows: DirectoryRow[]): HubData {
+  const cities = citiesOf(rows);
+  return {
+    label,
+    businesses: rows.map(toHubBusiness),
+    cities,
+    stats: [
+      {value: String(rows.length), label: 'Listings'},
+      {value: String(cities.length), label: 'Cities'},
+    ],
   };
 }
 
