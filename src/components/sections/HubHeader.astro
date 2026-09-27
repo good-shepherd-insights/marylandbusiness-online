@@ -45,7 +45,6 @@ const hasContent = Boolean(header.breadcrumbRoot || header.liveBadgeLabel || lab
             {header.liveBadgeLabel && (
               <div class="hub-live-badge" role="status" aria-label={`${header.liveBadgeLabel} — directory is active`}>
                 <span class="hub-live-dot" aria-hidden="true">
-                  <span class="hub-live-dot-ping" />
                   <span class="hub-live-dot-core" />
                 </span>
                 <span class="hub-live-label">{header.liveBadgeLabel}</span>
@@ -173,9 +172,6 @@ const hasContent = Boolean(header.breadcrumbRoot || header.liveBadgeLabel || lab
     flex-shrink: 0;
   }
 
-  .hub-live-dot-ping {
-    display: none;
-  }
 
   .hub-live-dot-core {
     position: relative;

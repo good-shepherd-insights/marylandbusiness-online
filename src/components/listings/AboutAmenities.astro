@@ -19,7 +19,7 @@ const amenities = (listing.amenities ?? []).filter((a) => a.label);
   (hasAbout || amenities.length > 0) && (
     <section id="about">
       {listing.aboutHeading && (
-        <h2 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-widest mb-6 border-l-4 border-[var(--primary)] pl-6">
+        <h2 class="text-xl font-extrabold text-[var(--card-foreground)] mb-6">
           {listing.aboutHeading}
         </h2>
       )}

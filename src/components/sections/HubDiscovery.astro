@@ -91,6 +91,7 @@ const rowAttrs = (b: HubBusiness) => ({
   data-defaults={JSON.stringify(filters)}
   data-counties={JSON.stringify(counties)}
   data-categories={JSON.stringify(categories)}
+  data-initial-stats={JSON.stringify(hub.stats)}
 >
   <!-- Map pane -->
   <section
@@ -580,6 +581,22 @@ const rowAttrs = (b: HubBusiness) => ({
     }
 
     let lastParams = chipsToParams().toString();
+    // Live header stats: rewrite the three [data-stat] tiles on every
+    // successful widen so Listings / Cities track scope live.
+    const initialStats: { value: string; label: string }[] = (() => {
+      try { return JSON.parse(root.dataset.initialStats ?? '[]'); } catch { return []; }
+    })();
+    function writeStat(index: number, value: string) {
+      const el = root.querySelector<HTMLElement>(`[data-stat="${index}"]`);
+      if (el) el.textContent = value;
+    }
+    function recomputeStatsFromRows(rows: BizRow[]) {
+      const cities = new Set<string>();
+      for (const r of rows) if (r.city?.slug) cities.add(r.city.slug);
+      writeStat(0, String(rows.length));
+      writeStat(1, String(cities.size));
+      if (initialStats[2]) writeStat(2, initialStats[2].value);
+    }
 
     async function widen() {
       const params = chipsToParams().toString();
@@ -597,6 +614,7 @@ const rowAttrs = (b: HubBusiness) => ({
         const data = (await res.json()) as { businesses: BizRow[]; cities: { name: string; slug: string; count: number }[] };
         renderRows(data.businesses);
         renderCities(data.cities);
+        recomputeStatsFromRows(data.businesses);
       } catch (err) {
         console.error('[hub] widen failed', err);
         /* E-1: visible error banner */
