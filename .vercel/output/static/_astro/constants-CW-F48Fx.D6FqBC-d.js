@@ -1,1 +1,0 @@
-import{n as e}from"./constants-CQiAaZVS.afp4XDQ0.js";import{t}from"./Compose.BZk0VbUj.js";var n=t,r=`presentation`,i=5e3,a=3e3,o=15e3,s=e,c=1e3,l=3e4,u=1e3;export{o as a,u as c,l as i,i as l,n,a as o,r,c as s,s as t};

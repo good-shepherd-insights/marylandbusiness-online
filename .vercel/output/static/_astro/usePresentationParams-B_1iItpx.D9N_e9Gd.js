@@ -1,1 +1,0 @@
-import{r as e}from"./rolldown-runtime.hePW80VL.js";import{n as t}from"./react-dom.BP1V3QUn.js";import{wt as n}from"./_singletons.C8th1npy.js";var r=e(t(),1);function i(e){let t=e===void 0||e,i=(0,r.useContext)(n);if(t&&!i)throw Error(`Presentation params context is missing`);return i}export{i as t};

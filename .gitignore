@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # impeccable audit cache
 .impeccable/
+
+# Vercel build output — never ship prebuilt artifacts; let Vercel run `pnpm build`
+.vercel/
