@@ -6,7 +6,7 @@ import { PortableText } from "astro-portabletext";
 import Listing from "@layouts/Listing.astro";
 import Landing from "@layouts/Landing.astro";
 import { getListing, getHomePage, getAboutPage, getSiteSettings, getDirectoryPage } from "@lib/sanity/queries";
-import { getCountyOptions, getGlobalHubView } from "@lib/directory/paths";
+import { directoryOptionHrefs, getCategoryOptions, getCountyOptions, getGlobalHubView } from "@lib/directory/paths";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import HubHeader from "@components/sections/HubHeader.astro";
 import HubDiscovery from "@components/sections/HubDiscovery.astro";
@@ -53,7 +53,15 @@ const MdxContent = pageEntry ? (await render(pageEntry)).Content : null;
 const afParam = !slug ? Astro.url.searchParams.get("af") : null;
 const globalHub = !slug && afParam ? await getGlobalHubView() : undefined;
 const hubDirectoryPage = globalHub ? await getDirectoryPage(perspectiveCookie) : undefined;
-const hubCounties = globalHub ? await getCountyOptions() : undefined;
+const [hubCounties, hubCategories] = globalHub
+  ? await Promise.all([getCountyOptions(), getCategoryOptions()])
+  : [undefined, undefined];
+const homeCountyData = !slug && home?.countyHubs
+  ? await (async () => {
+      const counties = await getCountyOptions();
+      return { counties, hrefs: (await directoryOptionHrefs(counties, [])).counties };
+    })()
+  : undefined;
 
 if (!listing && !MdxContent && !about && !globalHub) {
   // No dedicated /404 route exists; return the status directly so crawlers
@@ -101,7 +109,7 @@ if (!listing && !MdxContent && !about) {
         >
           {settings && <Navbar settings={settings} />}
           <HubHeader header={hubDirectoryPage.hubHeader!} label={globalHub.hub.label} />
-          <HubDiscovery discovery={hubDirectoryPage.hubDiscovery!} hub={globalHub.hub} filters={globalHub.filters} counties={hubCounties} />
+          <HubDiscovery discovery={hubDirectoryPage.hubDiscovery!} hub={globalHub.hub} filters={globalHub.filters} counties={hubCounties} categories={hubCategories} />
           {settings && <Footer settings={settings} />}
         </div>
       </BaseLayout>
@@ -117,7 +125,7 @@ if (!listing && !MdxContent && !about) {
       <BaseLayout>
         {home.hero && <Hero hero={home.hero} />}
         {settings && <Navbar settings={settings} />}
-        {home.countyHubs && <CountyHubs countyHubs={home.countyHubs} />}
+        {home.countyHubs && <CountyHubs countyHubs={home.countyHubs} counties={homeCountyData?.counties ?? []} countyHrefs={homeCountyData?.hrefs ?? {}} />}
         {home.featuredBusinesses && <FeaturedBusinesses featuredBusinesses={home.featuredBusinesses} />}
         {home.editorial && <Editorial editorial={home.editorial} />}
         {home.socialFeed && <SocialFeed socialFeed={home.socialFeed} />}

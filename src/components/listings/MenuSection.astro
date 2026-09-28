@@ -72,14 +72,14 @@ function chipClass(item: MenuItem) {
                 )}
                 <div class="flex-1">
                   <div class="flex justify-between items-start mb-1">
-                    <h4 class="text-sm font-extrabold uppercase tracking-tight">{item.name}</h4>
+                    <h3 class="text-sm font-extrabold uppercase tracking-tight">{item.name}</h3>
                     {item.price != null && (
                       <span class="text-sm font-extrabold text-[var(--primary)]">${item.price}</span>
                     )}
                   </div>
                   <p class="text-xs text-[var(--foreground)] leading-relaxed">{item.description}</p>
                   {item.badge && (
-                    <span class={`inline-block mt-2 text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 ${chipClass(item)}`}>
+                    <span class={`inline-block mt-2 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 ${chipClass(item)}`}>
                       {badgeLabel[item.badge] ?? item.badge}
                     </span>
                   )}

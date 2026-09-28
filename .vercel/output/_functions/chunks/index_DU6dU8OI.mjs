@@ -1,13 +1,13 @@
 import { r as __exportAll } from "./rolldown-runtime_DWOOXAbm.mjs";
-import { N as createAstro, b as renderTemplate, f as renderComponent, x as maybeRenderHead } from "./jsx-runtime_CgLb4yc8.mjs";
+import { N as createAstro, b as renderTemplate, f as renderComponent, m as Fragment, x as maybeRenderHead } from "./jsx-runtime_CgLb4yc8.mjs";
 import { t as createComponent } from "./astro-component_D1QvgdDd.mjs";
 import "./page-ssr_CDjLlKbJ.mjs";
 import "./compiler_DxiFqWHW.mjs";
-import { t as $$BaseLayout } from "./BaseLayout_D7NwmmmV.mjs";
+import { t as $$BaseLayout } from "./BaseLayout_Cjk47rbK.mjs";
 import { a as getDirectoryPage, f as getSiteSettings } from "./queries_BlgXXG8z.mjs";
-import { n as $$Navbar, t as $$Footer } from "./sora_B4VQ4_VB.mjs";
+import { n as $$Navbar, t as $$Footer } from "./sora_YXIr58-4.mjs";
 import { c as resolveDirectoryPath, n as getCategoryOptions, r as getCountyOptions } from "./paths_PJNqNWPZ.mjs";
-import { n as $$HubDiscovery, r as $$HubHeader, t as $$HubBasic } from "./HubBasic_DOjFtIf5.mjs";
+import { n as $$HubDiscovery, r as $$HubHeader, t as $$HubBasic } from "./HubBasic_Cqv7cVFq.mjs";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
 //#region src/pages/[category]/[subcategory]/[county]/[city]/index.astro
 var _city__exports = /* @__PURE__ */ __exportAll({
@@ -26,7 +26,7 @@ var $$Index = createComponent(async ($$result, $$props, $$slots) => {
 	const dir = await resolveDirectoryPath(`${category}/${subcategory}/${county}/${city}`);
 	const view = dir?.kind === "open" ? dir.view : void 0;
 	const directoryPage = view ? await getDirectoryPage(perspectiveCookie) : void 0;
-	const hasChrome = Boolean(view && directoryPage?.hubHeader && directoryPage.hubDiscovery);
+	Boolean(view && directoryPage?.hubHeader && directoryPage.hubDiscovery);
 	if (dir?.kind === "narrow" || dir?.kind === "invalid") return new Response(null, {
 		status: 301,
 		headers: { Location: dir.redirectTo }
@@ -35,7 +35,7 @@ var $$Index = createComponent(async ($$result, $$props, $$slots) => {
 		status: 301,
 		headers: { Location: "/" }
 	});
-	return renderTemplate`${hasChrome && view ? renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, {
+	return renderTemplate`${renderTemplate`${renderComponent($$result, "Fragment", Fragment, {}, { "default": ($$result) => renderTemplate`hasChrome && view ? (${renderComponent($$result, "BaseLayout", $$BaseLayout, {
 		"title": `${view.hub.label} ${directoryPage.hubHeader?.headingSuffix ?? ""}`.trim(),
 		"description": view.state.description ?? void 0,
 		"slug": city
@@ -49,7 +49,7 @@ var $$Index = createComponent(async ($$result, $$props, $$slots) => {
 		"filters": view.filters,
 		"counties": countyOptions,
 		"categories": categoryOptions
-	})}${settings && renderTemplate`${renderComponent($$result, "Footer", $$Footer, { "settings": settings })}`}</div>` })}` : view ? renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, {
+	})}</div>` })}) : view ? (${renderComponent($$result, "BaseLayout", $$BaseLayout, {
 		"title": view.hub.label,
 		"description": view.state.description ?? void 0,
 		"slug": city
@@ -57,7 +57,7 @@ var $$Index = createComponent(async ($$result, $$props, $$slots) => {
 		"label": view.hub.label,
 		"description": view.state.description,
 		"hub": view.hub
-	})}${settings && renderTemplate`${renderComponent($$result, "Footer", $$Footer, { "settings": settings })}`}` })}` : null}`;
+	})}` })}) : null${settings && renderTemplate`${renderComponent($$result, "Footer", $$Footer, { "settings": settings })}`}` })}`}`;
 }, "/Users/dev/Projects/marylandbusiness-online/src/pages/[category]/[subcategory]/[county]/[city]/index.astro", void 0);
 var $$file = "/Users/dev/Projects/marylandbusiness-online/src/pages/[category]/[subcategory]/[county]/[city]/index.astro";
 var $$url = "/[category]/[subcategory]/[county]/[city]";

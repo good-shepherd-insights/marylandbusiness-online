@@ -15,11 +15,11 @@ const { section } = Astro.props;
 
 <section class="alert-signup">
   <div class="wrap">
-    <Icon name={`tabler:${section.icon}`} class="bell" />
+    <Icon name="tabler:bell" class="bell" aria-hidden="true" />
     <h2>{section.heading}</h2>
     <p>{section.description}</p>
-    <form class="form" method="post" action="#">
-      <input type="email" placeholder={section.emailPlaceholder} />
+    <form class="form" method="post" onsubmit="event.preventDefault()">
+      <input type="email" placeholder={section.emailPlaceholder} aria-label={section.emailPlaceholder || "Email address"} required />
       <button type="submit">{section.buttonLabel}</button>
     </form>
   </div>

@@ -27,7 +27,7 @@ const valid = (listing.events ?? []).filter((event) => event.title);
               <span class="text-xl font-extrabold">{event.day}</span>
             </div>
             <div class="flex-1">
-              <h4 class="text-sm font-extrabold uppercase tracking-tight">{event.title}</h4>
+              <h3 class="text-sm font-extrabold uppercase tracking-tight">{event.title}</h3>
               <p class="text-xs text-[var(--foreground)] uppercase tracking-widest mt-1">
                 {[event.time, event.venue].filter(Boolean).join(' • ')}
               </p>

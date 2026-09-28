@@ -35,10 +35,10 @@ var $$BaseLayout = createComponent(async ($$result, $$props, $$slots) => {
 	const draftMode = Astro.cookies.has(perspectiveCookieName);
 	const settings = await getSiteSettings(Astro.cookies.get(perspectiveCookieName)?.value);
 	const { title, slug } = Astro.props;
-	const siteTitle = settings?.siteTitle ?? themeConfig_default.general.title;
-	const seoName = settings?.seoName ?? themeConfig_default.general.seo?.name;
-	const seoDescription = settings?.seoDescription ?? themeConfig_default.general.seo?.description;
-	const seoUrl = settings?.seoUrl ?? themeConfig_default.general.seo?.url;
+	const siteTitle = settings?.siteTitle ?? themeConfig_default?.general?.title ?? "Maryland Business Directory";
+	const seoName = settings?.seoName ?? themeConfig_default?.general?.seo?.name ?? siteTitle;
+	const seoDescription = settings?.seoDescription ?? themeConfig_default?.general?.seo?.description ?? "";
+	const seoUrl = settings?.seoUrl ?? themeConfig_default?.general?.seo?.url ?? "";
 	let seoDomain;
 	try {
 		seoDomain = seoUrl ? new URL(seoUrl).hostname : void 0;

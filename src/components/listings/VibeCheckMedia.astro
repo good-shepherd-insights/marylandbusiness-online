@@ -29,13 +29,13 @@ const { listing } = Astro.props;
     </div>
   </div>
   <div class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
-    <span class="text-[9px] font-bold text-[var(--secondary)] uppercase tracking-[0.2em]">
+    <span class="text-[11px] font-bold text-[var(--secondary)] uppercase tracking-[0.2em]">
       {listing.videoEyebrow}
     </span>
     <h3 class="text-lg font-extrabold text-white uppercase tracking-tight mt-1">{listing.videoCaption}</h3>
   </div>
   {listing.videoDuration && (
-    <div class="absolute top-6 right-6 bg-white/90 px-3 py-1.5 text-[9px] font-extrabold uppercase tracking-widest text-[var(--card-foreground)]">
+    <div class="absolute top-6 right-6 bg-white/90 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-widest text-[var(--card-foreground)]">
       {listing.videoDuration}
     </div>
   )}

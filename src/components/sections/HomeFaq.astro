@@ -30,13 +30,18 @@ const { faq } = Astro.props;
         <div class="space-y-4">
           {(faq.items ?? []).map((item, i) => (
             <div class:list={['faq-item bg-white border border-[var(--border)] p-6', i === 0 && 'open']}>
-              <button type="button" class="faq-question w-full flex items-center justify-between gap-6 text-left">
+              <button
+                type="button"
+                class="faq-question w-full flex items-center justify-between gap-6 text-left"
+                aria-expanded={i === 0 ? "true" : "false"}
+                aria-controls={`home-faq-answer-${i}`}
+              >
                 <h3 class="font-extrabold text-[var(--card-foreground)] tracking-tight text-base">
                   {item.question}
                 </h3>
-                <Icon name="tabler:chevron-down" class="faq-chevron w-3 h-3 text-[var(--foreground)] shrink-0" />
+                <Icon name="tabler:chevron-down" class="faq-chevron w-3 h-3 text-[var(--foreground)] shrink-0" aria-hidden="true" />
               </button>
-              <div class="faq-answer">
+              <div id={`home-faq-answer-${i}`} class="faq-answer" role="region" aria-label={item.question}>
                 {item.answer && (
                   <p class="text-sm text-[var(--foreground)] leading-relaxed pt-6 max-w-prose">{item.answer}</p>
                 )}
@@ -54,7 +59,9 @@ const { faq } = Astro.props;
     .querySelectorAll<HTMLButtonElement>('.home-faq .faq-question')
     .forEach((btn) => {
       btn.addEventListener('click', () => {
-        btn.closest('.faq-item')?.classList.toggle('open');
+        const item = btn.closest('.faq-item');
+        const isOpen = item?.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(Boolean(isOpen)));
       });
     });
 </script>

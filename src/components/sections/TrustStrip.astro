@@ -19,14 +19,16 @@ const { signals } = Astro.props.trustStrip;
   signals && signals.length > 0 && (
     <div class="trust-strip">
       <div class="trust-strip-inner">
-        {signals.map((signal) =>
-          signal.label ? (
+        {signals.map((signal, i) => {
+          const defaultIcon = ['tabler:shield-check', 'tabler:award', 'tabler:building-bank', 'tabler:certificate'][i % 4];
+          const iconName = signal.icon?.startsWith('tabler:') ? signal.icon : defaultIcon;
+          return signal.label ? (
             <div class="trust-signal">
-              {signal.icon && <Icon name={signal.icon} />}
+              <Icon name={iconName} aria-hidden="true" />
               <span>{signal.label}</span>
             </div>
-          ) : null,
-        )}
+          ) : null;
+        })}
       </div>
     </div>
   )

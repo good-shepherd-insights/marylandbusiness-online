@@ -23,22 +23,22 @@ const links = settings.navLinks ?? [];---
 
     <div class="hidden lg:flex items-center gap-10 font-bold text-[11px] uppercase tracking-widest text-[var(--foreground)]">
       {links.map((link) => (
-        link.label && <a href={link.href ?? '#'}>{link.label}</a>
+        link.label && <a href={link.href ?? '/'}>{link.label}</a>
       ))}
     </div>
 
     <div class="flex items-center gap-4">
       {settings.navCtaLabel && (
-        <a href="#" class="btn-primary px-3 py-2 text-[11px] md:px-6 md:py-4 md:text-xs">{settings.navCtaLabel}</a>
+        <a href="/how-it-works" class="btn-primary px-3 py-2 text-[11px] md:px-6 md:py-4 md:text-xs">{settings.navCtaLabel}</a>
       )}
-      <button type="button" class="mobile-toggle lg:hidden p-1" aria-label="Menu">
-        <Icon name="tabler:menu" class="w-5 h-5 text-[var(--card-foreground)]" />
+      <button type="button" class="mobile-toggle lg:hidden p-1 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-nav-panel">
+        <Icon name="tabler:menu" class="w-5 h-5 text-[var(--card-foreground)]" aria-hidden="true" />
       </button>
     </div>
 
-    <div class="mobile-panel hidden absolute top-full left-0 right-0 bg-white border-b border-[var(--border)] flex-col px-4 py-4">
+    <div id="mobile-nav-panel" class="mobile-panel hidden absolute top-full left-0 right-0 bg-white border-b border-[var(--border)] flex-col px-4 py-4">
       {links.map((link) => (
-        link.label && <a href={link.href ?? '#'} class="py-3 font-bold text-[11px] uppercase tracking-widest text-[var(--foreground)]">{link.label}</a>
+        link.label && <a href={link.href ?? '/'} class="py-3 font-bold text-[11px] uppercase tracking-widest text-[var(--foreground)]">{link.label}</a>
       ))}
     </div>
   </nav>
@@ -47,8 +47,10 @@ const links = settings.navLinks ?? [];---
 <script>
   document.querySelectorAll<HTMLButtonElement>('.mobile-toggle').forEach((btn) => {
     btn.addEventListener('click', () => {
-      document.querySelector('.site-navbar .mobile-panel')?.classList.toggle('hidden');
-      document.querySelector('.site-navbar .mobile-panel')?.classList.toggle('flex');
+      const panel = document.querySelector<HTMLElement>('.site-navbar .mobile-panel');
+      const isHidden = panel?.classList.toggle('hidden');
+      panel?.classList.toggle('flex');
+      btn.setAttribute('aria-expanded', String(!isHidden));
     });
   });
 </script>

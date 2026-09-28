@@ -4,7 +4,7 @@ import { t as createComponent } from "./astro-component_D1QvgdDd.mjs";
 import "./page-ssr_CDjLlKbJ.mjs";
 import "./compiler_DxiFqWHW.mjs";
 import { t as $$PortableText } from "./lib_DGRe2E4_.mjs";
-import { t as $$BaseLayout } from "./BaseLayout_D7NwmmmV.mjs";
+import { t as $$BaseLayout } from "./BaseLayout_Cjk47rbK.mjs";
 import { f as getSiteSettings, n as getBlogPost, p as themeConfig_default } from "./queries_BlgXXG8z.mjs";
 import { n as $$Prose, t as $$AppShell } from "./AppShell_ROKySnsH.mjs";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
@@ -15,7 +15,7 @@ var $$Article = createComponent(async ($$result, $$props, $$slots) => {
 	Astro.self = $$Article;
 	const { frontmatter, slug } = Astro.props;
 	const settings = await getSiteSettings();
-	const title = frontmatter?.title || settings?.siteTitle || themeConfig_default.general.title;
+	const title = frontmatter?.title || settings?.siteTitle || themeConfig_default?.general?.title || "Article";
 	const description = frontmatter?.description;
 	return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, {
 		"title": title,

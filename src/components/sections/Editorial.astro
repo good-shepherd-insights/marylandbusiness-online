@@ -46,7 +46,7 @@ const validStories = (stories ?? []).filter((s) => s?.title);
             )}
             {(quote || attributionName) && (
               <div class="editorial-caption">
-                {quote && <h4>{quote}</h4>}
+                {quote && <blockquote class="editorial-quote">{quote}</blockquote>}
                 {(attributionName || attributionBusiness) && (
                   <div class="editorial-attribution">
                     <div>
@@ -59,6 +59,7 @@ const validStories = (stories ?? []).filter((s) => s?.title);
             )}
           </div>
           <div class="editorial-content">
+            {eyebrow && <span class="editorial-eyebrow">{eyebrow}</span>}
             {heading && <h2>{heading}</h2>}
             {description && <p class="editorial-description">{description}</p>}
             {validStories.length > 0 && (
@@ -66,7 +67,7 @@ const validStories = (stories ?? []).filter((s) => s?.title);
                 {validStories.map((story: EditorialStory) => (
                   <div class="editorial-story">
                     <div>
-                      <h4>{story.title}</h4>
+                      <h3>{story.title}</h3>
                       {story.excerpt && <p>{story.excerpt}</p>}
                     </div>
                   </div>
@@ -126,7 +127,8 @@ const validStories = (stories ?? []).filter((s) => s?.title);
     border-top: 1px solid var(--editorial-border);
   }
 
-  .editorial-caption h4 {
+  .editorial-caption blockquote,
+  .editorial-quote {
     font-size: 1.125rem;
     font-weight: 700;
     color: var(--editorial-foreground);
@@ -200,7 +202,7 @@ const validStories = (stories ?? []).filter((s) => s?.title);
     border-left: 2px solid var(--editorial-primary);
   }
 
-  .editorial-story h4 {
+  .editorial-story h3 {
     font-size: 0.875rem;
     font-weight: 700;
     color: var(--editorial-foreground);

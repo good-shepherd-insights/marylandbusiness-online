@@ -21,12 +21,12 @@ const valid = (Astro.props.promotions ?? []).filter((p) => p.heading);
             <div class="relative overflow-hidden border-2 border-[var(--primary)] bg-[#FBEAEA] p-8 flex flex-col justify-between">
               <div class="absolute -right-6 -top-6 w-24 h-24 bg-[rgba(157,34,53,0.1)] rotate-45" />
               <div>
-                <span class="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[var(--primary)]">
+                <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--primary)]">
                   {promo.eyebrow}
                 </span>
-                <h4 class="text-2xl font-extrabold text-[var(--card-foreground)] uppercase tracking-tight mt-2 mb-2">
+                <h3 class="text-2xl font-extrabold text-[var(--card-foreground)] uppercase tracking-tight mt-2 mb-2">
                   {promo.heading}
-                </h4>
+                </h3>
                 <p class="text-xs text-[var(--foreground)] font-bold uppercase tracking-widest">{promo.note}</p>
               </div>
               {promo.ctaLabel && promo.ctaLink && (
@@ -39,12 +39,12 @@ const valid = (Astro.props.promotions ?? []).filter((p) => p.heading);
             <div class="relative overflow-hidden border-2 border-[var(--card-foreground)] bg-[#FFF8E6] p-8 flex flex-col justify-between">
               <div class="absolute -right-6 -top-6 w-24 h-24 bg-[rgba(234,170,0,0.2)] rotate-45" />
               <div>
-                <span class="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[var(--card-foreground)]">
+                <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--card-foreground)]">
                   {promo.eyebrow}
                 </span>
-                <h4 class="text-2xl font-extrabold text-[var(--card-foreground)] uppercase tracking-tight mt-2 mb-2">
+                <h3 class="text-2xl font-extrabold text-[var(--card-foreground)] uppercase tracking-tight mt-2 mb-2">
                   {promo.heading}
-                </h4>
+                </h3>
                 <p class="text-xs text-[var(--foreground)] font-bold uppercase tracking-widest">{promo.note}</p>
               </div>
               {promo.ctaLabel && promo.ctaLink && (

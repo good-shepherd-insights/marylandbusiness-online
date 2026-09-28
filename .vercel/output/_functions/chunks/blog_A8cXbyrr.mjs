@@ -165,7 +165,7 @@ var _sfc_main$1 = /*@__PURE__*/ defineComponent({
 function _sfc_ssrRender$1(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
 	_push(`<div${ssrRenderAttrs(mergeProps({ class: "flex flex-wrap gap-2 mt-4" }, _attrs))}><!--[-->`);
 	ssrRenderList($setup.props.options, (option) => {
-		_push(`<span class="${ssrRenderClass([$setup.selectedTags.includes(option.value) ? "border-primary-500 dark:border-primary-300" : "", "border border-gray-200 rounded-md px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-900 dark:border-gray-600 cursor-pointer select-none"])}">${ssrInterpolate(option.label)}</span>`);
+		_push(`<button type="button" class="${ssrRenderClass([$setup.selectedTags.includes(option.value) ? "border-primary-500 dark:border-primary-300" : "", "border border-gray-200 rounded-md px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-900 dark:border-gray-600 cursor-pointer select-none text-xs font-semibold"])}"${ssrRenderAttr("aria-pressed", $setup.selectedTags.includes(option.value))}>${ssrInterpolate(option.label)}</button>`);
 	});
 	_push(`<!--]--></div>`);
 }
@@ -214,15 +214,15 @@ var _sfc_main = /*@__PURE__*/ defineComponent({
 	}
 });
 function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-	_push(`<div${ssrRenderAttrs(mergeProps({ class: "flex m-0 gap-4 mt-4 py-2" }, _attrs))} data-v-ee63ebf7><!--[-->`);
+	_push(`<div${ssrRenderAttrs(mergeProps({ class: "flex m-0 gap-4 mt-4 py-2" }, _attrs))} data-v-51ec2f3c><!--[-->`);
 	ssrRenderList($setup.selectedTags, (myTag) => {
-		_push(`<div class="${ssrRenderClass([`border-blue-500`, "relative group border-2 shadow-sm font-semibold text-blue-500 bg-blue-600/10 rounded-lg px-1.5 py-1 inline-flex items-center justify-center"])}" data-v-ee63ebf7><span class="absolute text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 flex items-center justify-center -top-4 left-0 bg-white rounded-full h-6 w-6 border dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-800" data-v-ee63ebf7>`);
+		_push(`<div class="relative group border-2 shadow-sm font-semibold text-[#9d2235] bg-[#9d2235]/10 border-[#9d2235] rounded-lg px-2 py-1 inline-flex items-center justify-center text-xs" data-v-51ec2f3c><button type="button" aria-label="Remove filter" class="absolute text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 flex items-center justify-center -top-4 left-0 bg-white rounded-full h-6 w-6 border dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-800 cursor-pointer" data-v-51ec2f3c>`);
 		ssrRenderSlot(_ctx.$slots, "default", {}, null, _push, _parent);
-		_push(`</span> ${ssrInterpolate($setup.labelFor(myTag))}</div>`);
+		_push(`</button> ${ssrInterpolate($setup.labelFor(myTag))}</div>`);
 	});
-	_push(`<!--]--><select class="border border-dashed border-gray-300 rounded-lg font-semibold text-gray-500 dark:border-gray-500 dark:bg-gray-700 dark:text-gray-400 focus:ring-primary-500 focus:ring-2 focus:border-none ring-offset-4" data-v-ee63ebf7><option value="" disabled selected data-v-ee63ebf7> Select a filter </option><!--[-->`);
+	_push(`<!--]--><select aria-label="Filter directory listings" class="border border-dashed border-gray-300 rounded-lg font-semibold text-gray-500 dark:border-gray-500 dark:bg-gray-700 dark:text-gray-400 focus:ring-primary-500 focus:ring-2 focus:border-none ring-offset-4 text-xs" data-v-51ec2f3c><option value="" disabled selected data-v-51ec2f3c> Select a filter </option><!--[-->`);
 	ssrRenderList($setup.props.options, (option) => {
-		_push(`<option${ssrRenderAttr("value", option.value)} data-v-ee63ebf7>${ssrInterpolate(option.label)}</option>`);
+		_push(`<option${ssrRenderAttr("value", option.value)} data-v-51ec2f3c>${ssrInterpolate(option.label)}</option>`);
 	});
 	_push(`<!--]--></select></div>`);
 }
@@ -232,7 +232,7 @@ _sfc_main.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("src/components/ui/tags/Select.vue");
 	return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-var Select_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["ssrRender", _sfc_ssrRender], ["__scopeId", "data-v-ee63ebf7"]]);
+var Select_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["ssrRender", _sfc_ssrRender], ["__scopeId", "data-v-51ec2f3c"]]);
 //#endregion
 //#region src/components/directory/Search.astro
 createAstro("https://marylandbusiness.online");
@@ -255,7 +255,7 @@ var $$Search = createComponent(async ($$result, $$props, $$slots) => {
 		"name": themeConfig_default.directoryUI.search.icon,
 		"class": "h-5 w-5 text-gray-400",
 		"aria-hidden": "true"
-	})}</div>` : ""}<input id="search"${addAttribute(`block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 dark:active:ring-primary-400 dark:bg-gray-700 dark:ring-gray-600 dark:text-gray-200 dark:placeholder:text-gray-400 ${themeConfig_default.directoryUI.search?.icon ? "pl-10" : ""}`, "class")}${addAttribute(searchPlaceholder, "placeholder")}><div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5"><kbd class="inline-flex items-center rounded border border-gray-200 px-1 font-sans text-xs text-gray-400 dark:border-gray-500 dark:text-gray-500">⌘K</kbd></div></div></div>${() => {
+	})}</div>` : ""}<input id="search" type="search"${addAttribute(searchPlaceholder || "Search directory listings", "aria-label")}${addAttribute(`block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 dark:active:ring-primary-400 dark:bg-gray-700 dark:ring-gray-600 dark:text-gray-200 dark:placeholder:text-gray-400 ${themeConfig_default.directoryUI.search?.icon ? "pl-10" : ""}`, "class")}${addAttribute(searchPlaceholder, "placeholder")}><div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5"><kbd class="inline-flex items-center rounded border border-gray-200 px-1 font-sans text-xs text-gray-400 dark:border-gray-500 dark:text-gray-500">⌘K</kbd></div></div></div>${() => {
 		if (themeConfig_default.layout.sidebar) return renderTemplate`${renderComponent($$result, "Fragment", Fragment, {}, { "default": ($$result) => renderTemplate`` })}`;
 		if (themeConfig_default.directoryUI.search.tags.display === "select") return renderTemplate`${renderComponent($$result, "UiTagSelect", Select_default, {
 			"client:load": true,

@@ -32,13 +32,13 @@ const valid = (listing.similar ?? []).filter((item) => item.name && item.image?.
               />
             </div>
             <div class="p-4">
-              <h4 class="text-[10px] font-extrabold uppercase tracking-widest">{item.name}</h4>
+              <h3 class="text-xs font-extrabold uppercase tracking-widest">{item.name}</h3>
               <div class="flex items-center gap-2 mt-1">
                 {item.subcategory?.name && (
-                  <span class="text-[8px] font-bold uppercase text-[var(--foreground)]">{item.subcategory.name}</span>
+                  <span class="text-[10px] font-bold uppercase text-[var(--foreground)]">{item.subcategory.name}</span>
                 )}
                 {item.priceRange && (
-                  <span class="text-[8px] font-bold uppercase text-[var(--primary)]">{item.priceRange}</span>
+                  <span class="text-[10px] font-bold uppercase text-[var(--primary)]">{item.priceRange}</span>
                 )}
               </div>
             </div>

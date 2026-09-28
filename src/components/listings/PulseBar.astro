@@ -76,4 +76,10 @@ const wait = segments(listing.pulseWaitText, pulse?.waitMinutes);
     --border: #e3e0dc;
     font-family: 'Sora Variable', 'Sora', sans-serif;
   }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.animate-ping) {
+      animation: none;
+      display: none;
+    }
+  }
 </style>

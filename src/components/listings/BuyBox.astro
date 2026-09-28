@@ -149,9 +149,9 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
       {(listing.taxStatus || listing.licenseNumber || listing.lastAudit) && (
         <div class="mt-4 pt-4 border-t border-[var(--border)] opacity-60">
           <div class="flex items-center justify-between mb-4">
-            <h5 class="text-[11px] font-extrabold text-[var(--card-foreground)]">
+            <h3 class="text-[11px] font-extrabold text-[var(--card-foreground)]">
               {listing.verificationHeading}
-            </h5>
+            </h3>
             <Icon name="tabler:shield-check" class="w-3 h-3 text-[var(--primary)]" />
           </div>
           <div class="space-y-2">
@@ -229,5 +229,11 @@ const taxTitle = TAX_STATUSES.find((o) => o.value === listing.taxStatus)?.title;
     align-items: center;
     justify-content: center;
     flex: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.animate-ping) {
+      animation: none;
+      display: none;
+    }
   }
 </style>

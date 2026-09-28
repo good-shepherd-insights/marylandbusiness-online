@@ -83,10 +83,10 @@ const validBusinesses = (businesses ?? []).filter((b) => b?.title);
                   {b.ctaIcon && (
                     <a
                       class="featured-contact"
-                      href={b.ctaLink ?? '#'}
+                      href={b.ctaLink ?? '/'}
                       aria-label={b.ctaLabel ? `${b.ctaLabel} for ${b.title}` : `Contact ${b.title}`}
                     >
-                      <Icon name={b.ctaIcon} aria-hidden="true" />
+                      <Icon name="tabler:arrow-up-right" aria-hidden="true" />
                     </a>
                   )}
                 </div>

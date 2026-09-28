@@ -9,10 +9,21 @@ import type { CountyHubsContent, CountyHub } from '@lib/sanity/types';
 
 interface Props {
   countyHubs: CountyHubsContent;
+  countyHrefs: Record<string, string>;
 }
 
-const { heading, description, ctaLabel, ctaLink, hubs } = Astro.props.countyHubs;
+const { countyHubs, countyHrefs } = Astro.props;
+const { heading, description, ctaLabel, ctaLink, hubs } = countyHubs;
 const validHubs = (hubs ?? []).filter((hub) => hub?.name);
+const countyCardHref = (name: string) => {
+  const key = name.trim().toLocaleLowerCase();
+  const county = Object.entries(countyHrefs).find(([slug]) => {
+    // The county list passed by the page is slug keyed; CMS names are
+    // resolved against the same published county options via their labels.
+    return slug === key;
+  });
+  return county?.[1];
+};
 ---
 
 {

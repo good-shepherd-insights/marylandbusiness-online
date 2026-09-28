@@ -25,19 +25,21 @@ const validPillars = (pillars ?? []).filter((p) => p?.title);
           {description && <p>{description}</p>}
         </div>
         <div class="pillars-grid">
-          {validPillars.map((pillar: Pillar) => (
-            <div class="pillar-card">
-              <div class="flex items-center gap-3 mb-4">
-                {pillar.icon && (
+          {validPillars.map((pillar: Pillar, i: number) => {
+            const defaultIcon = ['tabler:compass', 'tabler:shield', 'tabler:heart-handshake', 'tabler:chart-arrows-vertical'][i % 4];
+            const iconName = pillar.icon?.startsWith('tabler:') ? pillar.icon : defaultIcon;
+            return (
+              <div class="pillar-card">
+                <div class="flex items-center gap-3 mb-4">
                   <div class="pillar-icon shrink-0">
-                    <Icon name={pillar.icon} />
+                    <Icon name={iconName} aria-hidden="true" />
                   </div>
-                )}
-                {pillar.title && <h3>{pillar.title}</h3>}
+                  {pillar.title && <h3>{pillar.title}</h3>}
+                </div>
+                {pillar.text && <p>{pillar.text}</p>}
               </div>
-              {pillar.text && <p>{pillar.text}</p>}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

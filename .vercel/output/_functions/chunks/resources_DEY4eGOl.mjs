@@ -4,10 +4,10 @@ import { t as createComponent } from "./astro-component_D1QvgdDd.mjs";
 import { t as renderScript } from "./script__Dvm899t.mjs";
 import "./page-ssr_CDjLlKbJ.mjs";
 import "./compiler_DxiFqWHW.mjs";
-import { t as $$BaseLayout } from "./BaseLayout_D7NwmmmV.mjs";
+import { t as $$BaseLayout } from "./BaseLayout_Cjk47rbK.mjs";
 import { d as getResourcesPage, f as getSiteSettings } from "./queries_BlgXXG8z.mjs";
 import { t as $$Icon } from "./components_nK_Mjrbt.mjs";
-import { n as $$Navbar, t as $$Footer } from "./sora_B4VQ4_VB.mjs";
+import { n as $$Navbar, t as $$Footer } from "./sora_YXIr58-4.mjs";
 import { a as getGeoCountyHubs } from "./paths_PJNqNWPZ.mjs";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
 //#region src/components/sections/ResourcesIntro.astro
@@ -91,8 +91,9 @@ var $$ResourceDirectory = createComponent(($$result, $$props, $$slots) => {
 	return renderTemplate`${maybeRenderHead($$result)}<section class="directory" id="resource-directory" data-astro-cid-u5iy4xpx><div class="wrap" data-astro-cid-u5iy4xpx><div class="head" data-astro-cid-u5iy4xpx><h2 data-astro-cid-u5iy4xpx>${section.heading}</h2><span class="count" data-astro-cid-u5iy4xpx>${section.countLabel}</span><span class="count" data-visible-count hidden data-astro-cid-u5iy4xpx></span></div><div class="toolbar" data-astro-cid-u5iy4xpx><div class="toolbar-row" data-toolbar data-astro-cid-u5iy4xpx><div class="search" data-astro-cid-u5iy4xpx>${renderComponent($$result, "Icon", $$Icon, {
 		"name": "tabler:search",
 		"class": "search-icon",
+		"aria-hidden": "true",
 		"data-astro-cid-u5iy4xpx": true
-	})}<input type="text"${addAttribute(section.searchPlaceholder, "placeholder")} data-astro-cid-u5iy4xpx></div><div class="selects" data-astro-cid-u5iy4xpx><div class="select-box" data-astro-cid-u5iy4xpx><select data-filter="jurisdiction"${addAttribute(section.jurisdictionOptions[0], "aria-label")} data-astro-cid-u5iy4xpx><option value="" data-astro-cid-u5iy4xpx>${section.jurisdictionOptions[0]}</option>${section.jurisdictionOptions.slice(1).map((option) => renderTemplate`<option${addAttribute(option, "value")} data-astro-cid-u5iy4xpx>${option}</option>`)}</select>${renderComponent($$result, "Icon", $$Icon, {
+	})}<input type="search"${addAttribute(section.searchPlaceholder, "placeholder")}${addAttribute(section.searchPlaceholder || "Search resources", "aria-label")} data-astro-cid-u5iy4xpx></div><div class="selects" data-astro-cid-u5iy4xpx><div class="select-box" data-astro-cid-u5iy4xpx><select data-filter="jurisdiction"${addAttribute(section.jurisdictionOptions[0], "aria-label")} data-astro-cid-u5iy4xpx><option value="" data-astro-cid-u5iy4xpx>${section.jurisdictionOptions[0]}</option>${section.jurisdictionOptions.slice(1).map((option) => renderTemplate`<option${addAttribute(option, "value")} data-astro-cid-u5iy4xpx>${option}</option>`)}</select>${renderComponent($$result, "Icon", $$Icon, {
 		"name": "tabler:chevron-down",
 		"class": "select-icon",
 		"data-astro-cid-u5iy4xpx": true
@@ -108,7 +109,7 @@ var $$ResourceDirectory = createComponent(($$result, $$props, $$slots) => {
 		"name": "tabler:arrow-back-up",
 		"class": "reset-icon",
 		"data-astro-cid-u5iy4xpx": true
-	})}${section.resetLabel}</button></div></div><div class="active-row" data-active-row hidden data-astro-cid-u5iy4xpx><span class="active-label" data-astro-cid-u5iy4xpx>Active:</span><span class="chips" data-active-chips data-astro-cid-u5iy4xpx></span></div></div><div class="layout" data-astro-cid-u5iy4xpx><aside class="rail" data-astro-cid-u5iy4xpx><div class="sticky" data-astro-cid-u5iy4xpx><h4 data-astro-cid-u5iy4xpx>${section.categoryHeading}</h4><nav class="categories" data-astro-cid-u5iy4xpx>${section.categories.map((category, i) => renderTemplate`<a href="#resources"${addAttribute(["category", { active: i === 0 }], "class:list")}${addAttribute(category, "data-category-filter")} data-astro-cid-u5iy4xpx>${category}</a>`)}</nav><h4 class="rail-gap" data-astro-cid-u5iy4xpx>${section.typeHeading}</h4><div class="type-options" data-astro-cid-u5iy4xpx>${section.railTypeOptions.map((type) => renderTemplate`<label class="type-option" data-astro-cid-u5iy4xpx><input type="checkbox"${addAttribute(type, "value")} data-type-checkbox data-astro-cid-u5iy4xpx>${type}</label>`)}</div><div class="calendar" data-astro-cid-u5iy4xpx><h4 class="calendar-heading" data-astro-cid-u5iy4xpx>${section.calendarHeading}</h4><div class="deadlines" data-astro-cid-u5iy4xpx>${(section.deadlines ?? []).map((deadline) => renderTemplate`<div class="deadline" data-astro-cid-u5iy4xpx><div data-astro-cid-u5iy4xpx><p class="deadline-title" data-astro-cid-u5iy4xpx>${deadline.title}</p><p class="deadline-org" data-astro-cid-u5iy4xpx>${deadline.org}</p></div><span class="deadline-date" data-astro-cid-u5iy4xpx>${deadline.dateLabel}</span></div>`)}</div></div></div></aside><div class="grid" data-astro-cid-u5iy4xpx>${(section.cards ?? []).map((card) => renderTemplate`<article class="card"${addAttribute(card.category, "data-category")}${addAttribute(card.typeBadge, "data-type")}${addAttribute(card.jurisdictionKind, "data-kind")}${addAttribute(`${card.title} ${card.jurisdiction} ${card.description}`.toLowerCase(), "data-search")} data-astro-cid-u5iy4xpx><div class="card-top" data-astro-cid-u5iy4xpx><div${addAttribute(["card-icon", iconTintClass[card.iconTint]], "class:list")} data-astro-cid-u5iy4xpx>${renderComponent($$result, "Icon", $$Icon, {
+	})}${section.resetLabel}</button></div></div><div class="active-row" data-active-row hidden data-astro-cid-u5iy4xpx><span class="active-label" data-astro-cid-u5iy4xpx>Active:</span><span class="chips" data-active-chips data-astro-cid-u5iy4xpx></span></div></div><div class="layout" data-astro-cid-u5iy4xpx><aside class="rail" data-astro-cid-u5iy4xpx><div class="sticky" data-astro-cid-u5iy4xpx><h3 data-astro-cid-u5iy4xpx>${section.categoryHeading}</h3><nav class="categories" data-astro-cid-u5iy4xpx>${section.categories.map((category, i) => renderTemplate`<a href="#resources"${addAttribute(["category", { active: i === 0 }], "class:list")}${addAttribute(category, "data-category-filter")} data-astro-cid-u5iy4xpx>${category}</a>`)}</nav><h3 class="rail-gap" data-astro-cid-u5iy4xpx>${section.typeHeading}</h3><div class="type-options" data-astro-cid-u5iy4xpx>${section.railTypeOptions.map((type) => renderTemplate`<label class="type-option" data-astro-cid-u5iy4xpx><input type="checkbox"${addAttribute(type, "value")} data-type-checkbox data-astro-cid-u5iy4xpx>${type}</label>`)}</div><div class="calendar" data-astro-cid-u5iy4xpx><h3 class="calendar-heading" data-astro-cid-u5iy4xpx>${section.calendarHeading}</h3><div class="deadlines" data-astro-cid-u5iy4xpx>${(section.deadlines ?? []).map((deadline) => renderTemplate`<div class="deadline" data-astro-cid-u5iy4xpx><div data-astro-cid-u5iy4xpx><p class="deadline-title" data-astro-cid-u5iy4xpx>${deadline.title}</p><p class="deadline-org" data-astro-cid-u5iy4xpx>${deadline.org}</p></div><span class="deadline-date" data-astro-cid-u5iy4xpx>${deadline.dateLabel}</span></div>`)}</div></div></div></aside><div class="grid" data-astro-cid-u5iy4xpx>${(section.cards ?? []).map((card) => renderTemplate`<article class="card"${addAttribute(card.category, "data-category")}${addAttribute(card.typeBadge, "data-type")}${addAttribute(card.jurisdictionKind, "data-kind")}${addAttribute(`${card.title} ${card.jurisdiction} ${card.description}`.toLowerCase(), "data-search")} data-astro-cid-u5iy4xpx><div class="card-top" data-astro-cid-u5iy4xpx><div${addAttribute(["card-icon", iconTintClass[card.iconTint]], "class:list")} data-astro-cid-u5iy4xpx>${renderComponent($$result, "Icon", $$Icon, {
 		"name": `tabler:${card.icon}`,
 		"class": "card-icon-svg",
 		"data-astro-cid-u5iy4xpx": true
@@ -126,10 +127,11 @@ var $$AlertSignup = createComponent(($$result, $$props, $$slots) => {
 	Astro.self = $$AlertSignup;
 	const { section } = Astro.props;
 	return renderTemplate`${maybeRenderHead($$result)}<section class="alert-signup" data-astro-cid-mg3dgvel><div class="wrap" data-astro-cid-mg3dgvel>${renderComponent($$result, "Icon", $$Icon, {
-		"name": `tabler:${section.icon}`,
+		"name": "tabler:bell",
 		"class": "bell",
+		"aria-hidden": "true",
 		"data-astro-cid-mg3dgvel": true
-	})}<h2 data-astro-cid-mg3dgvel>${section.heading}</h2><p data-astro-cid-mg3dgvel>${section.description}</p><form class="form" method="post" action="#" data-astro-cid-mg3dgvel><input type="email"${addAttribute(section.emailPlaceholder, "placeholder")} data-astro-cid-mg3dgvel><button type="submit" data-astro-cid-mg3dgvel>${section.buttonLabel}</button></form></div></section>`;
+	})}<h2 data-astro-cid-mg3dgvel>${section.heading}</h2><p data-astro-cid-mg3dgvel>${section.description}</p><form class="form" method="post" onsubmit="event.preventDefault()" data-astro-cid-mg3dgvel><input type="email"${addAttribute(section.emailPlaceholder, "placeholder")}${addAttribute(section.emailPlaceholder || "Email address", "aria-label")} required data-astro-cid-mg3dgvel><button type="submit" data-astro-cid-mg3dgvel>${section.buttonLabel}</button></form></div></section>`;
 }, "/Users/dev/Projects/marylandbusiness-online/src/components/sections/AlertSignup.astro", void 0);
 //#endregion
 //#region src/pages/resources.astro

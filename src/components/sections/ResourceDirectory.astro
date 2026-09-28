@@ -35,8 +35,8 @@ const iconTintClass: Record<string, string> = {
     <div class="toolbar">
       <div class="toolbar-row" data-toolbar>
         <div class="search">
-          <Icon name="tabler:search" class="search-icon" />
-          <input type="text" placeholder={section.searchPlaceholder} />
+          <Icon name="tabler:search" class="search-icon" aria-hidden="true" />
+          <input type="search" placeholder={section.searchPlaceholder} aria-label={section.searchPlaceholder || "Search resources"} />
         </div>
         <div class="selects">
           <div class="select-box">
@@ -74,14 +74,14 @@ const iconTintClass: Record<string, string> = {
     <div class="layout">
       <aside class="rail">
         <div class="sticky">
-          <h4>{section.categoryHeading}</h4>
+          <h3>{section.categoryHeading}</h3>
           <nav class="categories">
             {section.categories.map((category, i) => (
               <a href="#resources" class:list={['category', { active: i === 0 }]} data-category-filter={category}>{category}</a>
             ))}
           </nav>
 
-          <h4 class="rail-gap">{section.typeHeading}</h4>
+          <h3 class="rail-gap">{section.typeHeading}</h3>
           <div class="type-options">
             {section.railTypeOptions.map((type) => (
               <label class="type-option">
@@ -92,7 +92,7 @@ const iconTintClass: Record<string, string> = {
           </div>
 
           <div class="calendar">
-            <h4 class="calendar-heading">{section.calendarHeading}</h4>
+            <h3 class="calendar-heading">{section.calendarHeading}</h3>
             <div class="deadlines">
               {(section.deadlines ?? []).map((deadline) => (
                 <div class="deadline">
@@ -164,7 +164,7 @@ const iconTintClass: Record<string, string> = {
   .layout { display: flex; flex-direction: column; gap: 48px; }
   .rail { width: 100%; }
   .sticky { position: static; }
-  .rail h4 { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: #121212; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid #e3e0dc; }
+  .rail h3 { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; color: #121212; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid #e3e0dc; }
   .rail-gap { margin-top: 40px; }
   .categories { display: flex; flex-direction: column; }
   .category { font-size: 14px; font-weight: 700; color: #404040; padding: 12px 0; border-bottom: 1px solid #e3e0dc; text-decoration: none; transition: all 0.15s ease; }

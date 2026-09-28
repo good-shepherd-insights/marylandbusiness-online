@@ -313,10 +313,10 @@ export async function getCategoryTree(
   perspectiveCookie?: PerspectiveCookie,
 ): Promise<SanityCategoryIndexGroup[]> {
   const { data } = await loadQuery<SanityCategoryIndexGroup[]>({
-    query: `*[_type == "category"] | order(name asc){
+    query: `*[_type == "category" && defined(name) && defined(slug.current)] | order(name asc){
       name,
       "slug": slug.current,
-      "subcategories": *[_type == "subcategory" && references(^._id)] | order(name asc){name, "slug": slug.current}
+      "subcategories": *[_type == "subcategory" && parent._ref == ^._id && defined(name) && defined(slug.current)] | order(name asc){name, "slug": slug.current}
     }`,
     perspectiveCookie,
   });

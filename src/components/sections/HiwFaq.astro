@@ -26,11 +26,16 @@ const { faq } = Astro.props;
         <div class="border-t border-[var(--border)]">
           {(faq.items ?? []).map((item, i) => (
             <div class:list={['faq-item border-b border-[var(--border)]', i === 0 && 'open']}>
-              <button type="button" class="faq-question w-full flex items-center justify-between py-6 text-left">
+              <button
+                type="button"
+                class="faq-question w-full flex items-center justify-between py-6 text-left"
+                aria-expanded={i === 0 ? "true" : "false"}
+                aria-controls={`hiw-faq-answer-${i}`}
+              >
                 <h3 class="text-base font-extrabold text-[var(--card-foreground)] pr-8">{item.question}</h3>
-                <Icon name="tabler:chevron-down" class="faq-chevron w-4 h-4 text-[var(--foreground)] shrink-0" />
+                <Icon name="tabler:chevron-down" class="faq-chevron w-4 h-4 text-[var(--foreground)] shrink-0" aria-hidden="true" />
               </button>
-              <div class="faq-answer">
+              <div id={`hiw-faq-answer-${i}`} class="faq-answer" role="region" aria-label={item.question}>
                 {item.answer && <p class="text-sm text-[var(--foreground)] leading-relaxed pb-6 pr-4 md:pr-10">{item.answer}</p>}
               </div>
             </div>
@@ -42,9 +47,11 @@ const { faq } = Astro.props;
 }
 
 <script>
-  document.querySelectorAll<HTMLButtonElement>('.faq-question').forEach((btn) => {
+  document.querySelectorAll<HTMLButtonElement>('.hiw-faq .faq-question').forEach((btn) => {
     btn.addEventListener('click', () => {
-      btn.closest('.faq-item')?.classList.toggle('open');
+      const item = btn.closest('.faq-item');
+      const isOpen = item?.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(Boolean(isOpen)));
     });
   });
 </script>

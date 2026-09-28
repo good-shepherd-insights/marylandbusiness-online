@@ -125,7 +125,7 @@ const rowAttrs = (b: HubBusiness) => ({
       </div>
       {discovery.regionFocusHeading && hub.cities.length > 0 && (
         <div class="region-focus hidden lg:block bg-white border border-[var(--border)] p-4 w-64">
-          <h4 class="region-focus-heading">{discovery.regionFocusHeading}</h4>
+          <h3 class="region-focus-heading">{discovery.regionFocusHeading}</h3>
           <div class="space-y-3" data-city-list>
             {hub.cities.map((city) => (
               <label class="city-label">
@@ -272,7 +272,7 @@ const rowAttrs = (b: HubBusiness) => ({
         )}
       </div>
       <div class="mt-4 flex flex-col gap-2" data-chips-wrap>
-        <div class="flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-widest text-[var(--muted-foreground)]">
+        <div class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-[var(--muted-foreground)]">
           <span data-chips-label>No filters active · showing everything</span>
           <span class="h-px flex-1 bg-[var(--border)]"></span>
         </div>
@@ -384,7 +384,7 @@ const rowAttrs = (b: HubBusiness) => ({
 
     {discovery.expertiseHeading && (discovery.expertiseStats?.length ?? 0) > 0 && (
       <div class="expertise-band p-5 bg-[#F3EFE8] border-t border-[var(--border)] shrink-0">
-        <h4 class="expertise-heading">{discovery.expertiseHeading}</h4>
+        <h3 class="expertise-heading">{discovery.expertiseHeading}</h3>
         <div class="flex flex-col gap-2 lg:grid lg:grid-cols-2 lg:gap-3">
           {discovery.expertiseStats!.map((stat) => (
             <div class="expertise-stat">
@@ -804,22 +804,10 @@ const rowAttrs = (b: HubBusiness) => ({
     const categoryList: { slug: string; label: string }[] = JSON.parse(root.dataset.categories ?? '[]');
 
     function renderCatMenu() {
-      let options: Array<{ slug: string; label: string }>;
-      if (categoryList.length > 0) {
-        options = categoryList;
-      } else {
-        options = [];
-        for (const el of rowEls()) {
-          const slug = el.dataset.cat;
-          if (slug && !options.some((o) => o.slug === slug)) {
-            options.push({ slug, label: el.dataset.catLabel || el.dataset.sub || slug });
-          }
-        }
-      }
       const active = chips.find((c) => c.type === 'cat' || c.type === 'sub')?.slug;
       for (const menu of catMenus) {
         menu.textContent = '';
-        for (const { slug, label } of options) {
+        for (const { slug, label } of categoryList) {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = `dropdown-item ${slug === active ? 'is-active' : ''}`;

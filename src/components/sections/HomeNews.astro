@@ -64,7 +64,7 @@ const items = news?.items ?? [];
         <!-- Archive Link Bar -->
         {news.archiveLabel && (
           <div class="news-archive-bar">
-            <a href={news.archiveUrl ?? '#'} class="news-archive-link">
+            <a href={news.archiveUrl ?? '/'} class="news-archive-link">
               <span>{news.archiveLabel}</span>
               <Icon name="tabler:arrow-right" aria-hidden="true" />
             </a>

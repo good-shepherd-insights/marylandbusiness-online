@@ -36,12 +36,14 @@ const populated = groups.filter((g) => (g.subcategories ?? []).length > 0);
           {populated.map((group) => (
             <div>
               <h3 class="text-[11px] font-extrabold text-[var(--primary)] uppercase tracking-[0.2em] mb-6 border-b border-[var(--border)] pb-2">
-                {group.name}
+                <a href={`/${encodeURIComponent(group.slug)}`}>
+                  {group.name}
+                </a>
               </h3>
               <ul class="space-y-1">
                 {(group.subcategories ?? []).map((sub) => (
                   <li>
-                    <a href={`/${group.slug}/${sub.slug}`} class="cat-link">
+                    <a href={`/${encodeURIComponent(group.slug)}/${encodeURIComponent(sub.slug)}`} class="cat-link">
                       {sub.name}
                     </a>
                   </li>
@@ -67,12 +69,11 @@ const populated = groups.filter((g) => (g.subcategories ?? []).length > 0);
     font-size: 13px;
     font-weight: 500;
     color: var(--foreground);
-    transition: all 0.15s ease;
+    transition: color 0.15s ease;
     display: block;
-    padding: 4px 0;
+    padding: 6px 0;
   }
   .cat-link:hover {
     color: var(--primary);
-    padding-left: 6px;
   }
 </style>

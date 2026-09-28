@@ -24,25 +24,27 @@ const validArms = (arms ?? []).filter((a) => a?.title);
           {heading && <h2>{heading}</h2>}
         </div>
         <div class="offers-grid">
-          {validArms.map((arm: OfferArm) => (
-            <div class="offer-card">
-              <div class="flex items-center gap-3 mb-4">
-                {arm.icon && (
+          {validArms.map((arm: OfferArm, i: number) => {
+            const defaultIcon = ['tabler:rocket', 'tabler:chart-bar', 'tabler:world', 'tabler:shield-check'][i % 4];
+            const iconName = arm.icon?.startsWith('tabler:') ? arm.icon : defaultIcon;
+            return (
+              <div class="offer-card">
+                <div class="flex items-center gap-3 mb-4">
                   <div class="offer-icon shrink-0">
-                    <Icon name={arm.icon} />
+                    <Icon name={iconName} aria-hidden="true" />
                   </div>
+                  {arm.title && <h3>{arm.title}</h3>}
+                </div>
+                {arm.text && <p>{arm.text}</p>}
+                {arm.ctaLabel && arm.ctaLink && (
+                  <a class="offer-cta" href={arm.ctaLink}>
+                    <span>{arm.ctaLabel}</span>
+                    <Icon name="tabler:arrow-right" aria-hidden="true" />
+                  </a>
                 )}
-                {arm.title && <h3>{arm.title}</h3>}
               </div>
-              {arm.text && <p>{arm.text}</p>}
-              {arm.ctaLabel && arm.ctaLink && (
-                <a class="offer-cta" href={arm.ctaLink}>
-                  <span>{arm.ctaLabel}</span>
-                  <Icon name="tabler:arrow-right" />
-                </a>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

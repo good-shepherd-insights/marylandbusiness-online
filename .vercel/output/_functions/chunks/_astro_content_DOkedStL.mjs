@@ -520,7 +520,7 @@ function createRenderEntry({ logger }) {
 		if (!entry) throw new AstroError(RenderUndefinedEntryError);
 		recordContentEntryRender(entry.filePath);
 		if (entry.deferredRender) try {
-			const { default: contentModules } = await import("./content-modules_BpNsscfw.mjs");
+			const { default: contentModules } = await import("./content-modules_D8sLHCW5.mjs");
 			const renderEntryImport = contentModules.get(entry.filePath);
 			return render$1({
 				collection: "",

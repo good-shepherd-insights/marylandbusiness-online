@@ -39,9 +39,9 @@ const year = new Date().getFullYear();
 
         {settings.footerQuickHeading && (
           <div>
-            <h4 class="font-bold text-[var(--card-foreground)] mb-8 text-[11px] uppercase tracking-[0.2em]">
+            <h3 class="font-bold text-[var(--card-foreground)] mb-8 text-[11px] uppercase tracking-[0.2em]">
               {settings.footerQuickHeading}
-            </h4>
+            </h3>
             <ul class="flex flex-col gap-4 text-[11px] font-bold uppercase tracking-widest">
               {(settings.footerQuickLinks ?? []).map((link) => (
                 <li>
@@ -60,9 +60,9 @@ const year = new Date().getFullYear();
 
         {settings.footerResourceHeading && (
           <div>
-            <h4 class="font-bold text-[var(--card-foreground)] mb-8 text-[11px] uppercase tracking-[0.2em]">
+            <h3 class="font-bold text-[var(--card-foreground)] mb-8 text-[11px] uppercase tracking-[0.2em]">
               {settings.footerResourceHeading}
-            </h4>
+            </h3>
             <ul class="flex flex-col gap-4 text-[11px] font-bold uppercase tracking-widest">
               {(settings.footerResourceLinks ?? []).map((link) => (
                 <li>
