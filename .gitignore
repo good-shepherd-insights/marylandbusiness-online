@@ -1,5 +1,6 @@
-# build output (project-root only — Vercel's `_render.func/dist/` must stay tracked)
+# build output
 /dist/
+.vercel/
 
 # generated types
 .astro/

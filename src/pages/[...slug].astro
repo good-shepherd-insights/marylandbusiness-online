@@ -125,7 +125,7 @@ if (!listing && !MdxContent && !about) {
       <BaseLayout>
         {home.hero && <Hero hero={home.hero} />}
         {settings && <Navbar settings={settings} />}
-        {home.countyHubs && <CountyHubs countyHubs={home.countyHubs} counties={homeCountyData?.counties ?? []} countyHrefs={homeCountyData?.hrefs ?? {}} />}
+        {home.countyHubs && <CountyHubs countyHubs={home.countyHubs} countyHrefs={homeCountyData?.hrefs ?? {}} />}
         {home.featuredBusinesses && <FeaturedBusinesses featuredBusinesses={home.featuredBusinesses} />}
         {home.editorial && <Editorial editorial={home.editorial} />}
         {home.socialFeed && <SocialFeed socialFeed={home.socialFeed} />}
