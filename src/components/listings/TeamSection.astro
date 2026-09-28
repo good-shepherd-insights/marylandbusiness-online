@@ -26,10 +26,11 @@ const valid = (listing.team ?? []).filter((member) => member.name);
             <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-[var(--primary)] mb-5">
               {member.avatar?.asset && (
                 <img
-                  src={sanityImageUrl(member.avatar, { width: 192 })}
+                  src={sanityImageUrl(member.avatar, { width: 240, height: 240, fit: 'crop', quality: 90 })}
                   alt={member.avatar.alt ?? member.name ?? ''}
                   class="w-full h-full object-cover"
                   loading="lazy"
+                  decoding="async"
                 />
               )}
             </div>

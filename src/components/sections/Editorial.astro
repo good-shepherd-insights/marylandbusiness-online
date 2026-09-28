@@ -6,7 +6,7 @@
  * is absent and never substitutes its own copy. Eyebrow border and image
  * caption placement are presentation (CSS).
  */
-import { sanityImageUrl } from '@lib/sanity/client';
+import { sanityImageUrl, sanityImageWidthSrcSet } from '@lib/sanity/client';
 import type { EditorialContent, EditorialStory } from '@lib/sanity/types';
 
 interface Props {
@@ -28,6 +28,14 @@ const {
 } = Astro.props.editorial;
 
 const validStories = (stories ?? []).filter((s) => s?.title);
+
+const editorialImageWidths = [960, 1280, 1600, 1920];
+const editorialImageParams = {
+  aspectRatio: 1,
+  fit: 'crop' as const,
+  quality: 90,
+  sharpen: 10,
+};
 ---
 
 {
@@ -38,10 +46,18 @@ const validStories = (stories ?? []).filter((s) => s?.title);
           <div class="editorial-media">
             {image?.asset && (
               <img
-                src={sanityImageUrl(image, { width: 1200 })}
-                srcset={`${sanityImageUrl(image, { width: 600 })} 1x, ${sanityImageUrl(image, { width: 1200 })} 2x`}
+                src={sanityImageUrl(image, {
+                  width: 1600,
+                  height: 1600,
+                  fit: editorialImageParams.fit,
+                  quality: editorialImageParams.quality,
+                  sharpen: editorialImageParams.sharpen,
+                })}
+                srcset={sanityImageWidthSrcSet(image, editorialImageWidths, editorialImageParams)}
+                sizes="(min-width: 1280px) 37rem, (min-width: 1024px) calc((100vw - 12rem) / 2), calc(100vw - 2rem)"
                 alt={imageAlt ?? ''}
                 loading="lazy"
+                decoding="async"
               />
             )}
             {(quote || attributionName) && (

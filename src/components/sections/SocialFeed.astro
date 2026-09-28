@@ -40,9 +40,10 @@ const validItems = (items ?? []).filter((item) => item?.name);
               <div class="social-person">
                 {item.avatar?.asset && (
                   <img
-                    src={sanityImageUrl(item.avatar, { width: 80 })}
+                    src={sanityImageUrl(item.avatar, { width: 120, height: 120, fit: 'crop', quality: 90 })}
                     alt={item.name ?? ''}
                     loading="lazy"
+                    decoding="async"
                   />
                 )}
                 <div>

@@ -69,10 +69,11 @@ const dateFmt = new Intl.DateTimeFormat('en-US', {
               <div class="flex items-center gap-3 mb-4">
                 {review.avatar?.asset && (
                   <img
-                    src={sanityImageUrl(review.avatar, { width: 80 })}
+                    src={sanityImageUrl(review.avatar, { width: 120, height: 120, fit: 'crop', quality: 90 })}
                     alt={review.avatar.alt ?? review.name ?? ''}
                     class="w-10 h-10 grayscale border border-[var(--border)]"
                     loading="lazy"
+                    decoding="async"
                   />
                 )}
                 <div>
