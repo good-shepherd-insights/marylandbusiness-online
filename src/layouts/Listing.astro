@@ -1,69 +1,70 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
-import AppProse from "../components/app/Prose.astro";
-const { frontmatter, slug } = Astro.props;
+import Navbar from "@components/app/Navbar.astro";
+import Footer from "@components/app/Footer.astro";
 import themeConfig from "@util/themeConfig";
-import { Icon } from "astro-icon/components";
-import AppShell from "@components/app/AppShell.astro";
-import config from "@util/themeConfig";
-import SidebarShell from "@components/app/SidebarShell.astro";
-import TitleHeader from "@components/listings/TitleHeader.astro";
+import { getSiteSettings } from "@lib/sanity/queries";
+import "@fontsource-variable/sora";
+import DetailHeader from "@components/listings/DetailHeader.astro";
+import PulseBar from "@components/listings/PulseBar.astro";
+import Promotions from "@components/listings/Promotions.astro";
+import GalleryGrid from "@components/listings/GalleryGrid.astro";
+import VibeCheck from "@components/listings/VibeCheck.astro";
+import Spotlight from "@components/listings/Spotlight.astro";
+import ListingEvents from "@components/listings/ListingEvents.astro";
+import AboutAmenities from "@components/listings/AboutAmenities.astro";
+import WhyChooseUs from "@components/listings/WhyChooseUs.astro";
+import MenuSection from "@components/listings/MenuSection.astro";
+import TeamSection from "@components/listings/TeamSection.astro";
+import AchievementsWall from "@components/listings/AchievementsWall.astro";
+import QaSection from "@components/listings/QaSection.astro";
+import ReviewsSection from "@components/listings/ReviewsSection.astro";
+import SimilarGrid from "@components/listings/SimilarGrid.astro";
+import BuyBox from "@components/listings/BuyBox.astro";
 
-const siteTitle = themeConfig.general.title;
-const title = frontmatter?.title || siteTitle;
-const link = frontmatter?.link;
+const { frontmatter, slug } = Astro.props;
+// Sanity listing docs take the full BusinessDetails layout. The template's
+// MDX fallbacks were removed — MDX pages render through Landing instead.
+const isListing = frontmatter?._type === "listing";
+const settings = await getSiteSettings();
+const title = frontmatter?.name || settings?.siteTitle || themeConfig?.general?.title || 'Listing';
 const description = frontmatter?.description;
-const linkText = link?.replace(/^https?:\/\//, "");
-const pageHeader = themeConfig.listings.pageHeader;
-const sidebar = config.layout.sidebar;
 ---
 
 <BaseLayout title={title} description={description} slug={slug}>
+  {settings && <Navbar settings={settings} />}
   {
-    sidebar ? (
-      <SidebarShell showSidebar={false}>
-        <div class="max-w-2xl w-full mx-auto py-20">
-          {pageHeader == "title" && (
-            <TitleHeader
-              title={title}
-              description={description}
-              link={link}
-              linkText={linkText}
-              image={frontmatter.image}
+    isListing && (
+      <div class="min-h-screen bg-[#FAF7F2]" style="font-family: 'Sora Variable', 'Sora', sans-serif;">
+        <main class="max-w-[1600px] mx-auto flex flex-col lg:flex-row">
+          <div class="flex-1 px-6 md:px-16 py-12 border-b lg:border-b-0 lg:border-r border-[#e3e0dc]">
+            <DetailHeader listing={frontmatter} />
+            <PulseBar listing={frontmatter} />
+            <Promotions promotions={frontmatter.promotions} />
+            <GalleryGrid images={frontmatter.gallery} />
+            <VibeCheck listing={frontmatter} />
+            <Spotlight
+              heading={frontmatter?.editorialHeading ?? ""}
+              sub={frontmatter?.editorialSub ?? ""}
+              ctaLabel={frontmatter?.editorialCtaLabel ?? ""}
+              stories={frontmatter?.editorialStories ?? []}
             />
-          )}
-          <AppProse>
-            <slot />
-          </AppProse>
-        </div>
-      </SidebarShell>
-    ) : (
-      <AppShell>
-        <div class="max-w-2xl w-full mx-auto py-20">
-          {pageHeader == "title" && (
-            <div class="mb-10">
-              <div class="flex justify-between items-center">
-                <h1 class="font-bold text-4xl text-gray-900 dark:text-gray-50">
-                  {title}
-                </h1>
-                {link && (
-                  <a
-                    class="inline-flex items-center gap-1 font-medium text-gray-800 dark:text-gray-100"
-                    href={link}
-                  >
-                    {linkText}
-                    <Icon name="tabler:arrow-up-right" />
-                  </a>
-                )}
-              </div>
-              <p class="text-gray-400 mt-2.5">{description}</p>
-            </div>
-          )}
-          <AppProse>
-            <slot />
-          </AppProse>
-        </div>
-      </AppShell>
+            <ListingEvents listing={frontmatter} />
+            <AboutAmenities listing={frontmatter} />
+            <WhyChooseUs listing={frontmatter} />
+            <MenuSection listing={frontmatter} />
+            <TeamSection listing={frontmatter} />
+            <AchievementsWall listing={frontmatter} />
+            <QaSection listing={frontmatter} />
+            <ReviewsSection listing={frontmatter} />
+            <SimilarGrid listing={frontmatter} />
+          </div>
+          <aside class="w-full lg:w-[450px] shrink-0 px-6 md:px-12 py-12">
+            <BuyBox listing={frontmatter} />
+          </aside>
+        </main>
+      </div>
     )
   }
+  {settings && <Footer settings={settings} />}
 </BaseLayout>

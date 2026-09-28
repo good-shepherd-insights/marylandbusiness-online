@@ -1,0 +1,99 @@
+---
+/**
+ * Promotions & coupons — design markup: two-up cards, tone from the
+ * `promotion.tone` enum (coupon solid/gift outline), rotated deco square.
+ */
+import type { Promotion } from '@lib/sanity/types';
+
+interface Props {
+  promotions: Promotion[] | null;
+}
+
+const valid = (Astro.props.promotions ?? []).filter((p) => p.heading);
+---
+
+{
+  valid.length > 0 && (
+    <section id="promotions" class="mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {valid.map((promo) =>
+          promo.tone === 'coupon' ? (
+            <div class="relative overflow-hidden border-2 border-[var(--primary)] bg-[#FBEAEA] p-8 flex flex-col justify-between">
+              <div class="absolute -right-6 -top-6 w-24 h-24 bg-[rgba(157,34,53,0.1)] rotate-45" />
+              <div>
+                <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--primary)]">
+                  {promo.eyebrow}
+                </span>
+                <h3 class="text-2xl font-extrabold text-[var(--card-foreground)] uppercase tracking-tight mt-2 mb-2">
+                  {promo.heading}
+                </h3>
+                <p class="text-xs text-[var(--foreground)] font-bold uppercase tracking-widest">{promo.note}</p>
+              </div>
+              {promo.ctaLabel && promo.ctaLink && (
+                <a class="btn-primary w-full py-4 mt-6" href={promo.ctaLink}>
+                  {promo.ctaLabel}
+                </a>
+              )}
+            </div>
+          ) : (
+            <div class="relative overflow-hidden border-2 border-[var(--card-foreground)] bg-[#FFF8E6] p-8 flex flex-col justify-between">
+              <div class="absolute -right-6 -top-6 w-24 h-24 bg-[rgba(234,170,0,0.2)] rotate-45" />
+              <div>
+                <span class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[var(--card-foreground)]">
+                  {promo.eyebrow}
+                </span>
+                <h3 class="text-2xl font-extrabold text-[var(--card-foreground)] uppercase tracking-tight mt-2 mb-2">
+                  {promo.heading}
+                </h3>
+                <p class="text-xs text-[var(--foreground)] font-bold uppercase tracking-widest">{promo.note}</p>
+              </div>
+              {promo.ctaLabel && promo.ctaLink && (
+                <a class="btn-outline w-full py-4 mt-6" href={promo.ctaLink}>
+                  {promo.ctaLabel}
+                </a>
+              )}
+            </div>
+          ),
+        )}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  section {
+    --primary: #9d2235;
+    --primary-foreground: #fff;
+    --secondary: #eaaa00;
+    --secondary-foreground: #121212;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    padding: 0;
+    border-bottom: none;
+  }
+  .btn-primary {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+    border-radius: 0;
+    display: block;
+    text-align: center;
+  }
+  .btn-outline {
+    border: 2px solid var(--card-foreground);
+    background: transparent;
+    color: var(--card-foreground);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+    border-radius: 0;
+    display: block;
+    text-align: center;
+  }
+</style>

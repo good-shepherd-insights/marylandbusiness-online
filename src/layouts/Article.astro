@@ -4,9 +4,10 @@ import BaseLayout from "./BaseLayout.astro";
 import AppProse from "../components/app/Prose.astro";
 const { frontmatter, slug } = Astro.props;
 import themeConfig from "@util/themeConfig";
+import { getSiteSettings } from "@lib/sanity/queries";
 import AppShell from "@components/app/AppShell.astro";
-const siteTitle = themeConfig.general.title;
-const title = frontmatter?.title || siteTitle;
+const settings = await getSiteSettings();
+const title = frontmatter?.title || settings?.siteTitle || themeConfig?.general?.title || 'Article';
 const description = frontmatter?.description;
 ---
 

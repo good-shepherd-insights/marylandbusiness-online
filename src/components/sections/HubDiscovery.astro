@@ -1,0 +1,1683 @@
+---
+/**
+ * Hub discovery — county hub (design 10 desktop, design 11 mobile).
+ * Desktop: split view — full map pane (Google Maps JavaScript API,
+ * lazy-loaded, pins from listing geo), 500px business-list pane, county
+ * expertise band. Mobile: 200px live map strip with fullscreen expand,
+ * sticky filter chip bar, compact rows, stacked expertise stats.
+ *
+ * The path IS the filter state: `filters` pre-applies the path's segments
+ * as removable chips — removal widens scope via /api/directory.json.
+ * Filters: Category and County dropdowns + city checkboxes.
+ * Never creates URLs, never indexed (TAGS.md).
+ *
+ * Fixes applied (critique 2026-09-27):
+ *   T-3  All text ≥13px for body/interactive; ≥12px for metadata/labels
+ *   S-1  Star icons: tabler:star-filled (full) / tabler:star (outline/empty)
+ *        Wrapped in role="img" aria-label; individual icons aria-hidden
+ *   S-2  Same star fix in JS renderRow
+ *   A-2  Dropdown panels get IDs; toggles get aria-controls
+ *   A-3  Phone aria-label → "Call {name}"; aria-hidden on phone icon
+ *   A-4  role="status" aria-live="polite" results region; count + error
+ *   A-5  aria-busy="true/false" on [data-list] during widen()
+ *   A-6  Focus returned to expand button when map closes
+ *   D-2  Mobile filter bar gets padding-inline-end for last-chip visibility
+ *   D-3  Map expand/close button aria-controls="hub-map-shell"
+ *   E-1  Visible inline error banner when API fails
+ *   E-2  Map-empty placeholder message when no geo points
+ *   P-3  First business image: loading="eager" fetchpriority="high"
+ *   P-4  Phone btn min-width/height 44px; filter btns min-height 44px
+ *   P-5  Dead .chip-toggle.is-active CSS removed
+ *   P-8  Mobile images: grayscale removed (color on all breakpoints)
+ *   P-9  detailHref null → undefined so Astro omits href attribute
+ */
+import { Icon } from 'astro-icon/components';
+import type { HubBusiness, HubData, SanityHubDiscovery } from '@lib/sanity/types';
+import type { PathFilter } from '@lib/directory/paths';
+
+interface Props {
+  discovery: SanityHubDiscovery;
+  hub: HubData;
+  /** Chips pre-applied by the path itself (its default state). */
+  filters?: PathFilter[];
+  /** All county entities — the County dropdown options. */
+  counties?: { label: string; slug: string }[];
+  /** All category entities — the Category dropdown options. */
+  categories?: { label: string; slug: string }[];
+}
+
+const { discovery, hub, filters = [], counties = [], categories = [] } = Astro.props;
+const businesses = hub.businesses.filter((b) => b.name && b.slug);
+
+/** Geocoded rows for the map; rows without a pin stay list-only. */
+const mapPoints = businesses
+  .filter((b) => typeof b.geo?.lat === 'number' && typeof b.geo?.lng === 'number')
+  .map((b) => ({ id: b._id, name: b.name ?? '', lat: b.geo!.lat, lng: b.geo!.lng }));
+
+const canExpand = Boolean(discovery.interactiveMapLabel) && mapPoints.length > 0;
+const hasMapPoints = mapPoints.length > 0;
+
+/** Full stars + half-star flag from a computed average. */
+function stars(rating: number) {
+  const full = Math.floor(rating);
+  return { full, half: rating - full >= 0.5 };
+}
+
+/**
+ * Detail path for a row: /{county}/{city}/{business}.
+ * P-9: returns undefined (not null) so Astro omits href attribute entirely.
+ */
+const detailHref = (b: HubBusiness): string | undefined =>
+  b.county?.slug && b.city?.slug && b.slug?.current
+    ? `/${b.county.slug}/${b.city.slug}/${b.slug.current}`
+    : undefined;
+
+const rowAttrs = (b: HubBusiness) => ({
+  'data-row': true,
+  'data-id': b._id,
+  'data-name': b.name ?? '',
+  'data-county': b.county?.slug ?? '',
+  'data-city': b.city?.slug ?? '',
+  'data-cat': b.subcategory?.parent?.slug || b.subcategory?.slug || '',
+  'data-cat-label': b.subcategory?.parent?.name || b.subcategory?.name || '',
+  'data-sub': b.subcategory?.slug ?? '',
+  'data-slug': b.slug?.current ?? '',
+});
+---
+
+<div
+  class="hub-split flex flex-1 min-h-0 flex-col lg:flex-row overflow-hidden"
+  data-hub
+  data-defaults={JSON.stringify(filters)}
+  data-counties={JSON.stringify(counties)}
+  data-categories={JSON.stringify(categories)}
+  data-initial-stats={JSON.stringify(hub.stats)}
+>
+  <!-- Map pane -->
+  <section
+    id="hub-map-shell"
+    data-map-shell
+    class="hub-map relative overflow-hidden flex flex-col bg-[#F5F4F2] border-b border-[var(--border)] lg:border-b-0 h-[200px] shrink-0 lg:h-auto lg:shrink lg:flex-1"
+    aria-label="Business locations map"
+  >
+    <div data-gmap class="gmap absolute inset-0" data-points={JSON.stringify(mapPoints)} aria-hidden="true"></div>
+
+    <!-- Map-empty placeholder (E-2): shown when no geo data available -->
+    {!hasMapPoints && (
+      <div class="map-empty-state">
+        <Icon name="tabler:map-off" class="w-8 h-8 mb-2 opacity-40" aria-hidden="true" />
+        <p>No map locations available for this area</p>
+      </div>
+    )}
+
+    <div class="map-controls absolute top-6 left-6 z-10 hidden lg:flex flex-col gap-2">
+      <div class="bg-white border border-[var(--border)] p-1 flex gap-1">
+        {discovery.mapToggleMapLabel && (
+          <button type="button" data-maptype="roadmap" class="map-toggle-btn is-active">
+            {discovery.mapToggleMapLabel}
+          </button>
+        )}
+        {discovery.mapToggleSatelliteLabel && (
+          <button type="button" data-maptype="hybrid" class="map-toggle-btn">
+            {discovery.mapToggleSatelliteLabel}
+          </button>
+        )}
+      </div>
+      {discovery.regionFocusHeading && hub.cities.length > 0 && (
+        <div class="region-focus hidden lg:block bg-white border border-[var(--border)] p-4 w-64">
+          <h3 class="region-focus-heading">{discovery.regionFocusHeading}</h3>
+          <div class="space-y-3" data-city-list>
+            {hub.cities.map((city) => (
+              <label class="city-label">
+                <input type="checkbox" checked data-city-check={city.slug} class="accent-[var(--primary)] w-4 h-4" />
+                <span class="city-label-text">{city.name} ({city.count})</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* A-6 / D-3: aria-controls points to map shell ID */}
+    {canExpand && (
+      <button
+        type="button"
+        data-map-expand
+        class="map-expand-btn z-10 lg:hidden"
+        aria-controls="hub-map-shell"
+        aria-label={`${discovery.interactiveMapLabel} — tap to expand`}
+      >
+        {discovery.interactiveMapLabel}
+      </button>
+    )}
+    {discovery.interactiveMapCloseLabel && (
+      <button
+        type="button"
+        data-map-close
+        class="map-close-btn z-[70]"
+        aria-label={discovery.interactiveMapCloseLabel}
+        aria-controls="hub-map-shell"
+      >
+        <Icon name="tabler:x" class="w-4 h-4" aria-hidden="true" />
+      </button>
+    )}
+  </section>
+
+  <!-- List pane -->
+  <section class="hub-list-pane w-full lg:w-[500px] border-t lg:border-t-0 lg:border-l border-[var(--border)] bg-[#FAF7F2] flex flex-col" aria-label="Business directory">
+
+    <!-- A-4: live status region for filter result announcements -->
+    <div role="status" aria-live="polite" aria-atomic="true" class="sr-only" data-status></div>
+
+    <!-- E-1: error banner (hidden by default; shown by JS on API fail) -->
+    <div class="hub-error-banner" data-error-banner hidden role="alert">
+      <Icon name="tabler:alert-triangle" class="w-4 h-4 shrink-0" aria-hidden="true" />
+      <span data-error-msg>Couldn't refresh results — showing previous list</span>
+      <button type="button" data-error-retry class="hub-error-retry">Try again</button>
+    </div>
+
+    <!-- Mobile sticky filter bar -->
+    <div class="lg:hidden sticky top-0 z-40 bg-white border-b border-[var(--border)]">
+      <div class="mobile-filter-bar">
+        {discovery.categoryFilterLabel && (
+          <button
+            type="button"
+            data-cat-toggle
+            id="cat-toggle-mobile"
+            class="btn-outline whitespace-nowrap flex items-center gap-2"
+            aria-expanded="false"
+            aria-controls="cat-menu-mobile"
+          >
+            <Icon name="tabler:filter" class="w-3 h-3" aria-hidden="true" />
+            {discovery.categoryFilterLabel}
+          </button>
+        )}
+        {counties.length > 0 && (
+          <button
+            type="button"
+            data-county-toggle
+            id="county-toggle-mobile"
+            class="btn-outline whitespace-nowrap flex items-center gap-2"
+            aria-expanded="false"
+            aria-controls="county-menu-mobile"
+          >
+            <Icon name="tabler:map-pin" class="w-3 h-3" aria-hidden="true" />
+            {discovery.regionFocusHeading ?? 'County'}
+          </button>
+        )}
+        {discovery.clearFiltersLabel && (
+          <button type="button" data-clear class="btn-outline whitespace-nowrap hub-clear-btn">
+            {discovery.clearFiltersLabel}
+          </button>
+        )}
+      </div>
+      <!-- D-2: flex-wrap chips row (not overflow-x, so no clip) -->
+      <div class="px-3 pb-3 hidden" data-chips-mobile></div>
+      <div id="cat-menu-mobile" class="hidden border-t border-[var(--border)] p-3 max-h-[50vh] overflow-y-auto custom-scrollbar" data-cat-menu-mobile></div>
+      <div id="county-menu-mobile" class="hidden border-t border-[var(--border)] p-3 max-h-[50vh] overflow-y-auto custom-scrollbar" data-county-menu-mobile></div>
+    </div>
+
+    <!-- Desktop filter header -->
+    <div class="hidden lg:block p-6 border-b border-[var(--border)] shrink-0">
+      <div class="flex items-center justify-between mb-5">
+        {discovery.browseHeading && (
+          <h2 class="browse-heading">
+            {discovery.browseHeading} <span class="browse-count" data-count>0</span>
+          </h2>
+        )}
+        {discovery.clearFiltersLabel && (
+          <button type="button" data-clear class="hub-clear-btn-desktop">{discovery.clearFiltersLabel}</button>
+        )}
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        {discovery.categoryFilterLabel && (
+          <div class="relative">
+            <button
+              type="button"
+              data-cat-toggle
+              id="cat-toggle-desktop"
+              class="btn-outline w-full flex items-center gap-2 justify-center"
+              aria-expanded="false"
+              aria-controls="cat-menu-desktop"
+            >
+              <Icon name="tabler:filter" class="w-3 h-3" aria-hidden="true" />
+              {discovery.categoryFilterLabel}
+            </button>
+            <div
+              id="cat-menu-desktop"
+              data-cat-menu
+              class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-[var(--border)] z-30 max-h-64 overflow-y-auto custom-scrollbar"
+            ></div>
+          </div>
+        )}
+        {counties.length > 0 && (
+          <div class="relative">
+            <button
+              type="button"
+              data-county-toggle
+              id="county-toggle-desktop"
+              class="btn-outline w-full flex items-center gap-2 justify-center"
+              aria-expanded="false"
+              aria-controls="county-menu-desktop"
+            >
+              <Icon name="tabler:map-pin" class="w-3 h-3" aria-hidden="true" />
+              {discovery.regionFocusHeading ?? 'County'}
+            </button>
+            <div
+              id="county-menu-desktop"
+              data-county-menu
+              class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-[var(--border)] z-30 max-h-64 overflow-y-auto custom-scrollbar"
+            ></div>
+          </div>
+        )}
+      </div>
+      <div class="mt-4 flex flex-col gap-2" data-chips-wrap>
+        <div class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-[var(--muted-foreground)]">
+          <span data-chips-label>No filters active · showing everything</span>
+          <span class="h-px flex-1 bg-[var(--border)]"></span>
+        </div>
+        <div class="flex flex-wrap gap-2" data-chips></div>
+      </div>
+    </div>
+
+    <!-- Business list -->
+    <div class="hub-list flex-1 overflow-y-auto custom-scrollbar" data-list aria-label="Business listings">
+      {businesses.map((b, idx) => {
+        const s = stars(b.rating);
+        const attrs = rowAttrs(b);
+        const href = detailHref(b);
+        const isFirst = idx === 0;
+        return (
+          <article class="business-list-item p-4 lg:p-6" data-biz={b._id} {...attrs}>
+            <div class="flex gap-4 lg:gap-5">
+              {b.imageUrl && (
+                href ? (
+                  <a href={href} class="biz-img-wrap shrink-0" tabindex="-1" aria-hidden="true">
+                    <img
+                      class="biz-img"
+                      src={b.imageUrl}
+                      alt=""
+                      loading={isFirst ? 'eager' : 'lazy'}
+                      fetchpriority={isFirst ? 'high' : undefined}
+                    />
+                  </a>
+                ) : (
+                  <div class="biz-img-wrap shrink-0">
+                    <img
+                      class="biz-img"
+                      src={b.imageUrl}
+                      alt=""
+                      loading={isFirst ? 'eager' : 'lazy'}
+                      fetchpriority={isFirst ? 'high' : undefined}
+                    />
+                  </div>
+                )
+              )}
+              <div class="flex-1 min-w-0">
+                <div class="mb-1 lg:mb-2">
+                  {b.name && (
+                    href ? (
+                      <a href={href} class="biz-name">
+                        {b.name}
+                      </a>
+                    ) : (
+                      <span class="biz-name">{b.name}</span>
+                    )
+                  )}
+                </div>
+                {b.reviewCount > 0 && (
+                  <div class="flex items-center gap-2 mb-2 lg:mb-3">
+                    {/* S-1: role=img, aria-label, icons aria-hidden */}
+                    <div
+                      class="yelp-rating flex items-center gap-px"
+                      role="img"
+                      aria-label={`${b.rating.toFixed(1)} out of 5 stars`}
+                    >
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Icon
+                          name={
+                            i < s.full
+                              ? 'tabler:star-filled'
+                              : i === s.full && s.half
+                                ? 'tabler:star-half-filled'
+                                : 'tabler:star'
+                          }
+                          class={`star-icon ${i < s.full || (i === s.full && s.half) ? 'star-full' : 'star-empty'}`}
+                          aria-hidden="true"
+                        />
+                      ))}
+                    </div>
+                    <span class="rating-text">
+                      {b.rating.toFixed(1)} <span class="rating-count">({b.reviewCount})</span>
+                    </span>
+                  </div>
+                )}
+                {b.description && (
+                  <p class="biz-description">{b.description}</p>
+                )}
+                <div class="flex gap-2 items-center">
+                  {b.ctaPrimaryLabel && b.ctaPrimaryUrl && (
+                    <a class="btn-primary flex-1" href={b.ctaPrimaryUrl}>{b.ctaPrimaryLabel}</a>
+                  )}
+                  {b.phone && (
+                    /* A-3 + P-4: "Call {name}", min 44×44px */
+                    <a
+                      class="phone-btn"
+                      href={`tel:${b.phone.replace(/[^0-9+]/g, '')}`}
+                      aria-label={`Call ${b.name}`}
+                    >
+                      <Icon name="tabler:phone" class="w-4 h-4" aria-hidden="true" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+      <div data-empty hidden class="p-10 text-center">
+        <Icon name="tabler:search-off" class="w-8 h-8 mx-auto mb-3 text-[var(--border)]" aria-hidden="true" />
+        <p class="empty-label" data-empty-labels></p>
+        <button type="button" data-empty-clear class="btn-outline px-6 mt-3">{discovery.clearFiltersLabel}</button>
+      </div>
+    </div>
+
+    {discovery.expertiseHeading && (discovery.expertiseStats?.length ?? 0) > 0 && (
+      <div class="expertise-band p-5 bg-[#F3EFE8] border-t border-[var(--border)] shrink-0">
+        <h3 class="expertise-heading">{discovery.expertiseHeading}</h3>
+        <div class="flex flex-col gap-2 lg:grid lg:grid-cols-2 lg:gap-3">
+          {discovery.expertiseStats!.map((stat) => (
+            <div class="expertise-stat">
+              <span class="expertise-stat-label">{stat.label}</span>
+              <span class="expertise-stat-value">{stat.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </section>
+</div>
+
+<script>
+  /**
+   * Map + filters. The path IS the filter state: chips render from the
+   * path's segments; removing one widens scope via /api/directory.json.
+   * Filters: Category and County dropdowns + city checkboxes.
+   * Client-side only — never creates URLs, never indexed (TAGS.md).
+   */
+  interface GmapPoint {
+    id: string;
+    name: string;
+    lat: number;
+    lng: number;
+  }
+
+  type MapsGoogle = {
+    maps: {
+      Map: new (el: HTMLElement, opts: Record<string, unknown>) => GoogleMap;
+      Marker: new (opts: Record<string, unknown>) => GoogleMarker;
+      LatLngBounds: new () => { extend(p: unknown): void; isEmpty(): boolean };
+      ControlPosition: Record<string, unknown>;
+      Size: new (w: number, h: number) => unknown;
+    };
+  };
+  type GoogleMap = {
+    setMapTypeId(id: string): void;
+    panTo(p: unknown): void;
+    fitBounds(b: unknown, pad?: number): void;
+    setOptions(opts: Record<string, unknown>): void;
+  };
+  type GoogleMarker = {
+    getPosition(): unknown;
+    addListener(ev: string, fn: () => void): void;
+    setIcon(icon: unknown): void;
+    setMap(m: unknown): void;
+  };
+
+  interface Chip {
+    type: 'county' | 'city' | 'sub' | 'cat';
+    slug: string;
+    label: string;
+  }
+  interface BizRow {
+    _id: string;
+    name?: string;
+    slug: { current: string };
+    description?: string;
+    imageUrl?: string | null;
+    image?: { alt?: string } | null;
+    ctaPrimaryLabel?: string;
+    ctaPrimaryUrl?: string;
+    phone?: string;
+    city?: { name?: string; slug?: string } | null;
+    county?: { name?: string; slug?: string } | null;
+    geo?: { lat: number; lng: number } | null;
+    rating: number;
+    reviewCount: number;
+    subcategory?: { name: string; slug: string; parent?: { name: string; slug: string } | null } | null;
+  }
+
+  const rootNode = document.querySelector<HTMLElement>('[data-hub]');
+  if (rootNode) {
+    const root: HTMLElement = rootNode;
+
+    /* ---------------- state ---------------- */
+    const defaults: Chip[] = JSON.parse(root.dataset.defaults ?? '[]');
+    let chips: Chip[] = [...defaults];
+
+    const af = new URLSearchParams(location.search).get('af');
+    if (af) {
+      try {
+        const extra: Chip[] = af.split(',').map((part) => {
+          const [type, slug, label] = part.split('~');
+          return { type, slug, label } as Chip;
+        }).filter((c) => ['county', 'city', 'sub', 'cat'].includes(c.type) && c.slug);
+        const known = new Set(chips.map((c) => `${c.type}:${c.slug}`));
+        chips = [...chips, ...extra.filter((c) => !known.has(`${c.type}:${c.slug}`))];
+        history.replaceState(null, '', location.pathname);
+      } catch {
+        /* malformed af: keep defaults */
+      }
+    }
+
+    const excludedCities = new Set<string>();
+
+    /* ---------------- elements ---------------- */
+    const list = root.querySelector<HTMLElement>('[data-list]');
+    const empty = root.querySelector<HTMLElement>('[data-empty]');
+    const cityList = root.querySelector<HTMLElement>('[data-city-list]');
+    const chipsHosts = Array.from(root.querySelectorAll<HTMLElement>('[data-chips],[data-chips-mobile]'));
+    const catMenus = Array.from(root.querySelectorAll<HTMLElement>('[data-cat-menu],[data-cat-menu-mobile]'));
+    const catToggles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-cat-toggle]'));
+    const countyMenus = Array.from(root.querySelectorAll<HTMLElement>('[data-county-menu],[data-county-menu-mobile]'));
+    const countyToggles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-county-toggle]'));
+    const clearBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-clear],[data-empty-clear]'));
+    const statusEl = root.querySelector<HTMLElement>('[data-status]');
+    const errorBanner = root.querySelector<HTMLElement>('[data-error-banner]');
+    const errorMsg = root.querySelector<HTMLElement>('[data-error-msg]');
+    const errorRetry = root.querySelector<HTMLButtonElement>('[data-error-retry]');
+
+    const rowEls = (): HTMLElement[] => Array.from(list?.querySelectorAll<HTMLElement>('[data-row]') ?? []);
+    const rowsById = new Map<string, HTMLElement>();
+    const syncRowMap = () => {
+      rowsById.clear();
+      for (const el of rowEls()) rowsById.set(el.dataset.id ?? '', el);
+    };
+    syncRowMap();
+
+    /* A-4: announce status to screen readers */
+    function announce(msg: string) {
+      if (!statusEl) return;
+      statusEl.textContent = '';
+      requestAnimationFrame(() => { statusEl.textContent = msg; });
+    }
+
+    function showError(msg?: string) {
+      if (!errorBanner) return;
+      if (errorMsg && msg) errorMsg.textContent = msg;
+      errorBanner.hidden = false;
+    }
+
+    function hideError() {
+      if (errorBanner) errorBanner.hidden = true;
+    }
+
+    errorRetry?.addEventListener('click', () => {
+      hideError();
+      lastParams = 'reset';
+      widen().then(apply);
+    });
+
+    /* icon cache: cloned from SSR markup */
+    const iconCache = new Map<string, string>();
+    function cacheIcons() {
+      const firstRow = list?.querySelector<HTMLElement>('[data-row]');
+      const x = root.querySelector<HTMLElement>('[data-map-close] svg');
+      if (x) iconCache.set('x', x.outerHTML);
+      if (firstRow) {
+        const starFull = firstRow.querySelector<SVGElement>('.yelp-rating svg.star-full');
+        const starHalf = firstRow.querySelector<SVGElement>('.yelp-rating svg.star-half');
+        const starEmpty = firstRow.querySelector<SVGElement>('.yelp-rating svg.star-empty');
+        const phone = firstRow.querySelector<HTMLElement>('a[href^="tel:"] svg');
+        if (starFull) iconCache.set('star-full', starFull.outerHTML);
+        if (starHalf) iconCache.set('star-half', starHalf.outerHTML);
+        if (starEmpty) iconCache.set('star-empty', starEmpty.outerHTML);
+        if (phone) iconCache.set('phone', phone.outerHTML);
+      }
+    }
+    const icon = (name: string) => iconCache.get(name) ?? '';
+
+    /* ---------------- chip rendering ---------------- */
+    const chipTypeLabel: Record<Chip['type'], string> = {
+      county: 'County',
+      city: 'City',
+      sub: 'Subcategory',
+      cat: 'Category',
+    };
+    function renderChips() {
+      for (const host of chipsHosts) {
+        const isMobile = 'chipsMobile' in host.dataset;
+        const chipsRow = host.querySelector<HTMLElement>('[data-chips]');
+        const labelSpan = host.querySelector<HTMLElement>('[data-chips-label]');
+        if (chipsRow) chipsRow.textContent = '';
+        if (labelSpan) {
+          labelSpan.textContent = chips.length === 0
+            ? 'No filters active · showing everything'
+            : `Active filters · ${chips.length}`;
+        }
+        if (!chipsRow) continue;
+
+        for (const chip of chips) {
+          const pill = document.createElement('span');
+          pill.className = 'inline-flex items-stretch overflow-hidden text-[10px] font-bold uppercase tracking-widest border border-[var(--primary)] bg-[var(--primary)] text-white';
+          const tag = document.createElement('span');
+          tag.className = 'px-2 py-1.5 bg-[var(--primary-foreground)]/10 text-white/80';
+          tag.textContent = chipTypeLabel[chip.type];
+          const label = document.createElement('span');
+          label.className = 'px-2 py-1.5 text-white';
+          label.textContent = chip.label;
+          const x = document.createElement('button');
+          x.type = 'button';
+          x.className = 'px-2 py-1.5 text-white/80 hover:text-white hover:bg-[var(--primary-foreground)]/15 border-l border-white/20';
+          x.setAttribute('aria-label', `Remove ${chip.label} filter`);
+          x.innerHTML = icon('x');
+          x.addEventListener('click', () => removeChip(chip));
+          pill.append(tag, label, x);
+          chipsRow.append(pill);
+        }
+        if (isMobile) host.classList.toggle('hidden', false);
+      }
+    }
+
+    const chipsToParams = () => {
+      const params = new URLSearchParams();
+      for (const chip of chips) params.set(chip.type, chip.slug);
+      return params;
+    };
+
+    async function removeChip(chip: Chip) {
+      chips = chips.filter((c) => c !== chip);
+      renderChips();
+      await widen();
+      apply();
+    }
+
+    let lastParams = chipsToParams().toString();
+    // Live header stats: rewrite the three [data-stat] tiles on every
+    // successful widen so Listings / Cities track scope live.
+    const initialStats: { value: string; label: string }[] = (() => {
+      try { return JSON.parse(root.dataset.initialStats ?? '[]'); } catch { return []; }
+    })();
+    function writeStat(index: number, value: string) {
+      const el = root.querySelector<HTMLElement>(`[data-stat="${index}"]`);
+      if (el) el.textContent = value;
+    }
+    function recomputeStatsFromRows(rows: BizRow[]) {
+      const cities = new Set<string>();
+      for (const r of rows) if (r.city?.slug) cities.add(r.city.slug);
+      writeStat(0, String(rows.length));
+      writeStat(1, String(cities.size));
+      if (initialStats[2]) writeStat(2, initialStats[2].value);
+    }
+
+    async function widen() {
+      const params = chipsToParams().toString();
+      if (params === lastParams) return;
+      lastParams = params;
+
+      /* A-5: aria-busy during fetch */
+      list?.setAttribute('data-loading', '');
+      list?.setAttribute('aria-busy', 'true');
+      hideError();
+
+      try {
+        const res = await fetch(`/api/directory.json?${params}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = (await res.json()) as { businesses: BizRow[]; cities: { name: string; slug: string; count: number }[] };
+        renderRows(data.businesses);
+        renderCities(data.cities);
+        recomputeStatsFromRows(data.businesses);
+      } catch (err) {
+        console.error('[hub] widen failed', err);
+        /* E-1: visible error banner */
+        showError('Couldn\'t refresh results — showing previous list');
+        announce('Error loading results. Showing previous list.');
+      } finally {
+        list?.removeAttribute('data-loading');
+        list?.setAttribute('aria-busy', 'false');
+        apply();
+      }
+    }
+
+    /* ---------------- row rendering ---------------- */
+    function renderRow(b: BizRow): HTMLElement {
+      const el = document.createElement('article');
+      el.className = 'business-list-item p-4 lg:p-6';
+      el.setAttribute('data-row', '');
+      el.dataset.biz = b._id;
+      el.dataset.id = b._id;
+      el.dataset.name = b.name ?? '';
+      el.dataset.county = b.county?.slug ?? '';
+      el.dataset.city = b.city?.slug ?? '';
+      el.dataset.cat = b.subcategory?.parent?.slug || b.subcategory?.slug || '';
+      el.dataset.catLabel = b.subcategory?.parent?.name || b.subcategory?.name || '';
+      el.dataset.sub = b.subcategory?.slug ?? '';
+      el.dataset.slug = b.slug?.current ?? '';
+      const href = b.county?.slug && b.city?.slug && b.slug?.current
+        ? `/${b.county.slug}/${b.city.slug}/${b.slug.current}` : null;
+      const wrap = document.createElement('div');
+      wrap.className = 'flex gap-4 lg:gap-5';
+
+      if (b.imageUrl) {
+        const imgBox = href ? document.createElement('a') : document.createElement('div');
+        imgBox.className = 'biz-img-wrap shrink-0';
+        if (href && imgBox instanceof HTMLAnchorElement) {
+          imgBox.href = href;
+          imgBox.tabIndex = -1;
+          imgBox.setAttribute('aria-hidden', 'true');
+        }
+        const img = document.createElement('img');
+        img.className = 'biz-img';
+        img.src = b.imageUrl;
+        img.alt = '';
+        img.loading = 'lazy';
+        imgBox.append(img);
+        wrap.append(imgBox);
+      }
+
+      const body = document.createElement('div');
+      body.className = 'flex-1 min-w-0';
+
+      if (b.name) {
+        const nameEl = href ? document.createElement('a') : document.createElement('span');
+        nameEl.className = 'biz-name';
+        nameEl.textContent = b.name;
+        if (href && nameEl instanceof HTMLAnchorElement) nameEl.href = href;
+        const nameRow = document.createElement('div');
+        nameRow.className = 'mb-1 lg:mb-2';
+        nameRow.append(nameEl);
+        body.append(nameRow);
+      }
+
+      /* S-2: star fix in client-rendered rows */
+      if (b.reviewCount > 0 && b.rating > 0 && iconCache.has('star-full')) {
+        const ratingRow = document.createElement('div');
+        ratingRow.className = 'flex items-center gap-2 mb-2 lg:mb-3';
+        const starsEl = document.createElement('div');
+        starsEl.className = 'yelp-rating flex items-center gap-px';
+        starsEl.setAttribute('role', 'img');
+        starsEl.setAttribute('aria-label', `${b.rating.toFixed(1)} out of 5 stars`);
+        const full = Math.floor(b.rating);
+        const half = b.rating - full >= 0.5;
+        for (let i = 0; i < 5; i += 1) {
+          const isStarFull = i < full;
+          const isStarHalf = !isStarFull && i === full && half;
+          const iconKey = isStarFull ? 'star-full' : isStarHalf ? 'star-half' : 'star-empty';
+          starsEl.insertAdjacentHTML('beforeend', icon(iconKey));
+        }
+        const nums = document.createElement('span');
+        nums.className = 'rating-text';
+        nums.textContent = `${b.rating.toFixed(1)} (${b.reviewCount})`;
+        ratingRow.append(starsEl, nums);
+        body.append(ratingRow);
+      }
+
+      if (b.description) {
+        const p = document.createElement('p');
+        p.className = 'biz-description';
+        p.textContent = b.description;
+        body.append(p);
+      }
+
+      const ctas = document.createElement('div');
+      ctas.className = 'flex gap-2 items-center';
+      if (b.ctaPrimaryLabel && b.ctaPrimaryUrl) {
+        const a = document.createElement('a');
+        a.className = 'btn-primary flex-1';
+        a.href = b.ctaPrimaryUrl;
+        a.textContent = b.ctaPrimaryLabel;
+        ctas.append(a);
+      }
+      if (b.phone && iconCache.has('phone')) {
+        const tel = document.createElement('a');
+        tel.className = 'phone-btn';
+        tel.href = `tel:${b.phone.replace(/[^0-9+]/g, '')}`;
+        /* A-3: "Call {name}" */
+        tel.setAttribute('aria-label', `Call ${b.name ?? ''}`);
+        tel.innerHTML = icon('phone');
+        ctas.append(tel);
+      }
+      body.append(ctas);
+      wrap.append(body);
+      el.append(wrap);
+      return el;
+    }
+
+    function renderRows(businesses: BizRow[]) {
+      if (!list) return;
+      list.querySelectorAll('[data-row]').forEach((el) => el.remove());
+      const { maps } = (window as unknown as { google?: MapsGoogle }).google ?? {};
+      for (const b of businesses) {
+        if (!b.name) continue;
+        notePoint(b);
+        if (map && maps) makeMarker(points.get(b._id)!, maps);
+        list.insertBefore(renderRow(b), empty ?? null);
+      }
+      syncRowMap();
+    }
+
+    /* ---------------- city checkboxes ---------------- */
+    function renderCities(cities: { name: string; slug: string; count: number }[]) {
+      if (!cityList) return;
+      cityList.textContent = '';
+      for (const city of cities) {
+        const label = document.createElement('label');
+        label.className = 'city-label';
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.checked = !excludedCities.has(city.slug);
+        box.setAttribute('data-city-check', city.slug);
+        box.className = 'accent-[var(--primary)] w-4 h-4';
+        box.addEventListener('change', () => {
+          if (box.checked) excludedCities.delete(city.slug);
+          else excludedCities.add(city.slug);
+          apply();
+        });
+        const span = document.createElement('span');
+        span.className = 'city-label-text';
+        span.textContent = `${city.name} (${city.count})`;
+        label.append(box, span);
+        cityList.append(label);
+      }
+    }
+
+    cityList?.querySelectorAll<HTMLInputElement>('[data-city-check]').forEach((box) => {
+      box.addEventListener('change', () => {
+        const slug = box.getAttribute('data-city-check') ?? '';
+        if (box.checked) excludedCities.delete(slug);
+        else excludedCities.add(slug);
+        apply();
+      });
+    });
+
+    /* ---------------- category dropdown ---------------- */
+    const categoryList: { slug: string; label: string }[] = JSON.parse(root.dataset.categories ?? '[]');
+
+    function renderCatMenu() {
+      const active = chips.find((c) => c.type === 'cat' || c.type === 'sub')?.slug;
+      for (const menu of catMenus) {
+        menu.textContent = '';
+        for (const { slug, label } of categoryList) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `dropdown-item ${slug === active ? 'is-active' : ''}`;
+          btn.textContent = label;
+          btn.addEventListener('click', () => {
+            chips = chips.filter((c) => c.type !== 'cat' && c.type !== 'sub');
+            chips.push({ type: 'cat', slug, label });
+            closeCatMenus();
+            renderChips();
+            widen().then(apply);
+          });
+          menu.append(btn);
+        }
+      }
+    }
+
+    function closeCatMenus() {
+      catMenus.forEach((m) => m.classList.add('hidden'));
+      catToggles.forEach((t) => t.setAttribute('aria-expanded', 'false'));
+    }
+
+    function menuFor(toggle: HTMLButtonElement): HTMLElement | undefined {
+      if (toggle.closest('.lg\\:hidden')) return root.querySelector<HTMLElement>('[data-cat-menu-mobile]') ?? undefined;
+      return toggle.parentElement?.querySelector<HTMLElement>('[data-cat-menu]') ?? undefined;
+    }
+
+    catToggles.forEach((toggle) => {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = menuFor(toggle);
+        if (!menu) return;
+        const wasOpen = !menu.classList.contains('hidden');
+        closeCatMenus();
+        if (!wasOpen) {
+          renderCatMenu();
+          menu.classList.remove('hidden');
+          toggle.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!(e.target as HTMLElement | null)?.closest('[data-cat-menu],[data-cat-menu-mobile],[data-cat-toggle]')) {
+        closeCatMenus();
+      }
+    });
+
+    /* ---------------- county dropdown ---------------- */
+    const countyList: { slug: string; label: string }[] = JSON.parse(root.dataset.counties ?? '[]');
+
+    function renderCountyMenu() {
+      const active = chips.find((c) => c.type === 'county')?.slug;
+      for (const menu of countyMenus) {
+        menu.textContent = '';
+        for (const county of countyList) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `dropdown-item ${county.slug === active ? 'is-active' : ''}`;
+          btn.textContent = county.label;
+          btn.addEventListener('click', () => {
+            chips = chips.filter((c) => c.type !== 'county' && c.type !== 'city');
+            chips.push({ type: 'county', slug: county.slug, label: county.label });
+            closeCountyMenus();
+            renderChips();
+            widen().then(apply);
+          });
+          menu.append(btn);
+        }
+      }
+    }
+
+    function closeCountyMenus() {
+      countyMenus.forEach((m) => m.classList.add('hidden'));
+      countyToggles.forEach((t) => t.setAttribute('aria-expanded', 'false'));
+    }
+
+    function countyMenuFor(toggle: HTMLButtonElement): HTMLElement | undefined {
+      if (toggle.closest('.lg\\:hidden')) return root.querySelector<HTMLElement>('[data-county-menu-mobile]') ?? undefined;
+      return toggle.parentElement?.querySelector<HTMLElement>('[data-county-menu]') ?? undefined;
+    }
+
+    countyToggles.forEach((toggle) => {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = countyMenuFor(toggle);
+        if (!menu) return;
+        const wasOpen = !menu.classList.contains('hidden');
+        closeCountyMenus();
+        closeCatMenus();
+        if (!wasOpen) {
+          renderCountyMenu();
+          menu.classList.remove('hidden');
+          toggle.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!(e.target as HTMLElement | null)?.closest('[data-county-menu],[data-county-menu-mobile],[data-county-toggle]')) {
+        closeCountyMenus();
+      }
+    });
+
+    clearBtns.forEach((btn) =>
+      btn.addEventListener('click', () => {
+        chips = [];
+        excludedCities.clear();
+        renderChips();
+        lastParams = 'reset';
+        cityList?.querySelectorAll<HTMLInputElement>('[data-city-check]').forEach((box) => { box.checked = true; });
+        widen().then(apply);
+      }),
+    );
+
+    /* ---------------- apply: filter + pins ---------------- */
+    const visibleIds = new Set<string>();
+    function rowVisible(el: HTMLElement): boolean {
+      for (const chip of chips) {
+        if ((el.dataset[chip.type] ?? '') !== chip.slug) return false;
+      }
+      if (el.dataset.city && excludedCities.has(el.dataset.city)) return false;
+      return true;
+    }
+
+    function apply() {
+      visibleIds.clear();
+      let visible = 0;
+      for (const el of rowEls()) {
+        const show = rowVisible(el);
+        el.hidden = !show;
+        if (show) { visible += 1; visibleIds.add(el.dataset.id ?? ''); }
+      }
+      if (empty) empty.hidden = visible > 0;
+      const count = String(visible);
+      for (const el of root.querySelectorAll<HTMLElement>('[data-count]')) el.textContent = count;
+      const emptyLabels = root.querySelector<HTMLElement>('[data-empty-labels]');
+      if (emptyLabels) {
+        emptyLabels.textContent = chips.length
+          ? `No results for: ${chips.map((c) => c.label).join(' · ')}`
+          : '';
+      }
+      /* A-4: announce count to screen readers */
+      if (visible > 0) {
+        announce(`${visible} ${visible === 1 ? 'business' : 'businesses'} found`);
+      } else {
+        announce('No results found. Try clearing filters.');
+      }
+      syncPins();
+    }
+
+    /* ---------------- map ---------------- */
+    const shell = document.querySelector<HTMLElement>('[data-map-shell]');
+    const gmapEl = document.querySelector<HTMLElement>('[data-gmap]');
+    const expandBtn = document.querySelector<HTMLButtonElement>('[data-map-expand]');
+    const closeBtn = document.querySelector<HTMLButtonElement>('[data-map-close]');
+
+    /* A-6: restore focus to expand button when map closes */
+    function setExpanded(on: boolean) {
+      shell?.classList.toggle('map-expanded', on);
+      document.documentElement.style.overflow = on ? 'hidden' : '';
+      window.dispatchEvent(new Event('resize'));
+      if (!on && expandBtn) expandBtn.focus();
+    }
+
+    expandBtn?.addEventListener('click', () => {
+      setExpanded(true);
+      ensureMap();
+    });
+    closeBtn?.addEventListener('click', () => setExpanded(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && shell?.classList.contains('map-expanded')) setExpanded(false);
+    });
+
+    let map: GoogleMap | null = null;
+    let loading: Promise<void> | null = null;
+    const toggles = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-maptype]'));
+    const points = new Map<string, GmapPoint>();
+    const markers = new Map<string, GoogleMarker>();
+    for (const p of JSON.parse(gmapEl?.dataset.points ?? '[]') as GmapPoint[]) points.set(p.id, p);
+
+    function notePoint(row: BizRow) {
+      if (row.geo && typeof row.geo.lat === 'number' && typeof row.geo.lng === 'number' && !points.has(row._id)) {
+        points.set(row._id, { id: row._id, name: row.name ?? '', lat: row.geo.lat, lng: row.geo.lng });
+      }
+    }
+
+    function pinIcon(active: boolean, maps: MapsGoogle['maps']) {
+      return {
+        url:
+          'data:image/svg+xml;charset=UTF-8,' +
+          encodeURIComponent(
+            `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z" fill="${active ? '#EAAA00' : '#9D2235'}" stroke="#fff" stroke-width="1.5"/></svg>`,
+          ),
+        scaledSize: new maps.Size(24, 24),
+      };
+    }
+
+    function makeMarker(p: GmapPoint, maps: MapsGoogle['maps']) {
+      if (!map || markers.has(p.id)) return;
+      const marker = new maps.Marker({
+        map: visibleIds.size === 0 || visibleIds.has(p.id) ? map : null,
+        position: { lat: p.lat, lng: p.lng },
+        title: p.name,
+        icon: pinIcon(false, maps),
+      });
+      marker.addListener('click', () => {
+        const row = rowsById.get(p.id);
+        if (row) {
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          row.classList.add('row-flash');
+          setTimeout(() => row.classList.remove('row-flash'), 1600);
+        }
+      });
+      markers.set(p.id, marker);
+    }
+
+    function syncPins() {
+      for (const [id, marker] of markers) marker.setMap(visibleIds.has(id) ? map : null);
+      if (!map) return;
+      const google = (window as unknown as { google?: MapsGoogle }).google;
+      if (!google) return;
+      const visible = [...points.values()].filter((p) => visibleIds.has(p.id));
+      if (visible.length === 0) return;
+      const bounds = new google.maps.LatLngBounds();
+      for (const p of visible) bounds.extend({ lat: p.lat, lng: p.lng });
+      map.fitBounds(bounds, 64);
+    }
+
+    function ensureMap(): Promise<void> {
+      if (map || !gmapEl) return Promise.resolve();
+      loading ??= (async () => {
+        const allPoints = [...points.values()];
+        const key = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY as string | undefined;
+        if (allPoints.length === 0 || !key) return;
+
+        await new Promise<void>((resolve, reject) => {
+          const inject = () => {
+            (window as unknown as Record<string, unknown>).__gmapReady = () => resolve();
+            const s = document.createElement('script');
+            s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&loading=async&callback=__gmapReady`;
+            s.async = true;
+            s.onerror = () => reject(new Error('Maps API failed to load'));
+            document.head.appendChild(s);
+          };
+          const io = new IntersectionObserver(
+            (entries) => {
+              if (entries.some((e) => e.isIntersecting)) {
+                io.disconnect();
+                inject();
+              }
+            },
+            { rootMargin: '400px' },
+          );
+          io.observe(gmapEl);
+        });
+
+        const google = (window as unknown as { google?: MapsGoogle }).google;
+        if (!google) return;
+        const { maps } = google;
+
+        map = new maps.Map(gmapEl, {
+          center: { lat: allPoints[0].lat, lng: allPoints[0].lng },
+          zoom: 12,
+          gestureHandling: 'cooperative',
+          zoomControl: false,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        });
+
+        apply();
+        for (const p of allPoints) makeMarker(p, maps);
+
+        for (const btn of toggles) {
+          btn.addEventListener('click', () => {
+            map?.setMapTypeId(btn.dataset.maptype || 'roadmap');
+            toggles.forEach((b) => b.classList.toggle('is-active', b === btn));
+          });
+        }
+      })();
+      return loading;
+    }
+
+    ensureMap().catch(() => {
+      /* invalid key or blocked network: pane keeps its quiet surface */
+    });
+
+    /* ---------------- boot ---------------- */
+    cacheIcons();
+    renderChips();
+    apply();
+  }
+</script>
+
+<style>
+  .hub-split {
+    --background: #faf7f2;
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --primary-foreground: #fff;
+    --secondary: #eaaa00;
+    --secondary-foreground: #121212;
+    --accent: #eaaa00;
+    --muted-foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+
+  /* Screen-reader only utility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .gmap { z-index: 0; }
+
+  /* E-2: map empty state */
+  .map-empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 1rem;
+    gap: 0;
+  }
+
+  /* E-1: error banner */
+  .hub-error-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    background: #fef2f2;
+    border-bottom: 1px solid #fecaca;
+    color: #991b1b;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .hub-error-retry {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9d2235;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    flex-shrink: 0;
+  }
+
+  .hub-error-retry:hover { text-decoration: underline; }
+
+  /* Map expand/close */
+  .map-expand-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 1px solid var(--card-foreground);
+    color: var(--card-foreground);
+    border-radius: 0;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8125rem;   /* 13px — was 10px */
+    padding: 0.75rem 1.5rem;
+    min-height: 44px;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  .map-expanded .gmap {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+  }
+
+  .map-expanded .map-controls {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 70;
+  }
+
+  .map-close-btn {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 2.75rem;        /* 44px — was 40px */
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--card-foreground);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    cursor: pointer;
+  }
+
+  .map-close-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .map-expanded .map-close-btn { display: flex; }
+
+  /* Map type toggle buttons */
+  .map-toggle-btn {
+    color: var(--card-foreground);
+    background: transparent;
+    font-size: 0.75rem;    /* 12px — was 10px */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 0.875rem;
+    min-height: 36px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .map-toggle-btn.is-active {
+    background: var(--card-foreground);
+    color: #fff;
+  }
+
+  .map-toggle-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+
+  /* Region focus panel */
+  .region-focus-heading {
+    font-size: 0.75rem;    /* 12px — was 10px */
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--card-foreground);
+  }
+
+  .city-label {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    cursor: pointer;
+    min-height: 32px;
+  }
+
+  .city-label-text {
+    font-size: 0.75rem;    /* 12px — was 10px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--card-foreground);
+  }
+
+  /* Mobile filter bar */
+  .mobile-filter-bar {
+    padding: 0.625rem 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    /* D-2: padding-inline-end ensures last chip isn't clipped */
+    padding-inline-end: 1.5rem;
+    scrollbar-width: none;
+  }
+
+  .mobile-filter-bar::-webkit-scrollbar { display: none; }
+
+  /* Browse heading (desktop filter header) */
+  .browse-heading {
+    font-size: 0.8125rem;  /* 13px — was 11px */
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--card-foreground);
+    margin: 0;
+  }
+
+  .browse-count {
+    color: var(--muted-foreground);
+    font-weight: 600;
+  }
+
+  /* Clear filters buttons */
+  .hub-clear-btn {
+    color: var(--primary);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .hub-clear-btn-desktop {
+    font-size: 0.75rem;    /* 12px — was 10px */
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    min-height: 32px;
+  }
+
+  .hub-clear-btn-desktop:hover { text-decoration: underline; }
+
+  /* Shared button styles */
+  .btn-primary {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: 4px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8125rem;  /* 13px — was 11px */
+    text-decoration: none;
+    min-height: 40px;
+    padding: 0 1rem;
+    transition: background-color 0.15s ease;
+  }
+
+  .btn-primary:hover { background-color: #7e1b2a; }
+
+  .btn-primary:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .btn-outline {
+    border: 1px solid var(--border);
+    color: var(--card-foreground);
+    border-radius: 4px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8125rem;  /* 13px — was 11px */
+    background: white;
+    cursor: pointer;
+    min-height: 40px;      /* P-4: close to 44px minimum */
+    padding: 0 0.875rem;
+    transition: border-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--card-foreground);
+  }
+
+  .btn-outline:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* P-4: Phone button 44×44px minimum */
+  .phone-btn {
+    width: 2.75rem;        /* 44px */
+    height: 2.75rem;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--card-foreground);
+    flex-shrink: 0;
+    text-decoration: none;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .phone-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .phone-btn:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Filter chip pills */
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.625rem;
+    background: white;
+    border: 1px solid var(--border);
+    font-size: 0.75rem;    /* 12px — was 9px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--card-foreground);
+  }
+
+  .chip-remove {
+    color: var(--muted-foreground);
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.125rem;
+    line-height: 1;
+    min-width: 20px;
+    min-height: 20px;
+  }
+
+  .chip-remove:hover { color: var(--primary); }
+
+  /* Business list */
+  .hub-list[data-loading] {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .hub-list :global(.business-list-item) {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .hub-list :global(.business-list-item[hidden]) { display: none; }
+
+  .hub-list :global(.business-list-item.row-flash) {
+    background: #f3efe8;
+    transition: background 0.3s ease;
+  }
+
+  /* Business image — P-8: color on all breakpoints (no grayscale) */
+  .hub-list :global(.biz-img-wrap) {
+    width: 5rem;
+    height: 5rem;
+    background: #F8F7F6;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .hub-list :global(.biz-img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Business name */
+  .hub-list :global(.biz-name) {
+    display: block;
+    font-size: 0.875rem;   /* 14px — was 12px */
+    font-weight: 700;
+    color: var(--card-foreground);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+
+  .hub-list :global(a.biz-name:hover) {
+    color: var(--primary);
+  }
+
+  /* Star rating */
+  .hub-list :global(.star-icon) {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  /* S-1: full and half stars in gold; empty stars in muted border color */
+  .hub-list :global(.star-full),
+  .hub-list :global(.star-half) {
+    color: var(--accent);
+  }
+
+  .hub-list :global(.star-empty) {
+    color: var(--border);
+    opacity: 0.8;
+  }
+
+  .hub-list :global(.rating-text) {
+    font-size: 0.75rem;    /* 12px — was 8px */
+    font-weight: 600;
+    color: var(--muted-foreground);
+    letter-spacing: 0;
+  }
+
+  .hub-list :global(.rating-count) {
+    font-weight: 500;
+    opacity: 0.8;
+  }
+
+  /* Business description — T-3: 13px was 10/11px */
+  .hub-list :global(.biz-description) {
+    font-size: 0.8125rem;  /* 13px */
+    line-height: 1.6;
+    color: var(--foreground);
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Shared btn-primary for client-rendered rows */
+  .hub-list :global(.btn-primary) {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    border-radius: 4px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8125rem;
+    text-decoration: none;
+    min-height: 40px;
+    padding: 0 1rem;
+  }
+
+  /* Empty state */
+  .hub-list :global([data-empty]) {
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+  }
+
+  .hub-list :global(.empty-label) {
+    font-size: 0.8125rem;  /* 13px — was 10px */
+    font-weight: 500;
+    color: var(--muted-foreground);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  /* Dropdown menu items */
+  .hub-list :global(.dropdown-item),
+  :global(.dropdown-item) {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;  /* 13px — was 10px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--card-foreground);
+    background: none;
+    border: none;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background 0.12s ease;
+  }
+
+  :global(.dropdown-item:hover),
+  :global(.dropdown-item.is-active) {
+    background: #F3EFE8;
+    color: var(--primary);
+  }
+
+  :global(.dropdown-item:focus-visible) {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+
+  /* Expertise band — T-3 */
+  .expertise-band { }
+
+  .expertise-heading {
+    font-size: 0.75rem;    /* 12px — was 9px */
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--primary);
+    margin: 0 0 0.875rem;
+  }
+
+  .expertise-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.625rem 0.75rem;
+    background: white;
+    border: 1px solid var(--border);
+  }
+
+  .expertise-stat-label {
+    font-size: 0.75rem;    /* 12px — was 8px */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--card-foreground);
+  }
+
+  .expertise-stat-value {
+    font-size: 0.8125rem;  /* 13px — was 9px */
+    font-weight: 700;
+    color: var(--card-foreground);
+  }
+
+  /* Scrollbars */
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+
+  /* Desktop image sizes */
+  @media (min-width: 1024px) {
+    .hub-list :global(.biz-img-wrap) {
+      width: 6rem;
+      height: 6rem;
+    }
+
+    .hub-list :global(.biz-description) {
+      font-size: 0.875rem; /* 14px desktop */
+    }
+
+    .expertise-stat {
+      display: block;
+      padding: 0.75rem;
+    }
+
+    .expertise-stat-label {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .expertise-stat-value {
+      display: block;
+    }
+  }
+
+  /* Mobile button square corners per design-11 */
+  @media (max-width: 1023px) {
+    .btn-primary,
+    .btn-outline,
+    .phone-btn {
+      border-radius: 0;
+    }
+  }
+</style>

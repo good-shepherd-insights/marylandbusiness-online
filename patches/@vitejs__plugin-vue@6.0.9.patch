@@ -1,0 +1,18 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index b7653bc26d08486fc1e880ccb14aa889b7ea1784..876df3ea77cd135aff7365199e4403ed3707b03f 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1434,6 +1434,13 @@ async function transformMain(code, filename, options, pluginContext, ssr, custom
+ 		if (transformWithOxc) {
+ 			const { code, map } = await transformWithOxc(resolvedCode, filename, {
+ 				...options.devServer?.config.oxc,
++				jsx: {
++					...options.devServer?.config.oxc?.jsx,
++					// vitejs/vite-plugin-vue#798 / #814: never inject React Fast
++					// Refresh helpers into Vue SFCs even when plugin-react set
++					// oxc.jsx.refresh globally.
++					refresh: false,
++				},
+ 				lang: "ts",
+ 				sourcemap: options.sourceMap
+ 			}, resolvedMap);

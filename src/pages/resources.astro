@@ -1,0 +1,46 @@
+---
+/**
+ * Resources page — static route (static beats dynamic segments). Content =
+ * CMS `resources` page singleton + its referenced section documents.
+ */
+import "@fontsource-variable/sora";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import { getResourcesPage, getSiteSettings } from '@lib/sanity/queries';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Navbar from '@components/app/Navbar.astro';
+import Footer from '@components/app/Footer.astro';
+import ResourcesIntro from '@components/sections/ResourcesIntro.astro';
+import RegulatoryUpdates from '@components/sections/RegulatoryUpdates.astro';
+import FeaturedPrograms from '@components/sections/FeaturedPrograms.astro';
+import CountyJump from '@components/sections/CountyJump.astro';
+import ResourceDirectory from '@components/sections/ResourceDirectory.astro';
+import AlertSignup from '@components/sections/AlertSignup.astro';
+
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
+const page = await getResourcesPage(perspectiveCookie);
+const settings = await getSiteSettings(perspectiveCookie);
+
+const hasContent = Boolean(
+  page?.intro ||
+  page?.regulatoryUpdates ||
+  page?.featuredPrograms ||
+  page?.countyJump ||
+  page?.resourceDirectory ||
+  page?.alertSignup,
+);
+
+if (!page || !hasContent) {
+  return new Response('Not found', { status: 404 });
+}
+---
+
+<BaseLayout>
+  {settings && <Navbar settings={settings} />}
+  {page.intro && <ResourcesIntro intro={page.intro} />}
+  {page.regulatoryUpdates && <RegulatoryUpdates section={page.regulatoryUpdates} />}
+  {page.featuredPrograms && <FeaturedPrograms section={page.featuredPrograms} />}
+  {page.countyJump && <CountyJump section={page.countyJump} />}
+  {page.resourceDirectory && <ResourceDirectory section={page.resourceDirectory} />}
+  {page.alertSignup && <AlertSignup section={page.alertSignup} />}
+  {settings && <Footer settings={settings} />}
+</BaseLayout>

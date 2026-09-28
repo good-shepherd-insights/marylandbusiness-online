@@ -1,54 +1,77 @@
 ---
 import "@fontsource-variable/gabarito";
 import themeConfig from "@util/themeConfig";
+import { getSiteSettings } from "@lib/sanity/queries";
 import "../styles/global.css";
 import Posthog from "@components/analytics/Posthog.astro";
+import SanityVisualEditing from "@components/SanityVisualEditing";
+import DisableDraftMode from "@components/DisableDraftMode";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+
+const draftMode = Astro.cookies.has(perspectiveCookieName);
+const settings = await getSiteSettings(Astro.cookies.get(perspectiveCookieName)?.value);
 import { ClientRouter } from "astro:transitions";
 import { getOGImage } from "@util/getOGImage";
 
 const { title, slug } = Astro.props;
-const siteTitle = themeConfig.general.title;
+const siteTitle = settings?.siteTitle ?? themeConfig?.general?.title ?? 'Maryland Business Directory';
+const seoName = settings?.seoName ?? themeConfig?.general?.seo?.name ?? siteTitle;
+const seoDescription = settings?.seoDescription ?? themeConfig?.general?.seo?.description ?? '';
+const seoUrl = settings?.seoUrl ?? themeConfig?.general?.seo?.url ?? '';
+let seoDomain: string | undefined;
+try {
+  seoDomain = seoUrl ? new URL(seoUrl).hostname : undefined;
+} catch {
+  seoDomain = undefined;
+}
 
 const calculatedTitle = title || siteTitle;
+// Home (and any layout without a slug) shares the index OG image.
+const ogSlug = slug ?? 'index';
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content="Astro description" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta name="generator" content={Astro.generator} />
 
     <title>{calculatedTitle}</title>
-    <meta name="description" content={themeConfig.general.seo.description} />
+    <meta name="description" content={seoDescription} />
 
     <!-- Facebook Meta Tags -->
-    <meta property="og:url" content={themeConfig.general.seo.url} />
+    <meta property="og:url" content={seoUrl} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={calculatedTitle} />
     <meta
       property="og:description"
-      content={themeConfig.general.seo.description}
+      content={seoDescription}
     />
-    <meta property="og:image" content={getOGImage(slug)} />
+    <meta property="og:image" content={getOGImage(ogSlug, settings?.seoUrl)} />
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta property="twitter:domain" content="codeagents.dev" />
-    <meta property="twitter:url" content={themeConfig.general.seo.url} />
-    <meta name="twitter:title" content={themeConfig.general.seo.name} />
+    {seoDomain && <meta property="twitter:domain" content={seoDomain} />}
+    <meta property="twitter:url" content={seoUrl} />
+    <meta name="twitter:title" content={seoName} />
     <meta
       name="twitter:description"
-      content={themeConfig.general.seo.description}
+      content={seoDescription}
     />
-    <meta name="twitter:image" content={getOGImage(slug)} />
+    <meta name="twitter:image" content={getOGImage(ogSlug, settings?.seoUrl)} />
     <ClientRouter />
   </head>
   <body class="bg-white dark:bg-gray-900">
     <slot />
     <Posthog />
+    {draftMode && (
+      <>
+        <SanityVisualEditing client:only="react" />
+        <DisableDraftMode client:only="react" />
+      </>
+    )}
   </body>
 </html>

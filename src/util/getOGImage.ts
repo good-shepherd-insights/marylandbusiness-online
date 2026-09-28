@@ -1,14 +1,12 @@
-import themeConfig from "./themeConfig"
-
 function getBasePath(): string {
   if (process.env.NODE_ENV === 'development') {
     return 'http://localhost:4321';
   }
 
-  return themeConfig.general.seo.url;
+  return process.env.PUBLIC_SITE_URL ?? '';
 }
 
-export function getOGImage(slug: string) {
-  let basePath: string = getBasePath();
+export function getOGImage(slug: string, baseUrl?: string) {
+  const basePath: string = baseUrl ?? getBasePath();
   return `${basePath}/og/${slug}.png`;
 }

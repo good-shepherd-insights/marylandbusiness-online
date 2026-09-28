@@ -1,0 +1,280 @@
+---
+/**
+ * Hub header — breadcrumb, path title + live badge, stat blocks.
+ * Title is the resolved path label (any path kind — county, city,
+ * subcategory, combo); labels/stats from the hubHeader section doc.
+ * Mobile: condensed strip (badge hidden, stats full-width with dividers).
+ *
+ * Fixes applied (critique 2026-09-27):
+ *   T-2  breadcrumb 8/9px → 13px; stat labels 8/9px → 11px; badge 9px → 11px
+ *   A-1  aria-label="Breadcrumb navigation" on <nav>
+ *   P-2  nth-child(2) hardcoded color → data-stat-primary attribute pattern
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHubHeader } from '@lib/sanity/types';
+
+interface Props {
+  header: SanityHubHeader;
+  label: string;
+  /** Real, computed listing stats — overrides the CMS stat blocks. */
+  stats?: { value: string; label: string; primary?: boolean }[];
+}
+
+const { header, label, stats } = Astro.props;
+const statBlocks = stats && stats.length > 0 ? stats : header.stats ?? [];
+const hasContent = Boolean(header.breadcrumbRoot || header.liveBadgeLabel || label);
+---
+
+{
+  hasContent && (
+    <header class="hub-header shrink-0">
+      <div class="hub-header-inner">
+        <div class="hub-header-main">
+          <nav aria-label="Breadcrumb navigation" class="hub-breadcrumb">
+            {header.breadcrumbRoot && (
+              <a href="/" class="hub-breadcrumb-root">{header.breadcrumbRoot}</a>
+            )}
+            <Icon name="tabler:chevron-right" class="hub-breadcrumb-sep" aria-hidden="true" />
+            <span class="hub-breadcrumb-current" aria-current="page">{label}</span>
+          </nav>
+
+          <div class="hub-title-row">
+            <h1 class="hub-title">
+              {label}{header.headingSuffix ? ` ${header.headingSuffix}` : ''}
+            </h1>
+            {header.liveBadgeLabel && (
+              <div class="hub-live-badge" role="status" aria-label={`${header.liveBadgeLabel} — directory is active`}>
+                <span class="hub-live-dot" aria-hidden="true">
+                  <span class="hub-live-dot-core" />
+                </span>
+                <span class="hub-live-label">{header.liveBadgeLabel}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {statBlocks.length > 0 && (
+          <div class="hub-stats" aria-label="Hub statistics">
+            {statBlocks.map((stat, index) => (
+              <div
+                class="hub-stat"
+                data-stat-primary={(stat as { primary?: boolean }).primary || (!stats && index === 1) ? '' : undefined}
+              >
+                <span class="hub-stat-value" data-stat={index}>{stat.value}</span>
+                <span class="hub-stat-label">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </header>
+  )
+}
+
+<style>
+  .hub-header {
+    --background: #faf7f2;
+    --foreground: #555555;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --secondary: #eaaa00;
+    --muted-foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .hub-header-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* T-2 fix: breadcrumb 8/9px → 13px */
+  .hub-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .hub-breadcrumb-root {
+    font-size: 0.8125rem;   /* 13px — was 8px */
+    font-weight: 600;
+    color: var(--foreground);
+    text-decoration: none;
+    letter-spacing: 0;
+  }
+
+  .hub-breadcrumb-root:hover {
+    color: var(--primary);
+  }
+
+  .hub-breadcrumb-root:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .hub-breadcrumb-sep {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: var(--border);
+    flex-shrink: 0;
+  }
+
+  .hub-breadcrumb-current {
+    font-size: 0.8125rem;   /* 13px */
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0;
+  }
+
+  .hub-title-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .hub-title {
+    font-size: 1.75rem;    /* 28px mobile */
+    line-height: 1.1;
+    font-weight: 800;
+    color: var(--card-foreground);
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  /* T-2 fix: badge 9px → 11px; now visible on mobile too */
+  .hub-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: color-mix(in srgb, var(--secondary) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--secondary) 30%, transparent);
+    padding: 0.3125rem 0.75rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  .hub-live-dot {
+    position: relative;
+    display: inline-flex;
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+  }
+
+
+  .hub-live-dot-core {
+    position: relative;
+    display: inline-flex;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #22c55e;
+  }
+
+  .hub-live-label {
+    font-size: 0.6875rem;   /* 11px — badge context label, small by design */
+    font-weight: 700;
+    color: var(--card-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Stats block */
+  .hub-stats {
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.875rem 0;
+  }
+
+  .hub-stat {
+    flex: 1;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    padding: 0 1rem;
+  }
+
+  .hub-stat:last-child {
+    border-right: 0;
+  }
+
+  .hub-stat-value {
+    display: block;
+    font-size: 1.25rem;     /* 20px — stat number */
+    font-weight: 800;
+    color: var(--card-foreground);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  /* P-2 fix: data-stat-primary attribute instead of nth-child(2) */
+  .hub-stat[data-stat-primary] .hub-stat-value {
+    color: var(--primary);
+  }
+
+  /* T-2 fix: stat labels 8/9px → 11px */
+  .hub-stat-label {
+    display: block;
+    font-size: 0.6875rem;   /* 11px — was 8px; label for a number, uppercase ok at this role */
+    font-weight: 600;
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.125rem;
+  }
+
+  /* Desktop layout */
+  @media (min-width: 1024px) {
+    .hub-header {
+      padding: 1.5rem 2rem;
+    }
+
+    .hub-header-inner {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 2rem;
+    }
+
+    .hub-header-main {
+      flex: 1;
+    }
+
+    .hub-title {
+      font-size: 2.5rem;    /* 40px desktop */
+    }
+
+    .hub-stats {
+      border: none;
+      padding: 0;
+      border-left: 1px solid var(--border);
+      padding-left: 2rem;
+      gap: 2.5rem;
+      flex-shrink: 0;
+      align-self: flex-end;
+    }
+
+    .hub-stat {
+      flex: none;
+      text-align: left;
+      border-right: none;
+      padding: 0;
+    }
+
+    .hub-stat-value {
+      font-size: 1.5rem;
+    }
+  }
+</style>

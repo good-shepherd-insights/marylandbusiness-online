@@ -1,0 +1,55 @@
+---
+/**
+ * Questions & Answers — design markup. Q:/A: prefixes are presentation;
+ * docs store raw question/answer text (census 07).
+ */
+import type { SanityListing } from '@lib/sanity/types';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const valid = (listing.qa ?? []).filter((item) => item.question && item.answer);
+---
+
+{
+  valid.length > 0 && (
+    <section id="qa">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-widest">
+          {listing.qaHeading}
+        </h2>
+        {listing.qaAskLabel && (
+          <span class="text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest">
+            {listing.qaAskLabel}
+          </span>
+        )}
+      </div>
+      <div class="space-y-2">
+        {valid.map((item) => (
+          <div class="qa-item">
+            <p class="font-bold text-[var(--card-foreground)] mb-2">{listing.qaQuestionPrefix} {item.question}</p>
+            <p class="text-sm text-[var(--foreground)]">{listing.qaAnswerPrefix} {item.answer}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  section {
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    --primary: #9d2235;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .qa-item {
+    border-bottom: 1px solid var(--border);
+    padding: 24px 0;
+  }
+</style>

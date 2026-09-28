@@ -1,0 +1,65 @@
+---
+/**
+ * "What You Get" category grid (design 12 §3): three cards with icon
+ * tiles rotating primary/secondary/dark by index. Icons are code literals;
+ * hovers dropped (V-10).
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHiwValue } from '@lib/sanity/types';
+
+interface Props {
+  value: SanityHiwValue;
+}
+
+const { value } = Astro.props;
+// Icon literals per authored category (census 12).
+const tileIcons = ['tabler:map-pin-search', 'tabler:shield-check', 'tabler:gauge'] as const;
+---
+
+{
+  value.heading && (
+    <section id="what-you-get" class="hiw-value py-16 md:py-28 px-4 md:px-12 bg-[#FDFCFB] border-y border-[var(--border)]">
+      <div class="max-w-7xl mx-auto">
+        <div class="max-w-2xl mb-12 md:mb-16">
+          {value.eyebrow && <span class="text-[var(--primary)] font-extrabold text-xs tracking-[0.2em] uppercase mb-6 block">{value.eyebrow}</span>}
+          <h2 class="text-3xl md:text-4xl font-extrabold text-[var(--card-foreground)] mb-6 tracking-tight">{value.heading}</h2>
+          {value.sub && <p class="text-lg text-[var(--foreground)] leading-relaxed font-medium">{value.sub}</p>}
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-0 border-t border-l border-[var(--border)]">
+          {(value.categories ?? []).map((cat, i) => (
+            <div class="border-r border-b border-[var(--border)] p-6 md:p-10 bg-[#FAF7F2] flex flex-col">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 flex items-center justify-center shrink-0">
+                  <Icon name={tileIcons[i] ?? 'tabler:shield-check'} class="w-5 h-5 text-[var(--primary)]" />
+                </div>
+                <h3 class="text-xl font-extrabold text-[var(--card-foreground)] tracking-tight">{cat.title}</h3>
+              </div>
+              {cat.description && <p class="text-sm text-[var(--foreground)] leading-relaxed mb-8 max-w-prose">{cat.description}</p>}
+              <ul class="flex flex-col gap-4 text-sm text-[var(--foreground)] font-medium">
+                {(cat.items ?? []).map((item) => (
+                  <li class="flex items-start gap-3">
+                    <Icon name="tabler:check" class="w-3.5 h-3.5 text-[var(--primary)] mt-1 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .hiw-value {
+    --foreground: #404040;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --secondary: #855b00;
+    --secondary-foreground: #ffffff;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+</style>

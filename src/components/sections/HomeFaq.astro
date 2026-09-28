@@ -1,0 +1,94 @@
+---
+/**
+ * Home FAQ accordion (census 13 §5): reuses the shared faqItem object from
+ * census 12. First item opens by default; script is scoped to .home-faq so
+ * it can never double-bind with HiwFaq's identical mechanics.
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHomeFaq } from '@lib/sanity/types';
+
+interface Props {
+  faq: SanityHomeFaq;
+}
+
+const { faq } = Astro.props;
+---
+
+{
+  faq.heading && (
+    <section id="home-faq" class="home-faq py-20 md:py-32 px-4 md:px-12 bg-[#FAF7F2] border-t border-[var(--border)]">
+      <div class="max-w-4xl mx-auto">
+        <div class="mb-10 md:mb-16">
+          <h2 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 md:mb-6 tracking-tight">
+            {faq.heading}
+          </h2>
+          <p class="text-base md:text-lg text-[var(--foreground)] font-medium leading-relaxed max-w-[70ch]">
+            {faq.description}
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          {(faq.items ?? []).map((item, i) => (
+            <div class:list={['faq-item bg-white border border-[var(--border)] p-6', i === 0 && 'open']}>
+              <button
+                type="button"
+                class="faq-question w-full flex items-center justify-between gap-6 text-left"
+                aria-expanded={i === 0 ? "true" : "false"}
+                aria-controls={`home-faq-answer-${i}`}
+              >
+                <h3 class="font-extrabold text-[var(--card-foreground)] tracking-tight text-base">
+                  {item.question}
+                </h3>
+                <Icon name="tabler:chevron-down" class="faq-chevron w-3 h-3 text-[var(--foreground)] shrink-0" aria-hidden="true" />
+              </button>
+              <div id={`home-faq-answer-${i}`} class="faq-answer" role="region" aria-label={item.question}>
+                {item.answer && (
+                  <p class="text-sm text-[var(--foreground)] leading-relaxed pt-6 max-w-prose">{item.answer}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<script>
+  document
+    .querySelectorAll<HTMLButtonElement>('.home-faq .faq-question')
+    .forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item?.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(Boolean(isOpen)));
+      });
+    });
+</script>
+
+<style>
+  .home-faq {
+    --foreground: #404040;
+    --card-foreground: #121212;
+    --primary: #9d2235;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  .faq-answer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+  .faq-answer > * {
+    overflow: hidden;
+  }
+  .faq-item.open .faq-answer {
+    grid-template-rows: 1fr;
+  }
+  .faq-item.open :global(.faq-chevron) {
+    transform: rotate(180deg);
+  }
+  :global(.faq-chevron) {
+    transition: transform 0.25s ease;
+  }
+</style>

@@ -1,0 +1,212 @@
+---
+import { sanityImageUrl, sanityImageSrcSet } from "@lib/sanity/client";
+import type { SanityEditorialStoryDoc } from "@lib/sanity/types";
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  heading: string;
+  sub: string;
+  ctaLabel: string;
+  stories: SanityEditorialStoryDoc[];
+}
+
+const props = Astro.props;
+const { heading, sub, ctaLabel } = props;
+
+// Tag chip palette keyed by the schema's tag enum; unknown tags fall back to
+// the neutral chip so new enum values render before styling exists.
+const chipByTag: Record<string, { bg: string; fg: string }> = {
+  feature: { bg: "var(--primary, #9D2235)", fg: "#fff" },
+  sustainability: { bg: "var(--secondary, #EAAA00)", fg: "var(--secondary-foreground, #121212)" },
+};
+const neutralChip = { bg: "var(--card-foreground, #121212)", fg: "#fff" };
+
+// Date-only CMS values are UTC; format in UTC so the calendar day never
+// shifts with the server's timezone.
+const dateFmt = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+const stories = (props.stories ?? []).filter((s) => s.title && s.date);
+---
+
+{
+  stories.length > 0 && (
+    <section class="spotlight" id="editorials">
+      <div class="spotlight-head">
+        <div>
+          <h2 class="spotlight-title">{heading}</h2>
+          <p class="spotlight-sub">{sub}</p>
+        </div>
+        <span class="spotlight-cta">{ctaLabel}</span>
+      </div>
+      <div class="spotlight-grid">
+        {stories.map((story) => {
+          const chip = chipByTag[story.tag ?? ""] ?? neutralChip;
+          return (
+            <article class="story-card">
+              <div class="story-media">
+                {story.image?.asset && (
+                  <img
+                    class="story-img"
+                    src={sanityImageUrl(story.image, { width: 640 })}
+                    srcset={sanityImageSrcSet(story.image, 640)}
+                    width="640"
+                    height="320"
+                    loading="lazy"
+                    alt={story.image?.alt ?? story.title}
+                  />
+                )}
+              </div>
+              <div class="story-body">
+                <div class="story-meta">
+                  <span class="story-chip" style={`background:${chip.bg};color:${chip.fg}`}>
+                    {story.tag}
+                  </span>
+                  <span class="story-date">
+                    {story.date ? dateFmt.format(new Date(story.date)) : ""}
+                  </span>
+                </div>
+                <h3 class="story-title">{story.title}</h3>
+                <p class="story-excerpt">{story.excerpt}</p>
+                <span class="story-cta">
+                  {story.ctaLabel}
+                  <Icon name="tabler:arrow-right" />
+                </span>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .spotlight {
+    background: var(--bg-muted, #f3efe8);
+    margin-inline: -4rem;
+    padding-inline: 4rem;
+    padding-block: 64px;
+    border-bottom: 1px solid var(--border, #e3e0dc);
+  }
+  .spotlight-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .spotlight-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--card-foreground, #121212);
+  }
+  .spotlight-sub {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.25rem;
+    color: var(--foreground, #3f3f46);
+  }
+  .spotlight-cta {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--primary, #9d2235);
+    border-bottom: 2px solid var(--primary, #9d2235);
+    padding-bottom: 0.25rem;
+  }
+  .spotlight-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
+  @media (max-width: 640px) {
+    .spotlight {
+      margin-inline: -1.5rem;
+      padding-inline: 1.5rem;
+    }
+    .spotlight-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .story-card {
+    background: var(--background, #faf7f2);
+    border: 1px solid var(--border, #e3e0dc);
+    display: flex;
+    flex-direction: column;
+  }
+  .story-media {
+    height: 12rem;
+    overflow: hidden;
+  }
+  .story-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .story-body {
+    padding: 2rem;
+  }
+  .story-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .story-chip {
+    color: #fff;
+    font-size: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.25rem 0.5rem;
+  }
+  .story-date {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--foreground, #3f3f46);
+  }
+  .story-title {
+    font-size: 1.125rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: var(--card-foreground, #121212);
+    margin-bottom: 1rem;
+  }
+  .story-excerpt {
+    font-size: 0.875rem;
+    color: var(--foreground, #3f3f46);
+    line-height: 1.625;
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .story-cta {
+    font-size: 0.625rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--card-foreground, #121212);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  :global(.story-cta svg) {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+</style>

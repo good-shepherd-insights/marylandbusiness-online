@@ -1,0 +1,54 @@
+---
+// Two-segment directory routes (TAGS.md + HUB-DIRECTORY-RESEARCH.md):
+// /anne-arundel/annapolis (geo-city) or /restaurant/seafood (type). One
+// hub UI for both. Resolution lives in `resolveHubRoute`; this page just
+// switches on the action kind — view/listing data is non-null in every
+// render branch the type system lets the template reach.
+import { getCountyOptions, getCategoryOptions, resolveHubRoute } from "@lib/directory/paths";
+import { getSiteSettings } from "@lib/sanity/queries";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import "@fontsource-variable/sora";
+import Navbar from "@components/app/Navbar.astro";
+import Footer from "@components/app/Footer.astro";
+import HubHeader from "@components/sections/HubHeader.astro";
+import HubDiscovery from "@components/sections/HubDiscovery.astro";
+import HubBasic from "@components/sections/HubBasic.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const { category, subcategory } = Astro.params;
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
+const [settings, countyOptions, categoryOptions, action] = await Promise.all([
+  getSiteSettings(perspectiveCookie),
+  getCountyOptions(),
+  getCategoryOptions(),
+  resolveHubRoute(`${category}/${subcategory}`, perspectiveCookie),
+]);
+
+if (action.kind === 'redirect') {
+  return new Response(null, { status: action.status, headers: { Location: action.to } });
+}
+// action.kind === 'hub' — view + directoryPage narrowed by the union.
+const { view, directoryPage } = action;
+const hubHeader = directoryPage?.hubHeader ?? null;
+const hubDiscovery = directoryPage?.hubDiscovery ?? null;
+---
+
+{
+  hubHeader && hubDiscovery ? (
+    <BaseLayout title={`${view.hub.label} ${hubHeader.headingSuffix ?? ""}`.trim()} description={view.state.description ?? undefined} slug={subcategory}>
+      <div
+        class="hub-page min-h-dvh bg-[#FAF7F2] flex flex-col overflow-hidden"
+        style="font-family: 'Sora Variable', 'Sora', sans-serif;"
+      >
+        {settings && <Navbar settings={settings} />}
+        <HubHeader header={hubHeader} label={view.hub.label} stats={view.hub.stats} />
+        <HubDiscovery discovery={hubDiscovery} hub={view.hub} filters={view.filters} counties={countyOptions} categories={categoryOptions} />
+      </div>
+    </BaseLayout>
+  ) : (
+    <BaseLayout title={view.hub.label} description={view.state.description ?? undefined} slug={subcategory}>
+      <HubBasic label={view.hub.label} description={view.state.description} hub={view.hub} />
+    </BaseLayout>
+  )
+}
+{settings && <Footer settings={settings} />}

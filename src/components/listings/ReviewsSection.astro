@@ -1,0 +1,137 @@
+---
+/**
+ * Customer Sentiment — design markup: aggregate + distribution on the
+ * left (w-[300px]), verified review list on the right. All figures
+ * computed from review docs at render time.
+ */
+import { Icon } from 'astro-icon/components';
+import { sanityImageUrl } from '@lib/sanity/client';
+import type { SanityListing } from '@lib/sanity/types';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const reviews = (listing.reviews ?? []).filter((r) => r.body || r.title);
+const count = reviews.length;
+const avg = count > 0 ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / count : 0;
+const fullStars = Math.floor(avg);
+const halfStar = avg - fullStars >= 0.5;
+
+const distribution = [5, 4, 3, 2, 1].map((stars) => {
+  const n = reviews.filter((r) => r.rating === stars).length;
+  return { stars, pct: count > 0 ? Math.round((n / count) * 100) : 0 };
+});
+
+const dateFmt = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+{
+  count > 0 && (
+    <section id="reviews">
+      <h2 class="text-xl font-extrabold text-[var(--card-foreground)] uppercase tracking-widest mb-10">
+        {listing.reviewsHeading}
+      </h2>
+      <div class="flex flex-col md:flex-row gap-10 md:gap-16">
+        <div class="md:w-[300px]">
+          <div class="text-5xl font-extrabold text-[var(--card-foreground)] mb-2" aria-label={`Average rating: ${avg.toFixed(1)} out of 5 stars`}>{avg.toFixed(1)}</div>
+          <div class="star-rating flex items-center gap-1 mb-6" role="img" aria-label={`Rated ${avg.toFixed(1)} out of 5 stars`}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Icon
+                name="tabler:star"
+                class={`${i < fullStars || (i === fullStars && halfStar) ? 'star-full' : 'star-empty'}`}
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+          <div class="space-y-3">
+            {distribution.map((row) => (
+              <div class="dist-row flex items-center text-[10px] font-bold uppercase tracking-widest">
+                <span class="w-12">{row.stars} {listing.ratingStarLabel}</span>
+                <div class="rating-bar">
+                  <div class="rating-bar-fill" style={`width: ${row.pct}%`} />
+                </div>
+                <span class="w-8 text-right">{row.pct}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="flex-1 space-y-10">
+          {reviews.map((review) => (
+            <div class="border-b border-[var(--border)] pb-8">
+              <div class="flex items-center gap-3 mb-4">
+                {review.avatar?.asset && (
+                  <img
+                    src={sanityImageUrl(review.avatar, { width: 120, height: 120, fit: 'crop', quality: 90 })}
+                    alt={review.avatar.alt ?? review.name ?? ''}
+                    class="w-10 h-10 grayscale border border-[var(--border)]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <div>
+                  <h3 class="text-xs font-extrabold uppercase tracking-widest">{review.name}</h3>
+                  <div class="flex items-center gap-2">
+                    {review.verifiedVisit && (
+                      <span class="text-[10px] font-bold text-green-600 uppercase border border-green-600 px-2 py-0.5">
+                        {listing.verifiedVisitLabel}
+                      </span>
+                    )}
+                    {review.date && (
+                      <span class="text-[10px] font-bold text-[var(--foreground)] uppercase">
+                        {dateFmt.format(new Date(review.date))}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div class="star-rating flex items-center gap-1 mb-3" role="img" aria-label={`Rated ${review.rating ?? 0} out of 5 stars`}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Icon
+                    name="tabler:star"
+                    class={`${i < (review.rating ?? 0) ? 'star-full' : 'star-empty'}`}
+                    aria-hidden="true"
+                  />
+                ))}
+              </div>
+              <h4 class="font-bold text-[var(--card-foreground)] mb-3">{review.title}</h4>
+              <p class="text-sm text-[var(--foreground)] leading-relaxed">{review.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  section {
+    --accent: #ffb612;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .star-rating { color: var(--accent); }
+  .star-rating :global(svg) { width: 14px; height: 14px; fill: currentColor; }
+  .star-rating :global(svg.star-empty) { fill: none; }
+  .rating-bar {
+    height: 8px;
+    background: #eee;
+    flex: 1;
+    margin: 0 12px;
+  }
+  .rating-bar-fill {
+    height: 100%;
+    background: var(--accent);
+  }
+</style>

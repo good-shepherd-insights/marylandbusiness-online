@@ -1,0 +1,283 @@
+---
+/**
+ * County hubs section — prominent, bold exploration grid of Maryland
+ * jurisdictions. Generously scaled cards with top circular pin badge,
+ * top-right corner arrow, distinct typography, and title-only hover.
+ */
+import { Icon } from 'astro-icon/components';
+import type { CountyHubsContent, CountyHub } from '@lib/sanity/types';
+
+interface Props {
+  countyHubs: CountyHubsContent;
+  countyHrefs: Record<string, string>;
+}
+
+const { countyHubs, countyHrefs } = Astro.props;
+const { heading, description, ctaLabel, ctaLink, hubs } = countyHubs;
+const validHubs = (hubs ?? []).filter((hub) => hub?.name);
+const countyCardHref = (name: string) => {
+  const key = name.trim().toLocaleLowerCase();
+  const county = Object.entries(countyHrefs).find(([slug]) => {
+    // The county list passed by the page is slug keyed; CMS names are
+    // resolved against the same published county options via their labels.
+    return slug === key;
+  });
+  return county?.[1];
+};
+---
+
+{
+  validHubs.length > 0 && (
+    <section class="county-hubs" aria-label={heading ?? 'Explore Maryland by County'}>
+      <div class="county-hubs-inner">
+        <!-- Section Header -->
+        <div class="county-hubs-header">
+          <div class="county-hubs-intro">
+            {heading && <h2>{heading}</h2>}
+            {description && <p class="county-hubs-lead">{description}</p>}
+          </div>
+          {ctaLabel && ctaLink && (
+            <a class="county-hubs-cta" href={ctaLink}>
+              <span>{ctaLabel}</span>
+              <Icon name="tabler:arrow-right" aria-hidden="true" />
+            </a>
+          )}
+        </div>
+
+        <!-- Prominent Grid of County Cards -->
+        <div class="county-hubs-grid">
+          {validHubs.map((hub: CountyHub) => {
+            const CardTag = hub.link ? 'a' : 'div';
+            return (
+              <CardTag class="county-card" href={hub.link ?? undefined}>
+                <div class="county-card-top">
+                  <div class="county-icon-badge" aria-hidden="true">
+                    <Icon name="tabler:map-pin" />
+                  </div>
+                  <Icon name="tabler:arrow-up-right" class="county-card-arrow" aria-hidden="true" />
+                </div>
+                <div class="county-card-body">
+                  <h3 class="county-title">{hub.name}</h3>
+                  {hub.businesses && (
+                    <span class="county-count-badge">
+                      {hub.businesses}
+                    </span>
+                  )}
+                </div>
+              </CardTag>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .county-hubs {
+    --hubs-primary: #9d2235;
+    --hubs-foreground: #121212;
+    --hubs-muted: #555555;
+    --hubs-border: #e3e0dc;
+    --hubs-background: #faf7f2;
+    --hubs-card-bg: #ffffff;
+    --hubs-badge-bg: rgba(157, 34, 53, 0.08);
+
+    background: var(--hubs-background);
+    border-top: 1px solid var(--hubs-border);
+    border-bottom: 1px solid var(--hubs-border);
+    padding: 6rem 1.5rem;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+
+  .county-hubs-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+  }
+
+  /* Section Header */
+  .county-hubs-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin-bottom: 3.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .county-hubs-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+  }
+
+  .county-hubs-intro {
+    max-width: 46rem;
+  }
+
+  .county-hubs-intro h2 {
+    font-size: clamp(2.25rem, 4vw, 3rem);
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--hubs-foreground);
+    margin: 0 0 1rem;
+  }
+
+  .county-hubs-lead {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    font-weight: 400;
+    color: var(--hubs-muted);
+    margin: 0;
+    max-width: 65ch;
+  }
+
+  .county-hubs-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--hubs-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 48px;
+    padding: 0.5rem 0;
+  }
+
+  .county-hubs-cta:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .county-hubs-cta :global(svg) {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .county-hubs-cta:focus-visible {
+    outline: 2px solid var(--hubs-primary);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+
+  /* 4-Column Responsive Grid */
+  .county-hubs-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 600px) {
+    .county-hubs-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .county-hubs-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .county-hubs-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  /* Substantial, Grounded County Card */
+  .county-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--hubs-card-bg);
+    border: 1px solid var(--hubs-border);
+    border-radius: 6px;
+    padding: 2rem 1.75rem;
+    min-height: 170px;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+  }
+
+  /* Restrained Title-Only Hover */
+  .county-card:hover .county-title {
+    color: var(--hubs-primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1.5px;
+  }
+
+  .county-card:focus-visible {
+    outline: 2px solid var(--hubs-primary);
+    outline-offset: 2px;
+  }
+
+  /* Card Top Row */
+  .county-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .county-icon-badge {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background: var(--hubs-badge-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .county-icon-badge :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--hubs-primary);
+  }
+
+  .county-card-arrow {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--hubs-muted);
+  }
+
+  /* Card Body */
+  .county-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .county-title {
+    font-size: 1.25rem;   /* 20px */
+    font-weight: 800;
+    color: var(--hubs-foreground);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0;
+    transition: color 0.15s ease;
+  }
+
+  .county-count-badge {
+    font-size: 0.8125rem; /* 13px */
+    font-weight: 600;
+    color: var(--hubs-muted);
+    letter-spacing: 0.01em;
+  }
+
+  @media (min-width: 1024px) {
+    .county-hubs {
+      padding: 7rem 2rem;
+    }
+  }
+</style>

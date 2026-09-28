@@ -1,0 +1,65 @@
+---
+// Three-segment routes (TAGS.md + HUB-DIRECTORY-RESEARCH.md): the combo
+// hub (/restaurant/seafood/anne-arundel) or the business detail at its
+// geographic path (/anne-arundel/annapolis/<business>). Resolution lives
+// in `resolveHybridRoute`; this page just switches on the action kind.
+import { getCountyOptions, getCategoryOptions, resolveHybridRoute } from "@lib/directory/paths";
+import { getSiteSettings } from "@lib/sanity/queries";
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import "@fontsource-variable/sora";
+import { PortableText } from "astro-portabletext";
+import Navbar from "@components/app/Navbar.astro";
+import Footer from "@components/app/Footer.astro";
+import HubHeader from "@components/sections/HubHeader.astro";
+import HubDiscovery from "@components/sections/HubDiscovery.astro";
+import HubBasic from "@components/sections/HubBasic.astro";
+import Listing from "@layouts/Listing.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const { category, subcategory, county } = Astro.params;
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
+const [settings, countyOptions, categoryOptions, action] = await Promise.all([
+  getSiteSettings(perspectiveCookie),
+  getCountyOptions(),
+  getCategoryOptions(),
+  resolveHybridRoute({category, subcategory, county}, perspectiveCookie),
+]);
+
+if (action.kind === 'redirect') {
+  return new Response(null, { status: action.status, headers: { Location: action.to } });
+}
+---
+
+{
+  action.kind === 'hub' ? (
+    (() => {
+      const {view, directoryPage} = action;
+      const hubHeader = directoryPage?.hubHeader ?? null;
+      const hubDiscovery = directoryPage?.hubDiscovery ?? null;
+      if (hubHeader && hubDiscovery) {
+        return (
+          <BaseLayout title={`${view.hub.label} ${hubHeader.headingSuffix ?? ""}`.trim()} description={view.state.description ?? undefined} slug={county}>
+            <div
+              class="hub-page min-h-dvh bg-[#FAF7F2] flex flex-col overflow-hidden"
+              style="font-family: 'Sora Variable', 'Sora', sans-serif;"
+            >
+              {settings && <Navbar settings={settings} />}
+              <HubHeader header={hubHeader} label={view.hub.label} stats={view.hub.stats} />
+              <HubDiscovery discovery={hubDiscovery} hub={view.hub} filters={view.filters} counties={countyOptions} categories={categoryOptions} />
+            </div>
+          </BaseLayout>
+        );
+      }
+      return (
+        <BaseLayout title={view.hub.label} description={view.state.description ?? undefined} slug={county}>
+          <HubBasic label={view.hub.label} description={view.state.description} hub={view.hub} />
+        </BaseLayout>
+      );
+    })()
+  ) : (
+    <Listing frontmatter={action.listing} slug={county ?? ""}>
+      <PortableText value={action.listing.about ?? []} />
+    </Listing>
+  )
+}
+{settings && <Footer settings={settings} />}

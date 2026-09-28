@@ -1,0 +1,125 @@
+---
+/**
+ * About header section — breadcrumb, badge, page heading, intro paragraph.
+ * All content comes from Sanity `about.header`; the component renders
+ * nothing when the section is absent and never substitutes its own copy.
+ */
+import { Icon } from 'astro-icon/components';
+import type { AboutHeaderContent } from '@lib/sanity/types';
+
+interface Props {
+  header: AboutHeaderContent;
+}
+
+const { breadcrumbRoot, breadcrumbCurrent, badge, heading, intro } = Astro.props.header;
+---
+
+{
+  heading && (
+    <header class="about-header">
+      <div class="about-header-inner">
+        {(breadcrumbRoot || breadcrumbCurrent) && (
+          <nav class="about-breadcrumb" aria-label="Breadcrumb">
+            {breadcrumbRoot && <span class="about-breadcrumb-root">{breadcrumbRoot}</span>}
+            {breadcrumbRoot && breadcrumbCurrent && <Icon name="tabler:chevron-right" />}
+            {breadcrumbCurrent && <span class="about-breadcrumb-current">{breadcrumbCurrent}</span>}
+          </nav>
+        )}
+        {badge && (
+          <span class="about-badge">
+            <Icon name="tabler:flag" />
+            <span>{badge}</span>
+          </span>
+        )}
+        <h1>{heading}</h1>
+        {intro && <p>{intro}</p>}
+      </div>
+    </header>
+  )
+}
+
+<style>
+  .about-header {
+    --header-primary: #9d2235;
+    --header-secondary: #855b00;
+    --header-secondary-foreground: #ffffff;
+    --header-foreground: #121212;
+    --header-muted: #404040;
+    --header-border: #e3e0dc;
+    --header-background: #fdfcfb;
+
+    background: var(--header-background);
+    border-bottom: 1px solid var(--header-border);
+    padding: 5rem 1rem;
+  }
+
+  .about-header-inner {
+    max-width: 64rem;
+    margin: 0 auto;
+  }
+
+  .about-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--header-muted);
+    margin-bottom: 2rem;
+  }
+
+  .about-breadcrumb :global(svg) {
+    width: 0.4375rem;
+    height: 0.4375rem;
+    opacity: 0.4;
+  }
+
+  .about-breadcrumb-current {
+    color: var(--header-primary);
+  }
+
+  .about-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 1rem;
+    background: var(--header-secondary);
+    color: var(--header-secondary-foreground);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 2rem;
+  }
+
+  .about-badge :global(svg) {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+
+  .about-header h1 {
+    font-size: 3.75rem;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--header-foreground);
+    margin: 0 0 2rem;
+  }
+
+  .about-header p {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 500;
+    color: var(--header-muted);
+    max-width: 70ch;
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .about-header {
+      padding: 5rem 3rem;
+    }
+  }
+</style>

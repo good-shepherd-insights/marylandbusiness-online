@@ -1,0 +1,307 @@
+---
+/**
+ * Daily business pulse section — Option 2: Clean discrete wire cards
+ * with category metadata header, 20px bold headline, 14px excerpt,
+ * and right-aligned timestamp sidebar with border divider.
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityHomeNews } from '@lib/sanity/types';
+
+interface Props {
+  news: SanityHomeNews;
+}
+
+const { news } = Astro.props;
+const items = news?.items ?? [];
+---
+
+{
+  news?.heading && items.length > 0 && (
+    <section id="news-feed" class="home-news" aria-label={news.heading}>
+      <div class="home-news-inner">
+        <!-- Section Header -->
+        <div class="home-news-header">
+          <div class="home-news-intro">
+            <h2>{news.heading}</h2>
+            {news.description && <p class="home-news-lead">{news.description}</p>}
+          </div>
+          {news.pulseLabel && (
+            <div class="home-news-status">
+              {news.pulseLabel}
+            </div>
+          )}
+        </div>
+
+        <!-- Option 2: Discrete Wire Cards Grid -->
+        <div class="news-cards-grid">
+          {items.map((item) => (
+            <article class="news-card">
+              <div class="news-card-main">
+                {(item.tag || item.place) && (
+                  <div class="news-card-meta">
+                    {item.tag && <span class="news-card-tag">{item.tag}</span>}
+                    {item.tag && item.place && <span class="news-card-dot" aria-hidden="true">·</span>}
+                    {item.place && <span class="news-card-place">{item.place}</span>}
+                  </div>
+                )}
+                {item.headline && (
+                  <h3 class="news-card-title">{item.headline}</h3>
+                )}
+                {item.excerpt && (
+                  <p class="news-card-excerpt">{item.excerpt}</p>
+                )}
+              </div>
+              <div class="news-card-sidebar">
+                {item.timeLabel && (
+                  <span class="news-card-time">{item.timeLabel}</span>
+                )}
+                <Icon name="tabler:arrow-right" class="news-card-arrow" aria-hidden="true" />
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <!-- Archive Link Bar -->
+        {news.archiveLabel && (
+          <div class="news-archive-bar">
+            <a href={news.archiveUrl ?? '/'} class="news-archive-link">
+              <span>{news.archiveLabel}</span>
+              <Icon name="tabler:arrow-right" aria-hidden="true" />
+            </a>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .home-news {
+    --news-primary: #9d2235;
+    --news-secondary: #855b00;
+    --news-foreground: #121212;
+    --news-muted: #555555;
+    --news-muted-light: #737373;
+    --news-border: #e3e0dc;
+    --news-background: #faf7f2;
+    --news-surface: #ffffff;
+
+    background: var(--news-background);
+    padding: 5.5rem 1.5rem;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+
+  .home-news-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+  }
+
+  /* Section Header */
+  .home-news-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .home-news-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+  }
+
+  .home-news-intro {
+    max-width: 46rem;
+  }
+
+  .home-news-intro h2 {
+    font-size: clamp(2.25rem, 4vw, 3rem);
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--news-foreground);
+    margin: 0 0 1rem;
+  }
+
+  .home-news-lead {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    font-weight: 400;
+    color: var(--news-muted);
+    margin: 0;
+    max-width: 65ch;
+  }
+
+  .home-news-status {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--news-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    padding: 0.5rem 0;
+  }
+
+  /* Cards Grid */
+  .news-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .news-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--news-surface);
+    border: 1px solid var(--news-border);
+    border-radius: 4px;
+    padding: 2rem 2.25rem;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+
+  @media (min-width: 768px) {
+    .news-card {
+      flex-direction: row;
+      align-items: center;
+      gap: 2rem;
+    }
+  }
+
+  .news-card:hover {
+    border-color: #c9c4bd;
+  }
+
+  .news-card:hover .news-card-title {
+    color: var(--news-primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1.5px;
+  }
+
+  .news-card-main {
+    flex: 1;
+  }
+
+  .news-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .news-card-tag {
+    font-size: 0.75rem;   /* 12px */
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--news-primary);
+  }
+
+  .news-card-dot {
+    color: var(--news-border);
+  }
+
+  .news-card-place {
+    font-size: 0.8125rem; /* 13px */
+    font-weight: 600;
+    color: var(--news-muted);
+  }
+
+  .news-card-title {
+    font-size: 1.25rem;   /* 20px */
+    font-weight: 800;
+    color: var(--news-foreground);
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.5rem;
+    transition: color 0.15s ease;
+  }
+
+  .news-card-excerpt {
+    font-size: 0.875rem;  /* 14px */
+    line-height: 1.6;
+    color: var(--news-muted);
+    margin: 0;
+    max-width: 75ch;
+  }
+
+  .news-card-sidebar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .news-card-sidebar {
+      margin-top: 0;
+      padding-left: 1.75rem;
+      border-left: 1px solid var(--news-border);
+      min-width: 140px;
+      justify-content: flex-end;
+    }
+  }
+
+  .news-card-time {
+    font-size: 0.8125rem; /* 13px */
+    font-weight: 600;
+    color: var(--news-muted-light);
+    white-space: nowrap;
+  }
+
+  .news-card-arrow {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--news-primary);
+  }
+
+  /* Archive Bar */
+  .news-archive-bar {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .news-archive-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--news-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+  }
+
+  .news-archive-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .news-archive-link :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .news-archive-link:focus-visible {
+    outline: 2px solid var(--news-primary);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (min-width: 1024px) {
+    .home-news {
+      padding: 6.5rem 2rem;
+    }
+  }
+</style>

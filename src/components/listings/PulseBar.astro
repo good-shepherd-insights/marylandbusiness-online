@@ -1,0 +1,85 @@
+---
+/**
+ * Real-time pulse bar — design markup (dark band, ping dot is
+ * design-specified motion). Figures from the latest pulse observation;
+ * sentence templates + icons are listing content ({n} placeholder splits
+ * so the value keeps the design's accent color).
+ */
+import type { SanityListing } from '@lib/sanity/types';
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const pulse = listing.pulse;
+
+function segments(template: string | undefined, value: number | null | undefined) {
+  if (!template || value == null) return null;
+  const [before, ...rest] = template.split('{n}');
+  return { before, after: rest.join('{n}') };
+}
+const booked = segments(listing.pulseBookedText, pulse?.booked);
+const capacity = segments(listing.pulseCapacityText, pulse?.capacityPct);
+const wait = segments(listing.pulseWaitText, pulse?.waitMinutes);
+---
+
+{
+  (booked || capacity || wait) && (
+    <div id="pulse-bar" class="mt-6 mb-12 flex flex-wrap items-center gap-6 bg-[#121212] px-6 py-4">
+      <div class="flex items-center gap-2">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--secondary)] opacity-75" />
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-[var(--secondary)]" />
+        </span>
+        {booked && (
+          <span class="text-[10px] font-bold text-white uppercase tracking-widest">
+            {booked.before}
+            <span class="text-[var(--secondary)]">{pulse?.booked}</span>
+            {booked.after}
+          </span>
+        )}
+      </div>
+      <span class="hidden md:block w-px h-4 bg-white/20" />
+      {capacity && (
+        <div class="flex items-center gap-2">
+          <Icon name="tabler:users-group" class="w-3 h-3 text-[var(--secondary)]" />
+          <span class="text-[10px] font-bold text-white uppercase tracking-widest">
+            {capacity.before}
+            <span class="text-[var(--secondary)]">{pulse?.capacityPct}</span>
+            {capacity.after}
+          </span>
+        </div>
+      )}
+      <span class="hidden md:block w-px h-4 bg-white/20" />
+      {wait && (
+        <div class="flex items-center gap-2">
+          <Icon name="tabler:clock" class="w-3 h-3 text-[var(--secondary)]" />
+          <span class="text-[10px] font-bold text-white uppercase tracking-widest">
+            {wait.before}
+            <span class="text-[var(--secondary)]">{pulse?.waitMinutes}</span>
+            {wait.after}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style>
+  div {
+    --primary: #9d2235;
+    --secondary: #eaaa00;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.animate-ping) {
+      animation: none;
+      display: none;
+    }
+  }
+</style>

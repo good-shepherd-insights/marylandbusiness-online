@@ -1,6 +1,6 @@
 ---
-import Icon from "node_modules/astro-icon/components/Icon.astro";
-import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+import { sanityImageUrl, sanityImageSrcSet } from "@lib/sanity/client";
 const { myItem, href } = Astro.props;
 ---
 
@@ -8,11 +8,14 @@ const { myItem, href } = Astro.props;
   <div class="flex flex-row gap-2.5 items-center">
     {
       myItem.image ? (
-        <Image
+        <img
           class="h-5 w-5 flex-shrink-0"
-          src={myItem.image}
-          alt={myItem.title}
+          src={sanityImageUrl(myItem.image, { width: 40, height: 40 })}
+          srcset={sanityImageSrcSet(myItem.image, 40)}
+          width="20"
+          height="20"
           loading="lazy"
+          alt={myItem.image?.alt ?? myItem.name}
         />
       ) : (
         <Icon
@@ -22,7 +25,7 @@ const { myItem, href } = Astro.props;
       )
     }
     <span class="font-semibold dark:text-gray-50 whitespace-nowrap card-title">
-      {myItem.title}
+      {myItem.name}
     </span>
     <Icon
       class="h-5 w-5 flex-shrink-0 text-gray-500 dark:text-gray-300"

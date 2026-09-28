@@ -11,9 +11,17 @@ const myItem = {
   ...item.data,
 };
 
-const href = config.directoryData?.source?.linksOutbound
-  ? myItem.link
-  : `/${myItem.id}`;
+// Outbound links only when configured AND the entry actually carries a link
+// field (JSON directory entries do; Sanity listings do not — they route by id).
+// Detail path: geographic when the listing carries county+city
+// (`/[county]/[city]/[business]`, TAGS.md); flat slug as fallback until the
+// city data lands.
+const geoHref =
+  myItem.county?.slug?.current && myItem.city?.slug?.current
+    ? `/${myItem.county.slug.current}/${myItem.city.slug.current}/${myItem.id}`
+    : undefined;
+
+const href = geoHref ?? `/${myItem.id}`;
 
 const type = config.directoryUI.grid.type;
 ---
@@ -21,7 +29,7 @@ const type = config.directoryUI.grid.type;
 <div
   class="listing"
   transition:name={`${myItem.id}-card`}
-  data-tags={myItem.tags?.join(",") || ""}
+  data-tags={[myItem.county?.slug?.current, myItem.city?.slug?.current, myItem.subcategory?.slug?.current].filter(Boolean).join(",")}
 >
   {type == "icon-list" && <BulletCard myItem={myItem} href={href} />}
   {

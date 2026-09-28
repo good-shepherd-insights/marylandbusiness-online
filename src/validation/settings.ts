@@ -12,17 +12,17 @@ const generalSchema = z.object({
   seo: z.object({
     name: z.string(),
     description: z.string(),
-    url: z.string().url(),
-  }),
+    url: z.url(),
+  }).optional(),
 });
 
 const headerSchema = z.object({
   banner: z.object({
     show: z.boolean(),
     text: z.string(),
-    link: z.string().url(),
+    link: z.url(),
     brandText: z.string(),
-  }),
+  }).optional(),
   navbar: z.object({
     colorModeSelector: z.boolean().optional().default(false),
     links: z.array(
@@ -35,8 +35,8 @@ const headerSchema = z.object({
   }),
   actionButton: z.object({
     text: z.string(),
-    href: z.string().url(),
-  }),
+    href: z.url(),
+  }).optional(),
 });
 
 const footerSchema = z.object({
@@ -79,13 +79,14 @@ const directoryData = z.object({
       databaseId: z.string(),
     })
     .optional(),
-  }),
+  }).optional(),
   tagPages: z.object({
     title: z.string(),
-  }),
+  })
+  .optional(),
   search: z.object({
     placeholder: z.string(),
-  }),
+  }).optional(),
   tags: z.array(
     z.object({
       key: z.string(),
@@ -94,7 +95,8 @@ const directoryData = z.object({
       emoji: z.string().optional(),
       description: z.string().optional(),
     })
-  ),
+  )
+  .optional(),
 });
 
 const directoryUI = z.object({
@@ -141,7 +143,7 @@ const themeSettingsSchema = z.object({
   theme: z.string(),
   general: generalSchema,
   header: headerSchema,
-  directoryData: directoryData,
+  directoryData: directoryData.optional(),
   footer: footerSchema,
 });
 
@@ -155,7 +157,7 @@ const themeSchema = z.object({
 const settingsSchema = z.object({
   general: generalSchema,
   listings: listingsSchema,
-  directoryData: directoryData,
+  directoryData: directoryData.optional(),
   directoryUI: directoryUI,
   header: headerSchema,
   footer: footerSchema,

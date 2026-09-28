@@ -1,0 +1,97 @@
+---
+/**
+ * BusinessDetails header — breadcrumbs, title, computed rating row,
+ * rank line, share/save actions. Markup mirrors the UX Pilot design.
+ */
+import { Icon } from 'astro-icon/components';
+import type { SanityListing } from '@lib/sanity/types';
+
+interface Props {
+  listing: SanityListing;
+}
+
+const { listing } = Astro.props;
+const reviews = listing.reviews ?? [];
+const count = reviews.length;
+const avg = count > 0 ? reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / count : 0;
+const fullStars = Math.floor(avg);
+const halfStar = avg - fullStars >= 0.5;
+---
+
+{
+  listing.name && (
+    <header>
+      <nav class="flex items-center gap-2 mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--foreground)]">
+        <a href="/">{listing.breadcrumbRoot}</a>
+        {listing.county && (
+          <>
+            <Icon name="tabler:chevron-right" class="w-2 h-2 opacity-40" />
+            <a href={`/${listing.county.slug.current}`}>{listing.county.name}</a>
+          </>
+        )}
+        {listing.subcategory && (
+          <>
+            <Icon name="tabler:chevron-right" class="w-2 h-2 opacity-40" />
+            <span class="text-[var(--primary)]">{listing.subcategory.name}</span>
+          </>
+        )}
+      </nav>
+
+      <div class="flex items-start justify-between gap-6">
+        <div>
+          <h1 class="text-3xl md:text-5xl font-extrabold text-[var(--card-foreground)] mb-4 leading-tight">
+            {listing.name}
+          </h1>
+          <div class="flex items-center gap-4">
+            {count > 0 && (
+              <div class="star-rating flex items-center gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Icon
+                    name="tabler:star"
+                    class={`${i < fullStars || (i === fullStars && halfStar) ? 'star-full' : 'star-empty'}`}
+                  />
+                ))}
+                <span class="ml-2 text-sm font-bold text-[var(--card-foreground)]">
+                  {avg.toFixed(1)} ({count} {count === 1 ? listing.reviewCountSingularLabel : listing.reviewCountPluralLabel})
+                </span>
+              </div>
+            )}
+            {count > 0 && listing.rankLine && <span class="text-[var(--border)]">|</span>}
+            {listing.rankLine && (
+              <span class="text-[10px] font-bold uppercase tracking-widest text-[var(--foreground)]">
+                {listing.rankLine}
+              </span>
+            )}
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="w-12 h-12 border border-[var(--border)] flex items-center justify-center" aria-label="Share">
+            <Icon name="tabler:share" class="w-4 h-4" />
+          </button>
+          <button class="w-12 h-12 border border-[var(--border)] flex items-center justify-center" aria-label="Save">
+            <Icon name="tabler:heart" class="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+<style>
+  /* Design tokens + system classes (UX Pilot yKiTibg7br0HIQXUrrkq) — scoped */
+  header {
+    --primary: #9d2235;
+    --primary-foreground: #fff;
+    --secondary: #eaaa00;
+    --secondary-foreground: #121212;
+    --accent: #ffb612;
+    --card-foreground: #121212;
+    --foreground: #555555;
+    --border: #e3e0dc;
+    --icon-box: #f8f7f6;
+    font-family: 'Sora Variable', 'Sora', sans-serif;
+  }
+  .star-rating { color: var(--accent); }
+  .star-rating :global(svg) { width: 14px; height: 14px; fill: currentColor; }
+  .star-rating :global(svg.star-empty) { fill: none; }
+</style>

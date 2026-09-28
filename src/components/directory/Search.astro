@@ -1,26 +1,29 @@
 ---
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
 import { Icon } from "astro-icon/components";
-import { getCollection } from "astro:content";
+import { getListings, getSiteSettings } from "../../lib/sanity/queries";
 import formatString from "../../util/formatString";
 import UiTagGrid from "../ui/tags/Grid.vue";
 import UiTagSelect from "../ui/tags/Select.vue";
 import config from "@util/themeConfig";
+import { getFilterOptions } from "@lib/directory/paths";
 
+const filterOptions = await getFilterOptions();
+
+const settings = await getSiteSettings(perspectiveCookie);
 const searchPlaceholder = await getSearchPlaceholder();
 
 async function getSearchPlaceholder() {
-  if (
-    config.directoryData.search?.placeholder &&
-    config.directoryData.search.placeholder.includes("{0}")
-  ) {
-    const count = (await getCollection("directory")).length;
-    return formatString(
-      config.directoryData.search?.placeholder ?? "Search among {0} listings",
-      count,
-    );
+  // CMS placeholder wins; TOML config is the fallback.
+  const placeholder =
+    settings?.searchPlaceholder ?? config.directoryData?.search?.placeholder;
+  if (placeholder && placeholder.includes("{0}")) {
+    const count = (await getListings(perspectiveCookie)).length;
+    return formatString(placeholder, count);
   }
 
-  return config.directoryData.search?.placeholder ?? "Search";
+  return placeholder ?? "Search";
 }
 ---
 
@@ -42,6 +45,8 @@ async function getSearchPlaceholder() {
       }
       <input
         id="search"
+        type="search"
+        aria-label={searchPlaceholder || "Search directory listings"}
         class=`block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6 dark:active:ring-primary-400 dark:bg-gray-700 dark:ring-gray-600 dark:text-gray-200 dark:placeholder:text-gray-400 ${config.directoryUI.search?.icon ? 'pl-10' : ''}`
         placeholder={searchPlaceholder}
       />
@@ -61,13 +66,13 @@ async function getSearchPlaceholder() {
       }
       if (config.directoryUI.search.tags.display === "select") {
         return (
-          <UiTagSelect client:load>
+          <UiTagSelect client:load options={filterOptions}>
             <Icon name="tabler:x" />
           </UiTagSelect>
         );
       }
       if (config.directoryUI.search.tags.display === "show-all") {
-        return <UiTagGrid client:load />;
+        return <UiTagGrid client:load options={filterOptions} />;
       }
     }
   }

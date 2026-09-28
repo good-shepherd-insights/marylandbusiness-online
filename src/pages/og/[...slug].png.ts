@@ -1,74 +1,82 @@
-import { getCollection, getEntry } from 'astro:content';
 import fs from 'fs';
 import path from 'path';
-import { ImageResponse } from '@vercel/og';
-import { getRootPages } from '@lib/getRootPages';
+import sharp from 'sharp';
+import satori from 'satori';
+import { getListingForOg, getSiteSettings } from '../../lib/sanity/queries';
+import { getEntry } from 'astro:content';
+import { sanityImageUrl } from '../../lib/sanity/client';
+import type { SanityImage } from '../../lib/sanity/types';
 import config from '@util/themeConfig';
-import { type AllContent } from '../../types/content';
 
 const boldFontPath = 'node_modules/@fontsource/gabarito/files/gabarito-latin-700-normal.woff' as const;
 const regularFontPath = 'node_modules/@fontsource/gabarito/files/gabarito-latin-400-normal.woff' as const;
- 
+
 interface Props {
   params: { slug: string };
 }
 
-function getPostCoverPath(entry: AllContent) {
-  if (!entry.data.image) {
-    return '/default-listing-image.png';
+/** Fetch a Sanity cover image as a base64 data URI for satori. */
+async function fetchCoverAsDataUri(image: SanityImage | undefined): Promise<string | null> {
+  if (!image?.asset) return null;
+  try {
+    const url = sanityImageUrl(image, { width: 400 });
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const type = res.headers.get('content-type') ?? 'image/png';
+    return `data:${type};base64,${buffer.toString('base64')}`;
+  } catch {
+    return null;
   }
-  return entry.data.image.src;
 }
 
-function getPostCoverImage(entry: AllContent) {
-  const imagePath = getPostCoverPath(entry);
-  if (process.env.NODE_ENV === 'development') {
-    return path.resolve(imagePath.replace(/\?.*/, '').replace('/@fs', ''));
+function getStaticCoverDataUri(): string | null {
+  try {
+    const buffer = fs.readFileSync(path.resolve('public/default-listing-image.png'));
+    return `data:image/png;base64,${buffer.toString('base64')}`;
+  } catch {
+    return null;
   }
-  return path.resolve(imagePath.replace('/', 'dist/'));
 }
- 
+
 export async function GET({ params }: Props) {
-  const title = config.general.title;
-  console.log(params);
+  const settings = await getSiteSettings();
+  const title = settings?.siteTitle ?? config.general.title;
   const { slug } = params;
 
-  let entry: AllContent | undefined;
-  const allListings = (await getCollection("directory")).map(e => e.id);
-  if (allListings.includes(slug)){
-    entry = await getEntry('directory', slug);
-  } else {
-    entry = await getEntry('pages', slug);
+  const listing = slug ? await getListingForOg(slug) : undefined;
+  const pageEntry = await getEntry('pages', slug ?? 'index');
+
+  // 404 when the route doesn't resolve to any content; an entry without a
+  // frontmatter title (e.g. index.mdx) falls back to the site title.
+  if (!listing && !pageEntry) {
+    return new Response('Not found', { status: 404 });
   }
 
-  if (!entry) {
-    throw new Error("Unable to find " + slug);
-  }
+  const titleText = listing?.name ?? pageEntry?.data.title ?? title;
 
   // using custom font files
   const GabartitoSansBold = fs.readFileSync(path.resolve(boldFontPath));
   const GabaritoSansRegular = fs.readFileSync(
     path.resolve(regularFontPath),
   );
-  let postCover;
-  try {
-    postCover = fs.readFileSync(getPostCoverImage(entry));
-  } catch (error) {
-    postCover = null;
-  }
 
-  const image = postCover ? {
+  const cover =
+    (await fetchCoverAsDataUri(listing?.image)) ??
+    (listing ? null : getStaticCoverDataUri());
+
+  const image = cover ? {
     type: 'img',
     props: {
-      src: postCover.buffer,
+      src: cover,
     },
-  } :               {
+  } : {
     type: 'div',
     props: {
-      tw: 'bg-gray-200 rounded-full'
+      tw: 'bg-gray-200 rounded-full',
     },
   };
- 
+
   const html = {
     type: 'div',
     props: {
@@ -95,7 +103,7 @@ export async function GET({ params }: Props) {
                     fontSize: '48px',
                     fontFamily: 'Gabarito Bold',
                   },
-                  children: entry.data.title,
+                  children: titleText,
                 },
               },
               {
@@ -106,7 +114,7 @@ export async function GET({ params }: Props) {
                     fontSize: '18px',
                     fontFamily: 'Gabarito Regular',
                   },
-                  children: entry.collection === 'directory' ? entry.data.description : entry.data.title,
+                  children: listing?.description ?? titleText,
                 },
               },
             ],
@@ -138,8 +146,10 @@ export async function GET({ params }: Props) {
       },
     },
   };
- 
-  return new ImageResponse(html, {
+
+  // Satori's React JSX types don't fit a plain-object element tree; structure is validated at runtime.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const svg = await satori(html as any, {
     width: 1200,
     height: 600,
     fonts: [
@@ -155,8 +165,10 @@ export async function GET({ params }: Props) {
       },
     ],
   });
-}
 
-export async function getStaticPaths() {
-  return await getRootPages(false);
+  const png = await sharp(Buffer.from(svg), { density: 72 }).png().toBuffer();
+
+  return new Response(png, {
+    headers: { 'Content-Type': 'image/png' },
+  });
 }

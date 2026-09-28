@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime.CWLBoBiw.js";var t=e();function n(){return(0,t.jsx)(`a`,{href:`/api/draft-mode/disable`,style:{position:`fixed`,bottom:8,left:8,zIndex:2147483647,padding:`6px 10px`,borderRadius:8,background:`#0d0d0d`,color:`#fff`,fontFamily:`system-ui, sans-serif`,fontSize:12,textDecoration:`none`,opacity:.85},children:`Exit draft mode`})}export{n as default};
