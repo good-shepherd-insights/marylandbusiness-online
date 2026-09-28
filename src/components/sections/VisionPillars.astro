@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { eyebrow, heading, description, pillars } = Astro.props.visionPillars;
-const validPillars = (pillars ?? []).filter((p) => p.title);
+const validPillars = (pillars ?? []).filter((p) => p?.title);
 ---
 
 {

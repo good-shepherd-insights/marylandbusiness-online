@@ -716,3 +716,89 @@ export async function getRowsForCombo(
   );
   return {businesses: hit.map(toHubBusiness), cities: citiesOf(hit), total: rows.length};
 }
+
+/** Best directory URL for a (category, subcategory, county, city) selection,
+ * computed against the live gate. Reuses the same open-gate set that drives
+ * every route + the sitemap, so an option link on the Hero points exactly
+ * where the directory will serve it. No query strings; the path is the
+ * state (HUB-DIRECTORY-RESEARCH.md).
+ *
+ * Always returns a working URL:
+ *  - the gate path for that combo if it exists
+ *  - the longest gate-passing ancestor with `?af=` chips carrying the
+ *    requested scope (HUB-DIRECTORY-RESEARCH.md tier-2) when only the
+ *    entities are valid but the gate hasn't approved the combo
+ *  - the hub root with `?af=` chips when no gate ancestor exists yet
+ *    (the user is first to scope this combo; landing at the hub activates
+ *    the chips client-side and the page works end-to-end)
+ *
+ * No bare tag URL is ever returned. The Hero option link is always a
+ * clickable, indexable path. */
+export function directoryPathFor(
+  sel: { cat?: string; sub?: string; county?: string; city?: string },
+  labelBy: Partial<Record<'cat' | 'sub' | 'county' | 'city', string>> = {},
+): string {
+  const { cat, sub, county, city } = sel;
+  const path = [cat, sub, county, city].filter((seg, i, arr) => seg && arr.slice(0, i).every((p) => Boolean(p)));
+  if (!path.length) return '/';
+  // Gate approves the full combo → plain path.
+  if (gateOpenSync(path.join('/'))) return `/${path.join('/')}`;
+  // Tier-2 fallback: nearest open ancestor + `?af=` chips for the full
+  // requested scope. If no open ancestor exists yet, land on the hub root
+  // with `?af=` so the user gets a working page (HUB-DIRECTORY-RESEARCH.md
+  // is silent on the empty-gate case; landing on `/` with `?af=` chips is
+  // the same UX the resolver produces for tier-3 "unresolvable" slugs).
+  const requested = [cat, sub, county, city].filter(Boolean) as Array<'cat' | 'sub' | 'county' | 'city'>;
+  const label = (k: 'cat' | 'sub' | 'county' | 'city', v: string | undefined) =>
+    labelBy[k] ?? v?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) ?? '';
+  const af = requested.map((k) => `${k}~${k === 'cat' ? cat : k === 'sub' ? sub : k === 'county' ? county : city}~${label(k, k === 'cat' ? cat : k === 'sub' ? sub : k === 'county' ? county : city)}`).join(',');
+  for (let i = requested.length - 1; i >= 0; i -= 1) {
+    if (gateOpenSync(path.slice(0, i).join('/'))) {
+      const base = path.slice(0, i).join('/');
+      const basePath = base ? `/${base}` : '/';
+      return af ? `${basePath}?af=${encodeURIComponent(af)}` : basePath;
+    }
+  }
+  return af ? `/?af=${encodeURIComponent(af)}` : '/';
+}
+
+/** Sync gate check used by the URL builder at render time (the async
+ * `resolveDirectoryPath` reuses the same index for the actual route). */
+function gateOpenSync(path: string): boolean {
+  if (!path) return true;
+  return gateIndexCache.has(path);
+}
+let gateIndexCache: Set<string> = new Set();
+
+/** The URL to use from the Hero dropdown options. Each link is computed
+ * server-side from the same `directoryPathFor` helper, so what the user
+ * sees in the address bar after clicking matches what the gate serves. */
+export async function directoryOptionHrefs(
+  counties: { slug: string; label: string }[],
+  categories: { slug: string; label: string }[],
+): Promise<{
+  counties: Record<string, string>;
+  categories: Record<string, string>;
+}> {
+  const index = await buildDirectoryIndex();
+  gateIndexCache = new Set([...index.open.keys()]);
+  const countyLabelBy: Record<string, string> = {};
+  for (const c of counties) countyLabelBy[c.slug] = c.label;
+  const categoryLabelBy: Record<string, string> = {};
+  for (const c of categories) categoryLabelBy[c.slug] = c.label;
+  // The labelBy map is keyed by the chip *type* ('cat' / 'county' / etc.),
+  // not by slug — so we look up by type, then pull the matching CMS label.
+  const withCounty = (slug: string) => {
+    const label = countyLabelBy[slug] ?? slug;
+    return directoryPathFor({ county: slug }, { county: label });
+  };
+  const withCategory = (slug: string) => {
+    const label = categoryLabelBy[slug] ?? slug;
+    return directoryPathFor({ cat: slug }, { cat: label });
+  };
+  const countiesHref: Record<string, string> = {};
+  for (const c of counties) countiesHref[c.slug] = withCounty(c.slug);
+  const categoriesHref: Record<string, string> = {};
+  for (const c of categories) categoriesHref[c.slug] = withCategory(c.slug);
+  return { counties: countiesHref, categories: categoriesHref };
+}

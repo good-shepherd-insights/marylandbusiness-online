@@ -13,7 +13,6 @@ interface Props {
 
 const { pathways } = Astro.props;
 const ICONS = ['tabler:home-2', 'tabler:shield-check', 'tabler:briefcase'];
-const TONES = ['tone-primary', 'tone-gold', 'tone-dark'];
 ---
 
 {
@@ -80,26 +79,6 @@ const TONES = ['tone-primary', 'tone-gold', 'tone-dark'];
   }
   .pathway-box {
     border: 1px solid var(--border);
-    transition: all 0.2s ease;
     background: white;
-  }
-  .pathway-box:hover {
-    border-color: var(--card-foreground);
-    transform: translateY(-4px);
-  }
-  .tone-primary {
-    background-color: rgba(157, 34, 53, 0.05);
-    color: var(--primary);
-    border-color: rgba(157, 34, 53, 0.1);
-  }
-  .tone-gold {
-    background-color: rgba(234, 170, 0, 0.1);
-    color: var(--card-foreground);
-    border-color: rgba(234, 170, 0, 0.2);
-  }
-  .tone-dark {
-    background-color: rgba(18, 18, 18, 0.05);
-    color: var(--card-foreground);
-    border-color: rgba(18, 18, 18, 0.1);
   }
 </style>

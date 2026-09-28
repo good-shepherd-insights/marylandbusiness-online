@@ -56,7 +56,7 @@ if (!about && !howItWorks && !view) {
 ---
 {
   about ? (
-    <BaseLayout>
+    <BaseLayout title={about.header?.heading ?? 'About'} slug={category}>
       {settings && <Navbar settings={settings} />}
       {about.header && <AboutHeader header={about.header} />}
       {about.statStrip && <StatStrip statStrip={about.statStrip} />}
@@ -69,9 +69,9 @@ if (!about && !howItWorks && !view) {
       {settings && <Footer settings={settings} />}
     </BaseLayout>
   ) : howItWorks ? (
-    <BaseLayout title={howItWorks.title} slug={category}>
+    <BaseLayout title={howItWorks.title ?? 'How It Works'} slug={category}>
       {settings && <Navbar settings={settings} />}
-      {howItWorks.hiwHeader && <HiwHeader header={howItWorks.hiwHeader} crumbTail={howItWorks.title} />}
+      {howItWorks.hiwHeader && <HiwHeader header={howItWorks.hiwHeader} crumbTail={howItWorks.title ?? 'How It Works'} />}
       {howItWorks.hiwProcess && <HiwProcess process={howItWorks.hiwProcess} />}
       {howItWorks.hiwValue && <HiwValue value={howItWorks.hiwValue} />}
       {howItWorks.hiwWhy && <HiwWhy why={howItWorks.hiwWhy} />}
@@ -83,15 +83,15 @@ if (!about && !howItWorks && !view) {
       {howItWorks.hiwCta && <HiwCta cta={howItWorks.hiwCta} />}
       {settings && <Footer settings={settings} />}
     </BaseLayout>
-  ) : hasChrome && view ? (
-    <BaseLayout title={`${view.hub.label} ${directoryPage!.hubHeader?.headingSuffix ?? ""}`.trim()} description={view.state.description ?? undefined} slug={category}>
+  ) : hasChrome && view && directoryPage ? (
+    <BaseLayout title={`${view.hub.label} ${directoryPage.hubHeader?.headingSuffix ?? ""}`.trim()} description={view.state.description ?? undefined} slug={category}>
       <div
         class="hub-page min-h-dvh bg-[#FAF7F2] flex flex-col overflow-hidden"
         style="font-family: 'Sora Variable', 'Sora', sans-serif;"
       >
         {settings && <Navbar settings={settings} />}
-        <HubHeader header={directoryPage!.hubHeader!} label={view.hub.label} />
-        <HubDiscovery discovery={directoryPage!.hubDiscovery!} hub={view.hub} filters={view.filters} counties={countyOptions} categories={categoryOptions} />
+        {directoryPage.hubHeader && <HubHeader header={directoryPage.hubHeader} label={view.hub.label} stats={view.hub.stats} />}
+        {directoryPage.hubDiscovery && <HubDiscovery discovery={directoryPage.hubDiscovery} hub={view.hub} filters={view.filters} counties={countyOptions} categories={categoryOptions} />}
         {settings && <Footer settings={settings} />}
       </div>
     </BaseLayout>

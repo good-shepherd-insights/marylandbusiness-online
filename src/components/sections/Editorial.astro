@@ -27,7 +27,7 @@ const {
   ctaLink,
 } = Astro.props.editorial;
 
-const validStories = (stories ?? []).filter((s) => s.title);
+const validStories = (stories ?? []).filter((s) => s?.title);
 ---
 
 {

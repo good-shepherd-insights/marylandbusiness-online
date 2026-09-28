@@ -33,22 +33,24 @@ if (!view) {
 ---
 
 {
+  <>
   hasChrome && view ? (
-    <BaseLayout title={`${view.hub.label} ${directoryPage!.hubHeader?.headingSuffix ?? ""}`.trim()} description={view.state.description ?? undefined} slug={city}>
+    <BaseLayout title={`${view!.hub.label} ${directoryPage!.hubHeader?.headingSuffix ?? ""}`.trim()} description={view!.state.description ?? undefined} slug={city}>
       <div
         class="hub-page min-h-dvh bg-[#FAF7F2] flex flex-col overflow-hidden"
         style="font-family: 'Sora Variable', 'Sora', sans-serif;"
       >
         {settings && <Navbar settings={settings} />}
-        <HubHeader header={directoryPage!.hubHeader!} label={view.hub.label} />
-        <HubDiscovery discovery={directoryPage!.hubDiscovery!} hub={view.hub} filters={view.filters} counties={countyOptions} categories={categoryOptions} />
-        {settings && <Footer settings={settings} />}
+        <HubHeader header={directoryPage!.hubHeader!} label={view!.hub.label} stats={view!.hub.stats} />
+        <HubDiscovery discovery={directoryPage!.hubDiscovery!} hub={view!.hub} filters={view!.filters} counties={countyOptions} categories={categoryOptions} />
       </div>
     </BaseLayout>
   ) : view ? (
-    <BaseLayout title={view.hub.label} description={view.state.description ?? undefined} slug={city}>
-      <HubBasic label={view.hub.label} description={view.state.description} hub={view.hub} />
-      {settings && <Footer settings={settings} />}
+    <BaseLayout title={view!.hub.label} description={view!.state.description ?? undefined} slug={city}>
+      <HubBasic label={view!.hub.label} description={view!.state.description} hub={view!.hub} />
     </BaseLayout>
   ) : null
+  {settings && <Footer settings={settings} />}
+  </>
+
 }

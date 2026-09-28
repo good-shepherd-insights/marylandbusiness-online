@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { eyebrow, heading, description, ctaLabel, ctaLink, partners } = Astro.props.partnerships;
-const validPartners = (partners ?? []).filter((p) => p.title);
+const validPartners = (partners ?? []).filter((p) => p?.title);
 ---
 
 {

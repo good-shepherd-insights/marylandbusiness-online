@@ -27,7 +27,7 @@ const { frontmatter, slug } = Astro.props;
 // MDX fallbacks were removed — MDX pages render through Landing instead.
 const isListing = frontmatter?._type === "listing";
 const settings = await getSiteSettings();
-const title = frontmatter?.name || settings?.siteTitle || themeConfig.general.title;
+const title = frontmatter?.name || settings?.siteTitle || themeConfig?.general?.title || 'Listing';
 const description = frontmatter?.description;
 ---
 

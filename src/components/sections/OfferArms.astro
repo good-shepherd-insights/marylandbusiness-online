@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { eyebrow, heading, arms } = Astro.props.offerArms;
-const validArms = (arms ?? []).filter((a) => a.title);
+const validArms = (arms ?? []).filter((a) => a?.title);
 ---
 
 {
