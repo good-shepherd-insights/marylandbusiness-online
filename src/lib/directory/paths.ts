@@ -13,8 +13,11 @@
  *    (`exclude`) — human override, per combination, audited via `note`.
  */
 import {loadQuery} from '@lib/sanity/load-query';
-import type {HubBusiness, HubCity, HubData, ListingEntry} from '@lib/sanity/types';
+import type {HubBusiness, HubCity, HubData, ListingEntry, SanityDirectoryPage, SanityListing} from '@lib/sanity/types';
+import {getDirectoryPage, getListing} from '@lib/sanity/queries';
 import {sanityImageUrl} from '@lib/sanity/client';
+
+export type PerspectiveCookie = string | undefined;
 
 export type PathKind = 'geo-county' | 'geo-city' | 'type' | 'type-county' | 'type-city';
 
@@ -397,6 +400,67 @@ export type DirectoryResolution =
    * active filtering. */
   | {kind: 'invalid'; redirectTo: string};
 
+/** Action returned to a directory route — every consumer switch-exhausts
+ * on `kind`. Pages never read nullable hub/listing fields; each branch
+ * gets the data it needs narrowed. */
+export type HubRouteAction =
+  | {kind: 'hub'; view: HubView; directoryPage: SanityDirectoryPage | null}
+  | {kind: 'redirect'; to: string; status: 301 | 302};
+
+/** 3-segment routes handle both combo hubs and business-detail fallbacks
+ * (the third segment may be either a county or a listing slug). */
+export type HybridRouteAction =
+  | {kind: 'hub'; view: HubView; directoryPage: SanityDirectoryPage | null}
+  | {kind: 'detail'; listing: SanityListing}
+  | {kind: 'redirect'; to: string; status: 301 | 302};
+
+/** Resolve a 2-segment or 4-segment directory route. Loads the
+ * directoryPage only on the open branch so non-hub paths pay nothing
+ * for it. Both 'narrow' (gate-off combo) and 'invalid' (unresolvable)
+ * resolve to a redirect — TAGS.md tier 2/3 behavior. */
+export async function resolveHubRoute(
+  path: string,
+  perspectiveCookie?: PerspectiveCookie,
+): Promise<HubRouteAction> {
+  const dir = await resolveDirectoryPath(path);
+  if (dir.kind === 'narrow' || dir.kind === 'invalid') {
+    return {kind: 'redirect', to: dir.redirectTo, status: 301};
+  }
+  const directoryPage = (await getDirectoryPage(perspectiveCookie)) ?? null;
+  return {kind: 'hub', view: dir.view, directoryPage};
+}
+
+/** Resolve a 3-segment directory route. When the directory resolver
+ * returns open → hub. When it returns narrow/invalid → try the
+ * business-detail fallback (third segment as a listing slug sitting in
+ * the requested county+city). Otherwise redirect per the directory
+ * resolver's chosen landing. Params accept undefined (Astro types
+ * `Astro.params` as possibly-undefined even for required segments);
+ * missing segments short-circuit to a root redirect. */
+export async function resolveHybridRoute(
+  params: {category?: string; subcategory?: string; county?: string},
+  perspectiveCookie?: PerspectiveCookie,
+): Promise<HybridRouteAction> {
+  const {category, subcategory, county} = params;
+  if (!category || !subcategory || !county) {
+    return {kind: 'redirect', to: '/', status: 301};
+  }
+  const dir = await resolveDirectoryPath(`${category}/${subcategory}/${county}`);
+  if (dir.kind === 'open') {
+    const directoryPage = (await getDirectoryPage(perspectiveCookie)) ?? null;
+    return {kind: 'hub', view: dir.view, directoryPage};
+  }
+  const listing = await getListing(county, perspectiveCookie);
+  if (
+    listing &&
+    listing.county?.slug?.current === category &&
+    listing.city?.slug?.current === subcategory
+  ) {
+    return {kind: 'detail', listing};
+  }
+  return {kind: 'redirect', to: dir.redirectTo, status: 301};
+}
+
 const pretty = (slug: string) =>
   slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -739,7 +803,11 @@ export function directoryPathFor(
   labelBy: Partial<Record<'cat' | 'sub' | 'county' | 'city', string>> = {},
 ): string {
   const { cat, sub, county, city } = sel;
-  const path = [cat, sub, county, city].filter((seg, i, arr) => seg && arr.slice(0, i).every((p) => Boolean(p)));
+  // Geographic selections can stand alone (for example, a county card on
+  // the home page). Type selections retain their ordered hierarchy.
+  const path = cat
+    ? [cat, sub, county, city].filter((seg, i, arr) => seg && arr.slice(0, i).every((p) => Boolean(p)))
+    : [county, city].filter((seg, i, arr) => seg && arr.slice(0, i).every((p) => Boolean(p)));
   if (!path.length) return '/';
   // Gate approves the full combo → plain path.
   if (gateOpenSync(path.join('/'))) return `/${path.join('/')}`;
