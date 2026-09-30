@@ -5,6 +5,7 @@
  * links reuse navLink data.
  */
 import { Icon } from 'astro-icon/components';
+import { sanityImageUrl } from '@lib/sanity/client';
 import type { SanityHomePathways } from '@lib/sanity/types';
 
 interface Props {
@@ -30,7 +31,17 @@ const ICONS = ['tabler:home-2', 'tabler:shield-check', 'tabler:briefcase'];
 
         <div class="grid md:grid-cols-3 gap-6 md:gap-8">
           {(pathways.cards ?? []).map((card, i) => (
-            <div class="pathway-box p-8 md:p-10 flex flex-col">
+            <div class:list={['pathway-box', 'p-8', 'md:p-10', 'flex', 'flex-col', { 'has-photo': !!card.image }]}>
+              {card.image && (
+                <div class="pathway-photo">
+                  <img
+                    src={sanityImageUrl(card.image, { width: 800, quality: 70 })}
+                    alt={card.imageAlt ?? card.title ?? ''}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
               <div class="flex items-center gap-3 mb-4">
                 <Icon name={ICONS[i % ICONS.length] as never} class="w-5 h-5 text-[var(--primary)] shrink-0" />
                 <h3 class="text-xl font-extrabold text-[var(--card-foreground)] tracking-tight">
@@ -79,5 +90,28 @@ const ICONS = ['tabler:home-2', 'tabler:shield-check', 'tabler:briefcase'];
   .pathway-box {
     border: 1px solid var(--border);
     background: white;
+    overflow: hidden;
+  }
+
+  /* Variation 6A: optional banner photo above the title/content */
+  .pathway-box.has-photo {
+    padding-top: 0;
+  }
+
+  .pathway-photo {
+    margin: 0 -2rem 2rem;
+  }
+
+  .pathway-photo img {
+    display: block;
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+  }
+
+  @media (min-width: 768px) {
+    .pathway-photo {
+      margin: 0 -2.5rem 2.5rem;
+    }
   }
 </style>

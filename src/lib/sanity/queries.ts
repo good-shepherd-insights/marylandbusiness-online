@@ -283,11 +283,11 @@ export async function getHomePage(
       homeNews->{
         _id, _type, eyebrow, heading, description, pulseLabel,
         archiveLabel, archiveUrl,
-        items[]{_key, tag, headline, excerpt, place, timeLabel}
+        items[]{_key, tag, headline, excerpt, place, timeLabel, image{asset,alt}, imageAlt}
       },
       homePathways->{
         _id, _type, eyebrow, heading, description,
-        cards[]{_key, title, description, links[]{_key, label, href}}
+        cards[]{_key, title, description, image{asset,alt}, imageAlt, links[]{_key, label, href}}
       },
       homeCategoryIndex->{
         _id, _type, eyebrow, heading, description
@@ -432,7 +432,7 @@ export async function getAboutPage(
         description,
         ctaLabel,
         ctaLink,
-        partners[]{icon,title,text}
+        partners[]{icon,title,text,image{asset,alt},imageAlt}
       },
       closingCta->{
         heading,
@@ -523,7 +523,9 @@ export async function getResourcesPage(
           iconTint,
           title,
           description,
-          url
+          url,
+          image{asset,alt},
+          imageAlt
         }
       },
       countyJump->{
@@ -562,7 +564,9 @@ export async function getResourcesPage(
           jurisdictionKind,
           category,
           description,
-          url
+          url,
+          image{asset,alt},
+          imageAlt
         },
         loadMoreLabel
       },

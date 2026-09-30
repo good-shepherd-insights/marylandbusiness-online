@@ -30,6 +30,19 @@ export const partner = defineType({
       rows: 3,
       validation: (rule) => rule.required(),
     }),
+    defineField({
+      name: 'image',
+      title: 'Photo',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'Optional full-bleed background photo with dark overlay and white text (variation 4D); card renders in the standard bordered style when empty',
+    }),
+    defineField({
+      name: 'imageAlt',
+      title: 'Photo alt text',
+      type: 'string',
+      description: 'Describe the photo for screen readers',
+    }),
   ],
   preview: {
     select: {title: 'title', icon: 'icon'},

@@ -45,6 +45,19 @@ export const resourceCard = defineType({
     defineField({name: 'category', title: 'Category', type: 'string', validation: (rule) => rule.required()}),
     defineField({name: 'description', title: 'Description', type: 'text', rows: 2, validation: (rule) => rule.required()}),
     defineField({name: 'url', title: 'Resource URL', type: 'url', validation: (rule) => rule.required()}),
+    defineField({
+      name: 'image',
+      title: 'Photo',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'Optional photo shown as a vertical rail on the left of the card (variation 2C); card renders without it when empty',
+    }),
+    defineField({
+      name: 'imageAlt',
+      title: 'Photo alt text',
+      type: 'string',
+      description: 'Describe the photo for screen readers',
+    }),
   ],
   preview: {
     select: {title: 'title', badge: 'typeBadge', jurisdiction: 'jurisdiction'},

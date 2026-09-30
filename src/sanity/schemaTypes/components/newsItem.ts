@@ -32,6 +32,19 @@ export const newsItem = defineType({
       title: 'Time Label',
       type: 'string',
     }),
+    defineField({
+      name: 'image',
+      title: 'Photo',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'Optional photo shown as a banner above the news card (variation 1A); card renders without it when empty',
+    }),
+    defineField({
+      name: 'imageAlt',
+      title: 'Photo alt text',
+      type: 'string',
+      description: 'Describe the photo for screen readers',
+    }),
   ],
   preview: {
     select: {title: 'headline', sub: 'tag'},

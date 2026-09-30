@@ -4,6 +4,7 @@
  * `featuredPrograms` section document.
  */
 import { Icon } from 'astro-icon/components';
+import { sanityImageUrl } from '@lib/sanity/client';
 import type { FeaturedProgramsContent, IconTint } from '@lib/sanity/types';
 
 interface Props {
@@ -24,13 +25,33 @@ const tintClass: Record<IconTint, string> = {
     <h2>{section.heading}</h2>
     <div class="grid">
       {(section.programs ?? []).map((program) => (
-        <div class="card">
-          <div class:list={['icon-box', tintClass[program.iconTint]]}>
-            <Icon name={`tabler:${program.icon}`} class="icon" />
-          </div>
-          <h3>{program.title}</h3>
-          <p>{program.description}</p>
-          <a class="visit" href={program.url} target="_blank" rel="noopener noreferrer">{section.cardLinkLabel}</a>
+        <div class:list={['card', { 'has-photo': !!program.image }]}>
+          {program.image ? (
+            <>
+              <div class="card-photo">
+                <img
+                  src={sanityImageUrl(program.image, { width: 800, quality: 70 })}
+                  alt={program.imageAlt ?? program.title}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="card-sheet">
+                <h3>{program.title}</h3>
+                <p>{program.description}</p>
+                <a class="visit" href={program.url} target="_blank" rel="noopener noreferrer">{section.cardLinkLabel}</a>
+              </div>
+            </>
+          ) : (
+            <>
+              <div class:list={['icon-box', tintClass[program.iconTint]]}>
+                <Icon name={`tabler:${program.icon}`} class="icon" />
+              </div>
+              <h3>{program.title}</h3>
+              <p>{program.description}</p>
+              <a class="visit" href={program.url} target="_blank" rel="noopener noreferrer">{section.cardLinkLabel}</a>
+            </>
+          )}
         </div>
       ))}
     </div>
@@ -44,6 +65,10 @@ const tintClass: Record<IconTint, string> = {
   h2 { font-size: 30px; font-weight: 800; color: #121212; letter-spacing: -0.025em; margin: 0 0 40px; }
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #e3e0dc; border-left: 1px solid #e3e0dc; }
   .card { border-right: 1px solid #e3e0dc; border-bottom: 1px solid #e3e0dc; padding: 32px; background: #fff; }
+  /* Variation 3D: optional photo with overlapping white content sheet */
+  .card.has-photo { padding: 0; }
+  .card-photo img { display: block; width: 100%; height: 230px; object-fit: cover; }
+  .card-sheet { background: #fff; margin: -70px 20px 20px; position: relative; padding: 22px; border: 1px solid #e3e0dc; }
   .icon-box { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
   .tint-primary { background: #9d2235; color: #fff; }
   .tint-secondary { background: #eaaa00; color: #121212; }

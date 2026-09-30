@@ -5,6 +5,7 @@
  * All content from Sanity `about.partnerships`.
  */
 import { Icon } from 'astro-icon/components';
+import { sanityImageUrl } from '@lib/sanity/client';
 import type { PartnershipsContent, Partner } from '@lib/sanity/types';
 
 interface Props {
@@ -36,14 +37,33 @@ const validPartners = (partners ?? []).filter((p) => p?.title);
               const defaultIcon = ['tabler:briefcase', 'tabler:certificate', 'tabler:building', 'tabler:users'][i % 4];
               const iconName = partner.icon?.startsWith('tabler:') ? partner.icon : defaultIcon;
               return (
-                <div class="partner-card">
-                  <div class="flex items-center gap-3 mb-3">
-                    <div class="partner-icon shrink-0">
-                      <Icon name={iconName} aria-hidden="true" />
-                    </div>
-                    {partner.title && <h3>{partner.title}</h3>}
-                  </div>
-                  {partner.text && <p>{partner.text}</p>}
+                <div class:list={['partner-card', { 'has-photo': !!partner.image }]}>
+                  {partner.image ? (
+                    <>
+                      <img
+                        class="partner-photo"
+                        src={sanityImageUrl(partner.image, { width: 800, quality: 70 })}
+                        alt={partner.imageAlt ?? partner.title ?? ''}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div class="partner-scrim" aria-hidden="true" />
+                      <div class="partner-overlay">
+                        {partner.title && <h3>{partner.title}</h3>}
+                        {partner.text && <p>{partner.text}</p>}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div class="flex items-center gap-3 mb-3">
+                        <div class="partner-icon shrink-0">
+                          <Icon name={iconName} aria-hidden="true" />
+                        </div>
+                        {partner.title && <h3>{partner.title}</h3>}
+                      </div>
+                      {partner.text && <p>{partner.text}</p>}
+                    </>
+                  )}
                 </div>
               );
             })}
@@ -139,6 +159,47 @@ const validPartners = (partners ?? []).filter((p) => p?.title);
     background: var(--partners-card);
     border-right: 1px solid var(--partners-border);
     border-bottom: 1px solid var(--partners-border);
+  }
+
+  /* Variation 4D: optional full-bleed photo background with dark scrim */
+  .partner-card.has-photo {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+    min-height: 220px;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .partner-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .partner-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(12, 8, 10, 0.92) 0%, rgba(12, 8, 10, 0.62) 55%, rgba(12, 8, 10, 0.28) 100%);
+  }
+
+  .partner-overlay {
+    position: relative;
+    padding: 1.25rem;
+    color: #ffffff;
+  }
+
+  .partner-card.has-photo .partner-overlay h3 {
+    color: #ffffff;
+    font-size: 0.95rem;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+  }
+
+  .partner-card.has-photo .partner-overlay p {
+    color: #e8e2d8;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   }
 
   .partner-icon {
