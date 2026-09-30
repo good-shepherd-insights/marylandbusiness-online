@@ -6,6 +6,7 @@
  * CMS props; card/program icons = CMS tabler names.
  */
 import { Icon } from 'astro-icon/components';
+import { sanityImageUrl } from '@lib/sanity/client';
 import type { IconTint, ResourceDirectoryContent } from '@lib/sanity/types';
 
 interface Props {
@@ -111,12 +112,23 @@ const iconTintClass: Record<string, string> = {
       <div class="grid">
         {(section.cards ?? []).map((card) => (
           <article
-            class="card"
+            class:list={['card', { 'has-photo': !!card.image }]}
             data-category={card.category}
             data-type={card.typeBadge}
             data-kind={card.jurisdictionKind}
             data-search={`${card.title} ${card.jurisdiction} ${card.description}`.toLowerCase()}
           >
+            {card.image && (
+              <div class="card-photo">
+                <img
+                  src={sanityImageUrl(card.image, { width: 400, quality: 70 })}
+                  alt={card.imageAlt ?? card.title}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            )}
+            <div class="card-body">
             <div class="card-top">
               <div class:list={['card-icon', iconTintClass[card.iconTint]]}>
                 <Icon name={`tabler:${card.icon}`} class="card-icon-svg" />
@@ -130,6 +142,7 @@ const iconTintClass: Record<string, string> = {
               {section.cardLinkLabel}
               <Icon name="tabler:arrow-right" class="visit-icon" />
             </a>
+            </div>
           </article>
         ))}
       </div>
@@ -182,7 +195,15 @@ const iconTintClass: Record<string, string> = {
   .deadline-org { font-size: 11px; font-weight: 700; color: #525252; text-transform: uppercase; letter-spacing: 0.1em; margin: 2px 0 0; }
   .deadline-date { font-size: 11px; font-weight: 800; color: #9d2235; text-transform: uppercase; white-space: nowrap; }
   .grid { flex: 1; display: grid; grid-template-columns: 1fr; gap: 24px; }
-  .card { border: 1px solid #e3e0dc; padding: 28px; display: flex; flex-direction: column; background: #faf7f2; transition: all 0.2s ease; }
+  .card { border: 1px solid #e3e0dc; display: flex; flex-direction: column; background: #faf7f2; transition: all 0.2s ease; overflow: hidden; }
+  .card-body { padding: 28px; display: flex; flex-direction: column; flex: 1; }
+  /* Variation 2C: optional photo as a left rail (stacks on top on mobile) */
+  .card-photo img { display: block; width: 100%; height: 140px; object-fit: cover; }
+  @media (min-width: 768px) {
+    .card.has-photo { flex-direction: row; }
+    .card.has-photo .card-photo { width: 130px; flex: none; }
+    .card.has-photo .card-photo img { height: 100%; }
+  }
   .card[hidden] { display: none; }
   .card:hover { border-color: #121212; box-shadow: 0 0 24px rgba(18, 18, 18, 0.06); }
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
