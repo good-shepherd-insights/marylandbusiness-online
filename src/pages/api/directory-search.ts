@@ -22,6 +22,9 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     resolution.kind === 'open' ? `/${resolution.path}` : resolution.redirectTo,
     request.url,
   );
+  // `/` renders the marketing home page, which has no hub to narrow, so it
+  // gets a clean redirect rather than a chip string nothing would read.
+  if (destination.pathname === '/') return redirect('/', 303);
   const categoryFilter = `cat~${category.slug}~${category.label}`;
   const existingFilters = destination.searchParams.get('af');
   destination.searchParams.set('af', existingFilters ? `${existingFilters},${categoryFilter}` : categoryFilter);

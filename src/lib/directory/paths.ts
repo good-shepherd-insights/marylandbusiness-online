@@ -377,6 +377,8 @@ export async function getPath(path: string): Promise<{state: PathState; listings
  * their segments pre-applied as chips; valid-but-gate-off combos
  * redirect to the nearest gate-passing ancestor with the requested
  * scope applied client-side (`?af=`); unresolvable slugs redirect bare.
+ * Chips only mean something on a directory route, so a redirect that
+ * lands on `/` is always bare.
  * ------------------------------------------------------------------ */
 
 /** One pre-applied path filter chip. */
@@ -583,27 +585,6 @@ function hubDataOf(index: DirectoryIndex, label: string, rows: DirectoryRow[]): 
   };
 }
 
-/** Hub view rooted at `/` — the landing for chip-carrying redirects whose
- * segment has no gate path yet (zero-listing entities, bare categories).
- * Scope: the whole directory; the `?af=` chips narrow it client-side. */
-export async function getGlobalHubView(): Promise<HubView> {
-  const index = await buildDirectoryIndex();
-  const state: PathState = {
-    path: '',
-    kind: 'type',
-    status: 'on',
-    reason: 'hub root',
-    count: index.rows.length,
-    label: 'Directory',
-    description: null,
-  };
-  return {
-    state,
-    hub: hubDataOf(index, state.label, index.rows),
-    filters: [],
-  };
-}
-
 /** One GROQ roundtrip resolving which real entities the requested slugs
  * hit — decides tier 2 (valid combo, redirect + filters) vs tier 3. */
 interface ResolvedEntities {
@@ -644,18 +625,23 @@ async function resolveEntities(segs: string[]): Promise<ResolvedEntities | undef
 const ent = (e: {name?: string; slug?: string} | null | undefined) =>
   e && e.slug ? {slug: e.slug, label: e.name ?? pretty(e.slug)} : undefined;
 
+/** Narrowing redirect. `base` is a gate-passing directory route whose hub
+ * applies `?af=` chips client-side (HubDiscovery). `/` is the marketing
+ * home page — no hub there to narrow — so it always redirects bare. */
 const narrowRedirect = (base: string, filters: PathFilter[]): DirectoryResolution => ({
   kind: 'narrow',
-  redirectTo: filters.length
-    ? `${base}?af=${encodeURIComponent(filters.map((f) => `${f.type}~${f.slug}~${f.label}`).join(','))}`
-    : base,
+  redirectTo:
+    filters.length && base !== '/'
+      ? `${base}?af=${encodeURIComponent(filters.map((f) => `${f.type}~${f.slug}~${f.label}`).join(','))}`
+      : base,
   filters,
 });
 
 /** Three-tier resolution for a requested directory path (route files).
- * open → render the hub; narrow → 301 to the best gate path carrying the
- * request (nearest ancestor + `?af=` chips, or a bare tag's own hub
- * landing); invalid (no entity, no listing) → redirect, no chip. */
+ * open → render the hub; narrow → 301 to the nearest gate-passing
+ * ancestor with `?af=` chips carrying the request (bare `/` when no
+ * ancestor is gated); invalid (no entity, no listing) → redirect, no
+ * chip. */
 export async function resolveDirectoryPath(path: string): Promise<DirectoryResolution> {
   const segs = path.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
   if (segs.length === 0 || segs.length > 4) return {kind: 'invalid', redirectTo: '/'};
@@ -792,9 +778,8 @@ export async function getRowsForCombo(
  *  - the longest gate-passing ancestor with `?af=` chips carrying the
  *    requested scope (HUB-DIRECTORY-RESEARCH.md tier-2) when only the
  *    entities are valid but the gate hasn't approved the combo
- *  - the hub root with `?af=` chips when no gate ancestor exists yet
- *    (the user is first to scope this combo; landing at the hub activates
- *    the chips client-side and the page works end-to-end)
+ *  - bare `/` when no gate ancestor exists yet — `/` renders the
+ *    marketing home page, which has no hub to apply chips to
  *
  * No bare tag URL is ever returned. The Hero option link is always a
  * clickable, indexable path. */
@@ -811,23 +796,19 @@ export function directoryPathFor(
   if (!path.length) return '/';
   // Gate approves the full combo → plain path.
   if (gateOpenSync(path.join('/'))) return `/${path.join('/')}`;
-  // Tier-2 fallback: nearest open ancestor + `?af=` chips for the full
-  // requested scope. If no open ancestor exists yet, land on the hub root
-  // with `?af=` so the user gets a working page (HUB-DIRECTORY-RESEARCH.md
-  // is silent on the empty-gate case; landing on `/` with `?af=` chips is
-  // the same UX the resolver produces for tier-3 "unresolvable" slugs).
+  // Tier-2 fallback: nearest gate-passing ancestor + `?af=` chips for the
+  // full requested scope. An empty base means no ancestor is gated, so the
+  // combo lands on the home page, which has no hub to apply chips to.
   const requested = (['cat', 'sub', 'county', 'city'] as const).filter((k) => sel[k]);
   const label = (k: 'cat' | 'sub' | 'county' | 'city', v: string | undefined) =>
     labelBy[k] ?? v?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) ?? '';
   const af = requested.map((k) => `${k}~${k === 'cat' ? cat : k === 'sub' ? sub : k === 'county' ? county : city}~${label(k, k === 'cat' ? cat : k === 'sub' ? sub : k === 'county' ? county : city)}`).join(',');
   for (let i = requested.length - 1; i >= 0; i -= 1) {
-    if (gateOpenSync(path.slice(0, i).join('/'))) {
-      const base = path.slice(0, i).join('/');
-      const basePath = base ? `/${base}` : '/';
-      return af ? `${basePath}?af=${encodeURIComponent(af)}` : basePath;
-    }
+    const base = path.slice(0, i).join('/');
+    if (!base) break;
+    if (gateOpenSync(base)) return af ? `/${base}?af=${encodeURIComponent(af)}` : `/${base}`;
   }
-  return af ? `/?af=${encodeURIComponent(af)}` : '/';
+  return '/';
 }
 
 /** Sync gate check used by the URL builder at render time (the async

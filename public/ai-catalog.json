@@ -1,0 +1,41 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Maryland Business Online",
+    "identifier": "did:web:marylandbusiness.goodshepherdinsights.com",
+    "documentationUrl": "https://marylandbusiness.goodshepherdinsights.com/llms.txt"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:marylandbusiness.online:directory:public-directory-api",
+      "displayName": "Maryland Business Online Directory API",
+      "type": "application/json",
+      "url": "https://marylandbusiness.goodshepherdinsights.com/api/directory.json",
+      "description": "Public JSON endpoint for Maryland Business Online directory data.",
+      "tags": ["maryland", "business-directory", "local-businesses"],
+      "capabilities": ["BusinessDirectoryLookup", "LocalBusinessDiscovery"],
+      "representativeQueries": [
+        "find Maryland local businesses by county",
+        "discover business listings in Maryland",
+        "look up local businesses and directory data"
+      ],
+      "version": "1.0.0",
+      "updatedAt": "2026-09-30T00:00:00Z"
+    },
+    {
+      "identifier": "urn:air:marylandbusiness.online:content:resources-page",
+      "displayName": "Maryland Business Online Resources",
+      "type": "text/html",
+      "url": "https://marylandbusiness.goodshepherdinsights.com/resources",
+      "description": "Resource page for Maryland business owners, visitors, and local-business researchers.",
+      "tags": ["maryland", "resources", "business-support"],
+      "capabilities": ["BusinessResourceDiscovery"],
+      "representativeQueries": [
+        "find Maryland business resources",
+        "resources for Maryland local business owners"
+      ],
+      "version": "1.0.0",
+      "updatedAt": "2026-09-30T00:00:00Z"
+    }
+  ]
+}

@@ -7,7 +7,7 @@
  * and never substitutes its own copy or defaults. Segment spacing is owned
  * here in markup (space between segments); heading data carries words only.
  */
-import { sanityImageUrl } from '@lib/sanity/client';
+import { sanityImageUrl, sanityImageWidthSrcSet } from '@lib/sanity/client';
 import { getCategoryOptions, getCountyOptions } from '@lib/directory/paths';
 import type { HeroContent } from '@lib/sanity/types';
 
@@ -30,11 +30,13 @@ const [counties, categories] = await Promise.all([getCountyOptions(), getCategor
             data-slide={index}
           >
             <img
-              src={sanityImageUrl(image, { width: 1920 })}
-              srcset={sanityImageUrl(image, { width: 1280 }) + ' 1280w, ' + sanityImageUrl(image, { width: 1920 }) + ' 1920w, ' + sanityImageUrl(image, { width: 2560 }) + ' 2560w'}
+              src={sanityImageUrl(image, { width: 1280, quality: index === 0 ? 68 : 60 })}
+              srcset={sanityImageWidthSrcSet(image, [640, 960, 1280, 1600, 1920], { quality: index === 0 ? 68 : 60 })}
               sizes="100vw"
               alt={image.alt ?? ''}
               loading={index === 0 ? 'eager' : 'lazy'}
+              fetchpriority={index === 0 ? 'high' : 'auto'}
+              decoding="async"
             />
             <div class="hero-overlay" />
           </div>
@@ -86,8 +88,8 @@ const [counties, categories] = await Promise.all([getCountyOptions(), getCategor
       </div>
 
       {images.length > 1 && (
-        <div class="hero-dots" role="tablist" aria-label="Background slides">
-          {images.map((image, index) => (
+        <div class="hero-dots" role="group" aria-label="Background slides">
+          {images.map((_, index) => (
             <button
               type="button"
               class:list={['hero-dot', { 'is-active': index === 0 }]}
@@ -146,6 +148,7 @@ const [counties, categories] = await Promise.all([getCountyOptions(), getCategor
   .hero-inner {
     position: relative;
     z-index: 1;
+    width: min(100%, 56rem);
     max-width: 56rem;
     margin: 0 auto;
     padding: 7rem 2rem;
@@ -244,6 +247,31 @@ const [counties, categories] = await Promise.all([getCountyOptions(), getCategor
     letter-spacing: 0.2em;
     text-transform: uppercase;
     cursor: pointer;
+  }
+
+  @media (max-width: 640px) {
+    .hero-inner {
+      padding-inline: 1.25rem;
+    }
+
+    .hero-heading {
+      font-size: clamp(2rem, 10vw, 2.5rem);
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
+    .hero-segment-highlight {
+      display: inline;
+      background: var(--hero-primary);
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      overflow-wrap: anywhere;
+    }
+
+    .hero-segment-highlight::before {
+      content: none;
+    }
   }
 
   .hero-dots {

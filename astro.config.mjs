@@ -24,6 +24,9 @@ export default defineConfig({
   site: "https://marylandbusiness.online",
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   output: 'server',
+  build: {
+    inlineStylesheets: 'always',
+  },
   adapter: vercel(),
   integrations: [
     sanity({
@@ -42,6 +45,10 @@ export default defineConfig({
     sitemap()
   ],
   vite: {
+    build: {
+      // Modern-evergreen browsers only; drops ES2020 downleveling from client bundles.
+      target: 'es2022',
+    },
     plugins: [tailwindcss(), ViteToml()],
     // Required by @sanity/visual-editing (per sanity.io/docs astro-visual-editing
     // troubleshooting: "Module resolution errors in development").
