@@ -5,6 +5,7 @@
  * and right-aligned timestamp sidebar with border divider.
  */
 import { Icon } from 'astro-icon/components';
+import { sanityImageUrl } from '@lib/sanity/client';
 import type { SanityHomeNews } from '@lib/sanity/types';
 
 interface Props {
@@ -36,6 +37,17 @@ const items = news?.items ?? [];
         <div class="news-cards-grid">
           {items.map((item) => (
             <article class="news-card">
+              {item.image && (
+                <div class="news-card-photo">
+                  <img
+                    src={sanityImageUrl(item.image, { width: 1200, quality: 70 })}
+                    alt={item.imageAlt ?? item.headline ?? ''}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
+              <div class="news-card-row">
               <div class="news-card-main">
                 {(item.tag || item.place) && (
                   <div class="news-card-meta">
@@ -56,6 +68,7 @@ const items = news?.items ?? [];
                   <span class="news-card-time">{item.timeLabel}</span>
                 )}
                 <Icon name="tabler:arrow-right" class="news-card-arrow" aria-hidden="true" />
+              </div>
               </div>
             </article>
           ))}
@@ -152,9 +165,6 @@ const items = news?.items ?? [];
   }
 
   .news-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
     background: var(--news-surface);
     border: 1px solid var(--news-border);
     border-radius: 4px;
@@ -163,14 +173,33 @@ const items = news?.items ?? [];
     color: inherit;
     cursor: pointer;
     transition: border-color 0.15s ease;
+    overflow: hidden;
+  }
+
+  .news-card-row {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   @media (min-width: 768px) {
-    .news-card {
+    .news-card-row {
       flex-direction: row;
       align-items: center;
       gap: 2rem;
     }
+  }
+
+  /* Variation 1A: optional top photo banner (renders only when the CMS item has an image) */
+  .news-card-photo {
+    margin: -2rem -2.25rem 1.75rem;
+  }
+
+  .news-card-photo img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
   }
 
   .news-card:hover {

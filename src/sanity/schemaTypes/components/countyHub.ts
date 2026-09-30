@@ -18,8 +18,20 @@ export const countyHub = defineType({
       name: 'businesses',
       title: 'Businesses',
       type: 'string',
-      validation: (rule) => rule.required(),
-      description: 'Active-business stat as shown, e.g. "2.4k Active"',
+      description: 'Optional active-business stat, e.g. "2.4k Active". Leave empty when no verified count exists.',
+    }),
+    defineField({
+      name: 'image',
+      title: 'County photo',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'Full-bleed photo shown on the hub card; hotspot controls the crop focus',
+    }),
+    defineField({
+      name: 'imageAlt',
+      title: 'Photo alt text',
+      type: 'string',
+      description: 'Describe the photo for screen readers, e.g. "Baltimore Inner Harbor at dusk"',
     }),
     defineField({
       name: 'link',

@@ -33,10 +33,11 @@ const validBusinesses = (businesses ?? []).filter((b) => b?.title);
               <div class="featured-media">
                 {b.image?.asset && (
                   <img
-                    src={sanityImageUrl(b.image, { width: 800 })}
-                    srcset={`${sanityImageUrl(b.image, { width: 400 })} 1x, ${sanityImageUrl(b.image, { width: 800 })} 2x`}
+                    src={sanityImageUrl(b.image, { width: 720, quality: 68 })}
+                    srcset={`${sanityImageUrl(b.image, { width: 360, quality: 68 })} 1x, ${sanityImageUrl(b.image, { width: 720, quality: 68 })} 2x`}
                     alt={b.imageAlt ?? b.title ?? ''}
                     loading="lazy"
+                    decoding="async"
                   />
                 )}
               </div>

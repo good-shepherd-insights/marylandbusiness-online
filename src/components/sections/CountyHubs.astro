@@ -1,33 +1,44 @@
 ---
 /**
- * County hubs section — prominent, bold exploration grid of Maryland
- * jurisdictions. Generously scaled cards with top circular pin badge,
- * top-right corner arrow, distinct typography, and title-only hover.
+ * County hubs — full-bleed photo cards for all 24 Maryland jurisdictions.
+ * Each card shows its county photo (CMS-curated, hotspot-aware) under a
+ * gradient overlay, with a business-count pill, county name, and explore
+ * link. Cards without a photo fall back to a branded gradient with a
+ * watermark pin so the grid stays visually intentional.
  */
 import { Icon } from 'astro-icon/components';
-import type { CountyHubsContent, CountyHub } from '@lib/sanity/types';
+import { sanityImageUrl } from '@lib/sanity/client';
+import type { CountyHubsContent, SanityImage } from '@lib/sanity/types';
+
+export interface HubCard {
+  name: string;
+  businesses?: string;
+  image?: SanityImage;
+  imageAlt?: string;
+  link?: string;
+}
 
 interface Props {
   countyHubs: CountyHubsContent;
-  countyHrefs: Record<string, string>;
+  hubs: HubCard[];
 }
 
-const { countyHubs, countyHrefs } = Astro.props;
-const { heading, description, ctaLabel, ctaLink, hubs } = countyHubs;
-const validHubs = (hubs ?? []).filter((hub) => hub?.name);
-const countyCardHref = (name: string) => {
-  const key = name.trim().toLocaleLowerCase();
-  const county = Object.entries(countyHrefs).find(([slug]) => {
-    // The county list passed by the page is slug keyed; CMS names are
-    // resolved against the same published county options via their labels.
-    return slug === key;
-  });
-  return county?.[1];
-};
+const { countyHubs, hubs } = Astro.props;
+const { heading, description, ctaLabel, ctaLink } = countyHubs;
+const cards = (hubs ?? []).filter((hub) => hub?.name);
+
+/**
+ * Desktop shows the first two rows (8 cards); the rest are hidden via CSS.
+ * On mobile the grid becomes a 2-row swipe carousel holding all counties.
+ */
+const DESKTOP_VISIBLE = 8;
+
+/** A card photo only renders when the CMS image has an asset. */
+const hasImage = (hub: HubCard) => Boolean(hub.image?.asset?._ref);
 ---
 
 {
-  validHubs.length > 0 && (
+  cards.length > 0 && (
     <section class="county-hubs" aria-label={heading ?? 'Explore Maryland by County'}>
       <div class="county-hubs-inner">
         <!-- Section Header -->
@@ -39,30 +50,47 @@ const countyCardHref = (name: string) => {
           {ctaLabel && ctaLink && (
             <a class="county-hubs-cta" href={ctaLink}>
               <span>{ctaLabel}</span>
-              <Icon name="tabler:arrow-right" aria-hidden="true" />
+              <Icon name="tabler:map" aria-hidden="true" />
             </a>
           )}
         </div>
 
-        <!-- Prominent Grid of County Cards -->
-        <div class="county-hubs-grid">
-          {validHubs.map((hub: CountyHub) => {
+        <!-- Full-Bleed Photo Grid / Mobile 2-row carousel -->
+        <div class="county-hubs-grid" role="region" aria-label="Maryland county hubs">
+          {cards.map((hub: HubCard, i: number) => {
             const CardTag = hub.link ? 'a' : 'div';
+            const showImage = hasImage(hub);
             return (
-              <CardTag class="county-card" href={hub.link ?? undefined}>
-                <div class="county-card-top">
-                  <div class="county-icon-badge" aria-hidden="true">
-                    <Icon name="tabler:map-pin" />
-                  </div>
-                  <Icon name="tabler:arrow-up-right" class="county-card-arrow" aria-hidden="true" />
+              <CardTag
+                class:list={[
+                  'hub-card',
+                  { 'hub-card--noimg': !showImage, 'hub-card--beyond': i >= DESKTOP_VISIBLE },
+                ]}
+                href={hub.link ?? undefined}
+              >
+                {showImage && hub.image && (
+                  <img
+                    class="hub-card-img"
+                    src={sanityImageUrl(hub.image, { width: 800, quality: 70 })}
+                    srcset={`${sanityImageUrl(hub.image, { width: 400, quality: 70 })} 1x, ${sanityImageUrl(hub.image, { width: 800, quality: 70 })} 2x`}
+                    alt={hub.imageAlt ?? ''}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <div class="hub-card-scrim" aria-hidden="true" />
+                {!showImage && (
+                  <Icon name="tabler:map-pin" class="hub-card-watermark" aria-hidden="true" />
+                )}
+                <div class="hub-card-top">
+                  {hub.businesses && <span class="hub-card-pill">{hub.businesses}</span>}
                 </div>
-                <div class="county-card-body">
-                  <h3 class="county-title">{hub.name}</h3>
-                  {hub.businesses && (
-                    <span class="county-count-badge">
-                      {hub.businesses}
-                    </span>
-                  )}
+                <div class="hub-card-bottom">
+                  <h3 class="hub-card-name">{hub.name}</h3>
+                  <span class="hub-card-go">
+                    Explore hub
+                    <Icon name="tabler:arrow-right" aria-hidden="true" />
+                  </span>
                 </div>
               </CardTag>
             );
@@ -80,8 +108,7 @@ const countyCardHref = (name: string) => {
     --hubs-muted: #555555;
     --hubs-border: #e3e0dc;
     --hubs-background: #faf7f2;
-    --hubs-card-bg: #ffffff;
-    --hubs-badge-bg: rgba(157, 34, 53, 0.08);
+    --hubs-fallback: linear-gradient(135deg, #a12638 0%, #57101d 100%);
 
     background: var(--hubs-background);
     border-top: 1px solid var(--hubs-border);
@@ -143,7 +170,8 @@ const countyCardHref = (name: string) => {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     text-decoration: none;
-    white-space: nowrap;
+    max-width: 100%;
+    overflow-wrap: anywhere;
     flex-shrink: 0;
     min-height: 48px;
     padding: 0.5rem 0;
@@ -165,17 +193,47 @@ const countyCardHref = (name: string) => {
     border-radius: 2px;
   }
 
-  /* 4-Column Responsive Grid */
+  /* Grid on desktop / 2-row swipe carousel on mobile */
   .county-hubs-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.25rem;
   }
 
+  @media (max-width: 599px) {
+    .county-hubs-grid {
+      grid-template-columns: none;
+      grid-template-rows: repeat(2, minmax(0, auto));
+      grid-auto-flow: column;
+      grid-auto-columns: min(74vw, 300px);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      margin-inline: -1.5rem;
+      padding-inline: 1.5rem;
+      padding-bottom: 0.25rem;
+    }
+
+    .county-hubs-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .county-hubs-grid .hub-card {
+      scroll-snap-align: start;
+      min-height: 220px;
+    }
+  }
+
   @media (min-width: 600px) {
     .county-hubs-grid {
       grid-template-columns: repeat(2, 1fr);
-      gap: 1.25rem;
+    }
+
+    /* Desktop stays compact: only the first two rows are viewable */
+    .county-hubs-grid .hub-card--beyond {
+      display: none;
     }
   }
 
@@ -189,90 +247,146 @@ const countyCardHref = (name: string) => {
   @media (min-width: 1200px) {
     .county-hubs-grid {
       grid-template-columns: repeat(4, 1fr);
-      gap: 1.5rem;
     }
   }
 
-  /* Substantial, Grounded County Card */
-  .county-card {
+  /* Full-Bleed Photo Card */
+  .hub-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    background: var(--hubs-card-bg);
-    border: 1px solid var(--hubs-border);
-    border-radius: 6px;
-    padding: 2rem 1.75rem;
-    min-height: 170px;
+    min-height: 240px;
+    border-radius: 12px;
+    overflow: hidden;
+    isolation: isolate;
     text-decoration: none;
-    color: inherit;
-    position: relative;
+    color: #fff;
+    padding: 1.25rem;
   }
 
-  /* Restrained Title-Only Hover */
-  .county-card:hover .county-title {
-    color: var(--hubs-primary);
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    text-decoration-thickness: 1.5px;
+  @media (min-width: 900px) {
+    .hub-card {
+      min-height: 300px;
+    }
   }
 
-  .county-card:focus-visible {
+  .hub-card-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    transition: transform 0.6s ease;
+  }
+
+  .hub-card:hover .hub-card-img {
+    transform: scale(1.06);
+  }
+
+  .hub-card-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      180deg,
+      rgba(8, 10, 8, 0.24) 0%,
+      rgba(8, 10, 8, 0) 38%,
+      rgba(8, 10, 8, 0.82) 100%
+    );
+  }
+
+  /* Branded fallback when a county has no photo yet */
+  .hub-card--noimg {
+    background: var(--hubs-fallback);
+  }
+
+  .hub-card--noimg .hub-card-scrim {
+    background: linear-gradient(
+      180deg,
+      rgba(8, 10, 8, 0) 40%,
+      rgba(8, 10, 8, 0.45) 100%
+    );
+  }
+
+  .hub-card-watermark {
+    position: absolute;
+    right: -1.75rem;
+    bottom: -1.75rem;
+    width: 9rem;
+    height: 9rem;
+    color: rgba(255, 255, 255, 0.14);
+    z-index: -1;
+  }
+
+  .hub-card:focus-visible {
     outline: 2px solid var(--hubs-primary);
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 
-  /* Card Top Row */
-  .county-card-top {
+  /* Card Content */
+  .hub-card-top {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2rem;
+    justify-content: flex-start;
+    min-height: 1.75rem;
   }
 
-  .county-icon-badge {
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 50%;
-    background: var(--hubs-badge-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .hub-card-pill {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--hubs-foreground);
+    font-size: 0.6875rem; /* 11px */
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.375rem 0.75rem;
+    border-radius: 999px;
   }
 
-  .county-icon-badge :global(svg) {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--hubs-primary);
-  }
-
-  .county-card-arrow {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: var(--hubs-muted);
-  }
-
-  /* Card Body */
-  .county-card-body {
+  .hub-card-bottom {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .county-title {
-    font-size: 1.25rem;   /* 20px */
+  .hub-card-name {
+    font-size: 1.375rem; /* 22px */
     font-weight: 800;
-    color: var(--hubs-foreground);
     letter-spacing: -0.02em;
     line-height: 1.2;
+    color: #fff;
     margin: 0;
-    transition: color 0.15s ease;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
   }
 
-  .county-count-badge {
+  .hub-card-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.8125rem; /* 13px */
-    font-weight: 600;
-    color: var(--hubs-muted);
-    letter-spacing: 0.01em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    opacity: 0.92;
+  }
+
+  .hub-card-go :global(svg) {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 0.2s ease;
+  }
+
+  .hub-card:hover .hub-card-go :global(svg) {
+    transform: translateX(4px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hub-card-img,
+    .hub-card-go :global(svg) {
+      transition: none;
+    }
   }
 
   @media (min-width: 1024px) {

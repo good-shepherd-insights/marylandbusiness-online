@@ -1,0 +1,73 @@
+---
+import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';
+import { getCountyOptions, directoryOptionHrefs } from '@lib/directory/paths';
+import { getCategoryTree, getHomePage, getSiteSettings } from '@lib/sanity/queries';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import '@fontsource-variable/sora';
+import Hero from '@components/sections/Hero.astro';
+import Navbar from '@components/app/Navbar.astro';
+import Footer from '@components/app/Footer.astro';
+import CountyHubs from '@components/sections/CountyHubs.astro';
+import FeaturedBusinesses from '@components/sections/FeaturedBusinesses.astro';
+import Editorial from '@components/sections/Editorial.astro';
+import SocialFeed from '@components/sections/SocialFeed.astro';
+import HomeNews from '@components/sections/HomeNews.astro';
+import HomePathways from '@components/sections/HomePathways.astro';
+import HomeCategoryIndex from '@components/sections/HomeCategoryIndex.astro';
+import HomeMethodology from '@components/sections/HomeMethodology.astro';
+import HomeFaq from '@components/sections/HomeFaq.astro';
+
+const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
+const settings = await getSiteSettings(perspectiveCookie);
+
+const home = await getHomePage(perspectiveCookie);
+const categoryTree = await getCategoryTree(perspectiveCookie);
+const homeCountyData = home?.countyHubs
+  ? await (async () => {
+      const counties = await getCountyOptions();
+      return { counties, hrefs: (await directoryOptionHrefs(counties, [])).counties };
+    })()
+  : undefined;
+
+/**
+ * All 24 Maryland jurisdictions as hub cards. CMS-curated entries (photo,
+ * business stat, custom link) merge onto the county list by slug; every
+ * county links to its directory hub page.
+ */
+const hubKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const hubCards = home?.countyHubs
+  ? (homeCountyData?.counties ?? []).map((county) => {
+      const curated = (home.countyHubs?.hubs ?? []).find(
+        (h) => h?.name && hubKey(h.name) === hubKey(county.slug),
+      );
+      return {
+        name: county.label,
+        businesses: curated?.businesses,
+        image: curated?.image,
+        imageAlt: curated?.imageAlt,
+        link: curated?.link || homeCountyData?.hrefs[county.slug],
+      };
+    })
+  : [];
+---
+
+{
+  home?.hero || home?.trustStrip || home?.countyHubs || home?.featuredBusinesses || home?.editorial || home?.socialFeed || home?.homeNews ? (
+    <BaseLayout>
+      <main id="main-content">
+        {home?.hero && <Hero hero={home.hero} />}
+        {settings && <Navbar settings={settings} />}
+        {home?.countyHubs && <CountyHubs countyHubs={home.countyHubs} hubs={hubCards} />}
+        {home?.featuredBusinesses && <FeaturedBusinesses featuredBusinesses={home.featuredBusinesses} />}
+        {home?.editorial && <Editorial editorial={home.editorial} />}
+        {home?.socialFeed && <SocialFeed socialFeed={home.socialFeed} />}
+        {home?.homeNews && <HomeNews news={home.homeNews} />}
+        {home?.homePathways && <HomePathways pathways={home.homePathways} />}
+        {home?.homeCategoryIndex && <HomeCategoryIndex section={home.homeCategoryIndex} groups={categoryTree} />}
+        {home?.homeMethodology && <HomeMethodology methodology={home.homeMethodology} />}
+        {home?.homeFaq && <HomeFaq faq={home.homeFaq} />}
+      </main>
+      {settings && <Footer settings={settings} />}
+    </BaseLayout>
+  ) : null
+}

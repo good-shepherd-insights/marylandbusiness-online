@@ -21,6 +21,19 @@ export const flagshipProgram = defineType({
     defineField({name: 'title', title: 'Title', type: 'string', validation: (rule) => rule.required()}),
     defineField({name: 'description', title: 'Description', type: 'text', rows: 3, validation: (rule) => rule.required()}),
     defineField({name: 'url', title: 'Program URL', type: 'url', validation: (rule) => rule.required()}),
+    defineField({
+      name: 'image',
+      title: 'Photo',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'Optional photo shown above the card with the content overlapping it (variation 3D); card renders without it when empty',
+    }),
+    defineField({
+      name: 'imageAlt',
+      title: 'Photo alt text',
+      type: 'string',
+      description: 'Describe the photo for screen readers',
+    }),
   ],
   preview: {
     select: {title: 'title', icon: 'icon'},

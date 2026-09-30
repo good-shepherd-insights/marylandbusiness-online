@@ -305,6 +305,8 @@ export interface CountyHub {
   name?: string;
   icon?: string;
   businesses?: string;
+  image?: SanityImage;
+  imageAlt?: string;
   link?: string;
 }
 
@@ -401,6 +403,8 @@ export interface SanityNewsItem {
   excerpt?: string;
   place?: string;
   timeLabel?: string;
+  image?: SanityImage;
+  imageAlt?: string;
 }
 export interface SanityHomeNews {
   _id: string;
@@ -417,6 +421,8 @@ export interface SanityPathwayCard {
   _key?: string;
   title?: string;
   description?: string;
+  image?: SanityImage;
+  imageAlt?: string;
   links?: SanityNavLink[] | null;
 }
 export interface SanityHomePathways {
@@ -640,6 +646,8 @@ export interface Partner {
   icon?: string;
   title?: string;
   text?: string;
+  image?: SanityImage;
+  imageAlt?: string;
 }
 
 export interface PartnershipsContent {
@@ -737,6 +745,8 @@ export interface FlagshipProgram {
   title: string;
   description: string;
   url: string;
+  image?: SanityImage;
+  imageAlt?: string;
 }
 
 export interface FeaturedProgramsContent {
@@ -771,6 +781,8 @@ export interface ResourceCardItem {
   category: string;
   description: string;
   url: string;
+  image?: SanityImage;
+  imageAlt?: string;
 }
 
 export interface ResourceDirectoryContent {

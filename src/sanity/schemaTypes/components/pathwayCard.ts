@@ -25,6 +25,19 @@ export const pathwayCard = defineType({
       type: 'array',
       of: [{type: 'navLink'}],
     }),
+    defineField({
+      name: 'image',
+      title: 'Photo',
+      type: 'image',
+      options: {hotspot: true},
+      description: 'Optional banner photo above the card content (variation 6A); card renders without it when empty',
+    }),
+    defineField({
+      name: 'imageAlt',
+      title: 'Photo alt text',
+      type: 'string',
+      description: 'Describe the photo for screen readers',
+    }),
   ],
   preview: {
     select: {title: 'title'},

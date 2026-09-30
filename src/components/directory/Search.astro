@@ -66,13 +66,13 @@ async function getSearchPlaceholder() {
       }
       if (config.directoryUI.search.tags.display === "select") {
         return (
-          <UiTagSelect client:load options={filterOptions}>
+          <UiTagSelect client:visible options={filterOptions}>
             <Icon name="tabler:x" />
           </UiTagSelect>
         );
       }
       if (config.directoryUI.search.tags.display === "show-all") {
-        return <UiTagGrid client:load options={filterOptions} />;
+        return <UiTagGrid client:visible options={filterOptions} />;
       }
     }
   }

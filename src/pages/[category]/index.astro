@@ -2,9 +2,9 @@
 // Single-segment routes (TAGS.md + HUB-DIRECTORY-RESEARCH.md): named pages
 // (about, how-it-works) or a directory path. [category] shadows [...slug]
 // for every single-segment URL (named params beat rest params). Directory
-// resolution is three-tier: gate-passing → hub; valid-but-gate-off → 302
-// to the nearest gate-passing ancestor with ?af= chips; unresolvable →
-// bare 302 to the hub root.
+// resolution is three-tier: gate-passing → hub; valid-but-gate-off → 301
+// to the nearest gate-passing ancestor with ?af= chips; unresolvable or
+// ungated → bare 301 to / (the home page takes no chips).
 import { getCountyOptions, getCategoryOptions, resolveDirectoryPath } from "@lib/directory/paths";
 import { getAboutPage, getDirectoryPage, getHowItWorksPage, getSiteSettings } from "@lib/sanity/queries";
 import { perspectiveCookieName } from '@sanity/preview-url-secret/constants';

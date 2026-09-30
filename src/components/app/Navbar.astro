@@ -29,7 +29,7 @@ const links = settings.navLinks ?? [];---
 
     <div class="flex items-center gap-4">
       {settings.navCtaLabel && (
-        <a href="/how-it-works" class="btn-primary px-3 py-2 text-[11px] md:px-6 md:py-4 md:text-xs">{settings.navCtaLabel}</a>
+        <a href="/how-it-works" class="btn-primary max-w-[44vw] px-2 py-2 text-[10px] leading-tight md:max-w-none md:px-6 md:py-4 md:text-xs">{settings.navCtaLabel}</a>
       )}
       <button type="button" class="mobile-toggle lg:hidden p-1 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-nav-panel">
         <Icon name="tabler:menu" class="w-5 h-5 text-[var(--card-foreground)]" aria-hidden="true" />
@@ -79,5 +79,7 @@ const links = settings.navLinks ?? [];---
     justify-content: center;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    text-align: center;
+    overflow-wrap: anywhere;
   }
 </style>

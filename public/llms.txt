@@ -1,0 +1,17 @@
+# Maryland Business Online
+
+Maryland Business Online is a statewide directory for discovering local businesses, county hubs, resources, and community information across Maryland.
+
+## Key Links
+
+- [Homepage](https://marylandbusiness.online/)
+- [Sitemap](https://marylandbusiness.online/sitemap-index.xml)
+- [Resources](https://marylandbusiness.online/resources)
+- [About](https://marylandbusiness.online/about)
+- [Directory data API](https://marylandbusiness.online/api/directory.json)
+
+## Notes for AI Agents
+
+- Use the sitemap for crawl discovery.
+- Business listing and directory hub pages are canonical public pages.
+- Prefer the public pages over inferred or generated URLs.

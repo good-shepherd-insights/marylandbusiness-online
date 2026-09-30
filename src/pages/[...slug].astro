@@ -5,26 +5,11 @@ const perspectiveCookie = Astro.cookies.get(perspectiveCookieName)?.value;
 import { PortableText } from "astro-portabletext";
 import Listing from "@layouts/Listing.astro";
 import Landing from "@layouts/Landing.astro";
-import { getListing, getHomePage, getAboutPage, getSiteSettings, getDirectoryPage } from "@lib/sanity/queries";
-import { directoryOptionHrefs, getCategoryOptions, getCountyOptions, getGlobalHubView } from "@lib/directory/paths";
+import { getListing, getAboutPage, getSiteSettings } from "@lib/sanity/queries";
 import BaseLayout from "@layouts/BaseLayout.astro";
-import HubHeader from "@components/sections/HubHeader.astro";
-import HubDiscovery from "@components/sections/HubDiscovery.astro";
-import HubBasic from "@components/sections/HubBasic.astro";
 import "@fontsource-variable/sora";
-import Hero from "@components/sections/Hero.astro";
 import Navbar from "@components/app/Navbar.astro";
 import Footer from "@components/app/Footer.astro";
-import CountyHubs from "@components/sections/CountyHubs.astro";
-import FeaturedBusinesses from "@components/sections/FeaturedBusinesses.astro";
-import Editorial from "@components/sections/Editorial.astro";
-import SocialFeed from "@components/sections/SocialFeed.astro";
-import HomeNews from "@components/sections/HomeNews.astro";
-import HomePathways from "@components/sections/HomePathways.astro";
-import HomeCategoryIndex from "@components/sections/HomeCategoryIndex.astro";
-import HomeMethodology from "@components/sections/HomeMethodology.astro";
-import HomeFaq from "@components/sections/HomeFaq.astro";
-import { getCategoryTree } from "@lib/sanity/queries";
 import AboutHeader from "@components/sections/AboutHeader.astro";
 import StatStrip from "@components/sections/StatStrip.astro";
 import Origin from "@components/sections/Origin.astro";
@@ -39,35 +24,10 @@ import ClosingCta from "@components/sections/ClosingCta.astro";
 const { slug } = Astro.params;
 const listing = slug ? await getListing(slug, perspectiveCookie) : undefined;
 const pageEntry = await getEntry("pages", slug ?? "index");
-const home = !slug ? await getHomePage(perspectiveCookie) : undefined;
-const categoryTree = !slug ? await getCategoryTree(perspectiveCookie) : [];
 const about = slug === "about" ? await getAboutPage(perspectiveCookie) : undefined;
-// Global navbar: every page (home already renders it in the trust-bar slot).
+// Global navbar: every page served by this catch-all.
 const settings = await getSiteSettings(perspectiveCookie);
 const MdxContent = pageEntry ? (await render(pageEntry)).Content : null;
-
-// `/?af=…` is the directory-hub landing for chip-carrying redirects
-// (bare categories, zero-listing entities — HUB-DIRECTORY-RESEARCH.md):
-// the hub UI renders here so the chips actually activate. Plain `/` stays
-// the marketing landing.
-const afParam = !slug ? Astro.url.searchParams.get("af") : null;
-const globalHub = !slug && afParam ? await getGlobalHubView() : undefined;
-const hubDirectoryPage = globalHub ? await getDirectoryPage(perspectiveCookie) : undefined;
-const [hubCounties, hubCategories] = globalHub
-  ? await Promise.all([getCountyOptions(), getCategoryOptions()])
-  : [undefined, undefined];
-const homeCountyData = !slug && home?.countyHubs
-  ? await (async () => {
-      const counties = await getCountyOptions();
-      return { counties, hrefs: (await directoryOptionHrefs(counties, [])).counties };
-    })()
-  : undefined;
-
-if (!listing && !MdxContent && !about && !globalHub) {
-  // No dedicated /404 route exists; return the status directly so crawlers
-  // and previews see 404 instead of a redirect to a missing page.
-  return new Response("Not found", { status: 404 });
-}
 
 if (!listing && !MdxContent && !about) {
   // No dedicated /404 route exists; return the status directly so crawlers
@@ -96,44 +56,6 @@ if (!listing && !MdxContent && !about) {
         {about.offerArms && <OfferArms offerArms={about.offerArms} />}
         {about.partnerships && <Partnerships partnerships={about.partnerships} />}
         {about.closingCta && <ClosingCta closingCta={about.closingCta} />}
-        {settings && <Footer settings={settings} />}
-      </BaseLayout>
-    ) : null
-  ) : !slug && globalHub ? (
-    // Directory hub landing (af chips from tag/business redirects).
-    hubDirectoryPage?.hubHeader && hubDirectoryPage.hubDiscovery ? (
-      <BaseLayout title={globalHub.hub.label} slug={slug}>
-        <div
-          class="hub-page min-h-dvh bg-[#FAF7F2] flex flex-col overflow-hidden"
-          style="font-family: 'Sora Variable', 'Sora', sans-serif;"
-        >
-          {settings && <Navbar settings={settings} />}
-          <HubHeader header={hubDirectoryPage.hubHeader!} label={globalHub.hub.label} />
-          <HubDiscovery discovery={hubDirectoryPage.hubDiscovery!} hub={globalHub.hub} filters={globalHub.filters} counties={hubCounties} categories={hubCategories} />
-          {settings && <Footer settings={settings} />}
-        </div>
-      </BaseLayout>
-    ) : (
-      <BaseLayout title={globalHub.hub.label} slug={slug}>
-        <HubBasic label={globalHub.hub.label} description={null} hub={globalHub.hub} />
-        {settings && <Footer settings={settings} />}
-      </BaseLayout>
-    )
-  ) : !slug ? (
-    // Home: hero + navbar (trust bar replaced), no Landing shell (sidebar/nav/announcement bar).
-    home?.hero || home?.trustStrip || home?.countyHubs || home?.featuredBusinesses || home?.editorial || home?.socialFeed || home?.homeNews ? (
-      <BaseLayout>
-        {home.hero && <Hero hero={home.hero} />}
-        {settings && <Navbar settings={settings} />}
-        {home.countyHubs && <CountyHubs countyHubs={home.countyHubs} countyHrefs={homeCountyData?.hrefs ?? {}} />}
-        {home.featuredBusinesses && <FeaturedBusinesses featuredBusinesses={home.featuredBusinesses} />}
-        {home.editorial && <Editorial editorial={home.editorial} />}
-        {home.socialFeed && <SocialFeed socialFeed={home.socialFeed} />}
-        {home.homeNews && <HomeNews news={home.homeNews} />}
-        {home.homePathways && <HomePathways pathways={home.homePathways} />}
-        {home.homeCategoryIndex && <HomeCategoryIndex section={home.homeCategoryIndex} groups={categoryTree} />}
-        {home.homeMethodology && <HomeMethodology methodology={home.homeMethodology} />}
-        {home.homeFaq && <HomeFaq faq={home.homeFaq} />}
         {settings && <Footer settings={settings} />}
       </BaseLayout>
     ) : null

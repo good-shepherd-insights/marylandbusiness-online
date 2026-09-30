@@ -1,0 +1,13 @@
+{
+  "@context": "https://www.w3.org/ns/did/v1",
+  "id": "did:web:marylandbusiness.goodshepherdinsights.com",
+  "name": "Maryland Business Online (pagedev)",
+  "description": "Maryland Business Online application staging deployment for page.dev testing.",
+  "service": [
+    {
+      "id": "#ai-catalog",
+      "type": "AiCatalog",
+      "serviceEndpoint": "https://marylandbusiness.goodshepherdinsights.com/ai-catalog.json"
+    }
+  ]
+}
