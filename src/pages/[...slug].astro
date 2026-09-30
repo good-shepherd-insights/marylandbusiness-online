@@ -63,6 +63,27 @@ const homeCountyData = !slug && home?.countyHubs
     })()
   : undefined;
 
+/**
+ * All 24 Maryland jurisdictions as hub cards. CMS-curated entries (photo,
+ * business stat, custom link) merge onto the county list by slug; every
+ * county links to its directory hub page.
+ */
+const hubKey = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const hubCards = home?.countyHubs
+  ? (homeCountyData?.counties ?? []).map((county) => {
+      const curated = (home.countyHubs?.hubs ?? []).find(
+        (h) => h?.name && hubKey(h.name) === hubKey(county.slug),
+      );
+      return {
+        name: county.label,
+        businesses: curated?.businesses,
+        image: curated?.image,
+        imageAlt: curated?.imageAlt,
+        link: curated?.link || homeCountyData?.hrefs[county.slug],
+      };
+    })
+  : [];
+
 if (!listing && !MdxContent && !about && !globalHub) {
   // No dedicated /404 route exists; return the status directly so crawlers
   // and previews see 404 instead of a redirect to a missing page.
@@ -125,7 +146,7 @@ if (!listing && !MdxContent && !about) {
       <BaseLayout>
         {home.hero && <Hero hero={home.hero} />}
         {settings && <Navbar settings={settings} />}
-        {home.countyHubs && <CountyHubs countyHubs={home.countyHubs} countyHrefs={homeCountyData?.hrefs ?? {}} />}
+        {home.countyHubs && <CountyHubs countyHubs={home.countyHubs} hubs={hubCards} />}
         {home.featuredBusinesses && <FeaturedBusinesses featuredBusinesses={home.featuredBusinesses} />}
         {home.editorial && <Editorial editorial={home.editorial} />}
         {home.socialFeed && <SocialFeed socialFeed={home.socialFeed} />}

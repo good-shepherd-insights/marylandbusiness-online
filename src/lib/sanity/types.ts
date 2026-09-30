@@ -305,6 +305,8 @@ export interface CountyHub {
   name?: string;
   icon?: string;
   businesses?: string;
+  image?: SanityImage;
+  imageAlt?: string;
   link?: string;
 }
 

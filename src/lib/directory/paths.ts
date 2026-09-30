@@ -816,7 +816,7 @@ export function directoryPathFor(
   // with `?af=` so the user gets a working page (HUB-DIRECTORY-RESEARCH.md
   // is silent on the empty-gate case; landing on `/` with `?af=` chips is
   // the same UX the resolver produces for tier-3 "unresolvable" slugs).
-  const requested = [cat, sub, county, city].filter(Boolean) as Array<'cat' | 'sub' | 'county' | 'city'>;
+  const requested = (['cat', 'sub', 'county', 'city'] as const).filter((k) => sel[k]);
   const label = (k: 'cat' | 'sub' | 'county' | 'city', v: string | undefined) =>
     labelBy[k] ?? v?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) ?? '';
   const af = requested.map((k) => `${k}~${k === 'cat' ? cat : k === 'sub' ? sub : k === 'county' ? county : city}~${label(k, k === 'cat' ? cat : k === 'sub' ? sub : k === 'county' ? county : city)}`).join(',');

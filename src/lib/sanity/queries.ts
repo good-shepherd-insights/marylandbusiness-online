@@ -232,7 +232,7 @@ export async function getHomePage(
         description,
         ctaLabel,
         ctaLink,
-        hubs[]{name,icon,businesses,link}
+        hubs[]{name,icon,businesses,link,image{asset,alt},imageAlt}
       },
       featuredBusinesses->{
         eyebrow,
